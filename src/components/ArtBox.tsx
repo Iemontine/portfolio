@@ -2,161 +2,182 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PAGE_ASCII_ART, TYPING_SPEED, DELETE_SPEED, SCROLL_COOLDOWN, INTERFACE_COLOR, BACKGROUND_COLOR } from '../constants';
 
 interface ArtBoxProps {
-    currentPage: number;
-    setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+	currentPage: number;
+	setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
 }
 
 let DISPLAYED_ART = PAGE_ASCII_ART[0].content;
 
 const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
-    const [displayedArt, setDisplayedArt] = useState(DISPLAYED_ART); // Tracks current displayed ASCII art
-    const [isCooldown, setIsCooldown] = useState(false); // Cooldown to prevent rapid scrolls
-    const typingInterval = useRef<number | null>(null); // Track the typing interval
-    const deleteInterval = useRef<number | null>(null); // Track the deletion interval
+	const [displayedArt, setDisplayedArt] = useState(DISPLAYED_ART); // Tracks current displayed ASCII art
+	const [isCooldown, setIsCooldown] = useState(false); // Cooldown to prevent rapid scrolls
+	const typingInterval = useRef<number | null>(null); // Track the typing interval
+	const deleteInterval = useRef<number | null>(null); // Track the deletion interval
 
-    const startTypingAnimation = (newPage: number) => {
-        // Clear any ongoing typing/deleting intervals
-        stopTyping();
-        stopDeleting();
+	const startTypingAnimation = (newPage: number) => {
+		// Clear any ongoing typing/deleting intervals
+		stopTyping();
+		stopDeleting();
 
-        // Reset displayed art to the current page content
-        const newText = PAGE_ASCII_ART[newPage].content;
+		// Reset displayed art to the current page content
+		const newText = PAGE_ASCII_ART[newPage].content;
 
-        // Find the length of the common prefix
-        let commonPrefixLength = findCommonPrefixLength(DISPLAYED_ART, newText);
+		// Find the length of the common prefix
+		let commonPrefixLength = findCommonPrefixLength(DISPLAYED_ART, newText);
 
-        const ITERS = 100;
-        let deleteSize = Math.ceil((DISPLAYED_ART.length - commonPrefixLength) / ITERS);
-        let writeSize = Math.ceil((newText.length - commonPrefixLength) / ITERS);
-        deleteInterval.current = window.setInterval(() => {
-            if (DISPLAYED_ART.length > commonPrefixLength) {
-                DISPLAYED_ART = DISPLAYED_ART.slice(0, -deleteSize);
-                setDisplayedArt(DISPLAYED_ART);
-            } else {
-                stopDeleting();
-                let typedText = DISPLAYED_ART;
-                typingInterval.current = window.setInterval(() => {
-                    if (typedText.length === newText.length) {
-                        if (typingInterval.current !== null) {
-                            clearInterval(typingInterval.current);
-                            typingInterval.current = null;
-                        }
-                    } else {
-                        const nextChunk = newText.slice(typedText.length, typedText.length + writeSize);
-                        typedText += nextChunk;
-                        DISPLAYED_ART = typedText;
-                        setDisplayedArt(DISPLAYED_ART);
-                    }
-                }, TYPING_SPEED);
-            }
-        }, DELETE_SPEED);
-    };
+		const ITERS = 100;
+		let deleteSize = Math.ceil((DISPLAYED_ART.length - commonPrefixLength) / ITERS);
+		let writeSize = Math.ceil((newText.length - commonPrefixLength) / ITERS);
+		deleteInterval.current = window.setInterval(() => {
+			if (DISPLAYED_ART.length > commonPrefixLength) {
+				DISPLAYED_ART = DISPLAYED_ART.slice(0, -deleteSize);
+				setDisplayedArt(DISPLAYED_ART);
+			} else {
+				stopDeleting();
+				let typedText = DISPLAYED_ART;
+				typingInterval.current = window.setInterval(() => {
+					if (typedText.length === newText.length) {
+						if (typingInterval.current !== null) {
+							clearInterval(typingInterval.current);
+							typingInterval.current = null;
+						}
+					} else {
+						const nextChunk = newText.slice(typedText.length, typedText.length + writeSize);
+						typedText += nextChunk;
+						DISPLAYED_ART = typedText;
+						setDisplayedArt(DISPLAYED_ART);
+					}
+				}, TYPING_SPEED);
+			}
+		}, DELETE_SPEED);
+	};
 
-    const stopTyping = () => {
-        if (typingInterval.current !== null) {
-            clearInterval(typingInterval.current);
-            typingInterval.current = null;
-        }
-    };
+	const stopTyping = () => {
+		if (typingInterval.current !== null) {
+			clearInterval(typingInterval.current);
+			typingInterval.current = null;
+		}
+	};
 
-    const stopDeleting = () => {
-        if (deleteInterval.current !== null) {
-            clearInterval(deleteInterval.current);
-            deleteInterval.current = null;
-        }
-    };
+	const stopDeleting = () => {
+		if (deleteInterval.current !== null) {
+			clearInterval(deleteInterval.current);
+			deleteInterval.current = null;
+		}
+	};
 
-    const handleScroll = (deltaY: number) => {
-        if (isCooldown) return;
-        setIsCooldown(true);
-        setTimeout(() => setIsCooldown(false), SCROLL_COOLDOWN);
+	const handleScroll = (deltaY: number) => {
+		if (isCooldown) return;
+		setIsCooldown(true);
+		setTimeout(() => setIsCooldown(false), SCROLL_COOLDOWN);
 
-        const direction = deltaY > 0 ? 'down' : 'up';
-        let newPage = currentPage;
+		const direction = deltaY > 0 ? 'down' : 'up';
+		let newPage = currentPage;
 
-        if (direction === 'down' && currentPage < PAGE_ASCII_ART.length
-            - 1) {
-            newPage = currentPage + 1;
-        } else if (direction === 'up' && currentPage > 0) {
-            newPage = currentPage - 1;
-        }
+		if (direction === 'down' && currentPage < PAGE_ASCII_ART.length
+			- 1) {
+			newPage = currentPage + 1;
+		} else if (direction === 'up' && currentPage > 0) {
+			newPage = currentPage - 1;
+		}
 
-        if (newPage !== currentPage) {
-            setCurrentPage(newPage);
-            startTypingAnimation(newPage);
-        }
-    };
+		if (newPage !== currentPage) {
+			setCurrentPage(newPage);
+			startTypingAnimation(newPage);
+		}
+	};
 
-    useEffect(() => {
-        const handleWheel = (e: WheelEvent) => {
-            handleScroll(e.deltaY);
-        };
+	// Handle scroll events
+	useEffect(() => {
+		const handleWheel = (e: WheelEvent) => {
+			handleScroll(e.deltaY); // Directly trigger scroll without blocking typing
+		};
 
-        window.addEventListener('wheel', handleWheel);
-        return () => window.removeEventListener('wheel', handleWheel);
-    }, [currentPage, isCooldown]);
+		const handleTouchStart = (e: TouchEvent) => {
+			const touchStartY = e.touches[0].clientY;
+			const handleTouchMove = (e: TouchEvent) => {
+				const touchEndY = e.touches[0].clientY;
+				const deltaY = touchEndY - touchStartY;
+				handleScroll(deltaY);
+			};
+			const handleTouchEnd = () => {
+				window.removeEventListener('touchmove', handleTouchMove);
+				window.removeEventListener('touchend', handleTouchEnd);
+			};
+			window.addEventListener('touchmove', handleTouchMove);
+			window.addEventListener('touchend', handleTouchEnd);
+		};
 
-    useEffect(() => {
-        startTypingAnimation(0);
-    }, []);
+		window.addEventListener('wheel', handleWheel);
+		window.addEventListener('touchstart', handleTouchStart);
 
-    const calculateFontSizeAndLineHeight = (text: string) => {
-        const lines = text.split('\n').length;
-        let fontSize = `${1}rem`; // default font size
-        let lineHeight = `${420/lines/17}rem`; // default line height
+		return () => {
+			window.removeEventListener('wheel', handleWheel);
+			window.removeEventListener('touchstart', handleTouchStart);
+		};
+	}, [currentPage, isCooldown]);
 
-        if (lines > 80) {
-            fontSize = '0.35rem';
-        }
-        else if (lines > 70) {
-            fontSize = '0.45rem';
-        }
-        else if (lines > 60) {
-            fontSize = '0.6rem';
-        }
-        else if (lines > 50) {
-            fontSize = '0.7rem';
-        }
-        else if (lines > 40) {
-            fontSize = '0.8rem';
-        }
-        else if (lines > 30) {
-            fontSize = '0.9rem';
-        }
+	useEffect(() => {
+		startTypingAnimation(0);
+	}, []);
 
-        return { fontSize, lineHeight };
-    };
+	const calculateFontSizeAndLineHeight = (text: string) => {
+		const lines = text.split('\n').length;
+		let fontSize = `${1}rem`; // default font size
+		let lineHeight = `${420 / lines / 17}rem`; // default line height
 
-    const { fontSize, lineHeight } = calculateFontSizeAndLineHeight(displayedArt);
+		if (lines > 80) {
+			fontSize = '0.35rem';
+		}
+		else if (lines > 70) {
+			fontSize = '0.45rem';
+		}
+		else if (lines > 60) {
+			fontSize = '0.6rem';
+		}
+		else if (lines > 50) {
+			fontSize = '0.7rem';
+		}
+		else if (lines > 40) {
+			fontSize = '0.8rem';
+		}
+		else if (lines > 30) {
+			fontSize = '0.9rem';
+		}
 
-    return (
-        <div style={{ 
-            borderColor: INTERFACE_COLOR, 
-            backgroundColor: BACKGROUND_COLOR, 
-            display: 'flex', 
-            justifyContent: 'center', 
-            alignItems: 'center', 
-            height: '500px', // Set a fixed height
-            width: '100%', // Set a fixed width
-            overflow: 'hidden' // Hide overflow content
-        }} className={`border p-4 text-xs`}>
-            <pre style={{ textAlign: 'center', fontSize, lineHeight }}>{displayedArt}</pre>
-        </div>
-    );
+		return { fontSize, lineHeight };
+	};
+
+	const { fontSize, lineHeight } = calculateFontSizeAndLineHeight(displayedArt);
+
+	return (
+		<div style={{
+			borderColor: INTERFACE_COLOR,
+			backgroundColor: BACKGROUND_COLOR,
+			display: 'flex',
+			justifyContent: 'center',
+			alignItems: 'center',
+			height: '500px', // Set a fixed height
+			width: '100%', // Set a fixed width
+			overflow: 'hidden' // Hide overflow content
+		}} className={`border p-4 text-xs`}>
+			<pre style={{ textAlign: 'center', fontSize, lineHeight }}>{displayedArt}</pre>
+		</div>
+	);
 };
 
 function findCommonPrefixLength(str1: string, str2: string): number {
-    let length = 0;
-    const minLength = Math.min(str1.length, str2.length);
+	let length = 0;
+	const minLength = Math.min(str1.length, str2.length);
 
-    for (let i = 0; i < minLength; i++) {
-        if (str1[i] === str2[i]) {
-            length++;
-        } else {
-            break;
-        }
-    }
-    return length;
+	for (let i = 0; i < minLength; i++) {
+		if (str1[i] === str2[i]) {
+			length++;
+		} else {
+			break;
+		}
+	}
+	return length;
 }
 
 export default ArtBox;
