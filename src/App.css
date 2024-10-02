@@ -1,3 +1,28 @@
+@font-face {
+  font-family: 'MS UI Gothic';
+  src: url('./fonts/MS-UIGothic.ttf') format('truetype');
+  font-weight: 100;
+  font-smooth: never;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  -webkit-text-size-adjust: 100%; /* For Safari */
+  text-size-adjust: 100%; /* For Chrome, Firefox, Edge, Opera */
+  font-family: 'MS UI Gothic', sans-serif; /* Set font for everything */
+}
+
+body {
+  background-color: #000;
+  filter: contrast(1.1) saturate(1.4) brightness(0.9);
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'MS UI Gothic', sans-serif; /* Ensure font is set for body */
+}
+
 .App {
   text-align: center;
 }
@@ -14,7 +39,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: #0b5cff;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -35,4 +60,17 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+@keyframes noise {
+  0%, 100% {
+    background-position: 0 0;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+}
+
+h1, h2, h3, p, span {
+  text-shadow: 0 0 10px currentColor, 0 0 30px currentColor, 0 0 50px currentColor;
 }
