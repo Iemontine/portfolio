@@ -20,57 +20,40 @@ body {
   height: 100%;
   width: 100%;
   overflow: hidden;
-  font-family: 'MS UI Gothic', sans-serif; /* Ensure font is set for body */
+  font-family: 'MS UI Gothic', sans-serif;
 }
 
-.App {
-  text-align: center;
+.vhs-effect {
+  position: relative;
+  overflow: hidden;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #0b5cff;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes noise {
-  0%, 100% {
-    background-position: 0 0;
-  }
-  50% {
-    background-position: 100% 100%;
-  }
+[class*="border"] {
+  background-color: #000;
+  box-shadow: 
+    0 0 1px var(--glow-color, currentColor),
+    0 0 2px var(--glow-color, currentColor),
+    0 0 3px var(--glow-color, currentColor);
+  transition: box-shadow 0.3s ease;
 }
 
 h1, h2, h3, p, span {
   text-shadow: 0 0 10px currentColor, 0 0 30px currentColor, 0 0 50px currentColor;
+}
+
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    transparent 50%,
+    rgba(32, 178, 170, 0.15) 50%
+  );
+  opacity: 20%;
+  background-size: 100% 8px;
+  z-index: 1;
+  pointer-events: none;
 }

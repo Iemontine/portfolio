@@ -25,7 +25,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
         // Find the length of the common prefix
         let commonPrefixLength = findCommonPrefixLength(DISPLAYED_ART, newText);
 
-        const ITERS = 50;
+        const ITERS = 100;
         let deleteSize = Math.ceil((DISPLAYED_ART.length - commonPrefixLength) / ITERS);
         let writeSize = Math.ceil((newText.length - commonPrefixLength) / ITERS);
         deleteInterval.current = window.setInterval(() => {
@@ -100,19 +100,47 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
         startTypingAnimation(0);
     }, []);
 
-    const calculateFontSize = (text: string) => {
+    const calculateFontSizeAndLineHeight = (text: string) => {
         const lines = text.split('\n').length;
-        if (lines < 10) return '1.5rem';
-        if (lines < 20) return '1.25rem';
-        if (lines < 30) return '1rem';
-        return '0.75rem';
+        let fontSize = `${1}rem`; // default font size
+        let lineHeight = `${420/lines/17}rem`; // default line height
+
+        if (lines > 80) {
+            fontSize = '0.35rem';
+        }
+        else if (lines > 70) {
+            fontSize = '0.45rem';
+        }
+        else if (lines > 60) {
+            fontSize = '0.6rem';
+        }
+        else if (lines > 50) {
+            fontSize = '0.7rem';
+        }
+        else if (lines > 40) {
+            fontSize = '0.8rem';
+        }
+        else if (lines > 30) {
+            fontSize = '0.9rem';
+        }
+
+        return { fontSize, lineHeight };
     };
 
-    const fontSize = calculateFontSize(displayedArt);
+    const { fontSize, lineHeight } = calculateFontSizeAndLineHeight(displayedArt);
 
     return (
-        <div style={{ borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR, display: 'flex', justifyContent: 'center' }} className={`border p-4 text-xs`}>
-            <pre style={{ textAlign: 'center', fontSize }}>{displayedArt}</pre>
+        <div style={{ 
+            borderColor: INTERFACE_COLOR, 
+            backgroundColor: BACKGROUND_COLOR, 
+            display: 'flex', 
+            justifyContent: 'center', 
+            alignItems: 'center', 
+            height: '500px', // Set a fixed height
+            width: '100%', // Set a fixed width
+            overflow: 'hidden' // Hide overflow content
+        }} className={`border p-4 text-xs`}>
+            <pre style={{ textAlign: 'center', fontSize, lineHeight }}>{displayedArt}</pre>
         </div>
     );
 };
