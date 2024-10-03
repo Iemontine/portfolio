@@ -1,44 +1,51 @@
 @font-face {
-  font-family: 'MS UI Gothic';
-  src: url('./fonts/MS-UIGothic.ttf') format('truetype');
-  font-weight: 100;
-  font-smooth: never;
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: grayscale;
+	font-family: 'MS UI Gothic';
+	src: url('./fonts/MS-UIGothic.ttf') format('truetype');
+	font-weight: 100;
+	font-smooth: never;
+	-webkit-font-smoothing: none;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 html {
-  -webkit-text-size-adjust: 100%; /* For Safari */
-  text-size-adjust: 100%; /* For Chrome, Firefox, Edge, Opera */
-  font-family: 'MS UI Gothic', sans-serif; /* Set font for everything */
+	-webkit-text-size-adjust: 100%;
+	/* For Safari */
+	text-size-adjust: 100%;
+	/* For Chrome, Firefox, Edge, Opera */
+	font-family: 'MS UI Gothic', sans-serif;
+	/* Set font for everything */
 }
 
 body {
-  background-color: #000;
-  filter: contrast(1.1) saturate(1.4) brightness(0.9);
-  position: relative;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-  font-family: 'MS UI Gothic', sans-serif;
+	background-color: #000;
+	filter: contrast(1.1) saturate(1.4) brightness(0.9);
+	position: relative;
+	height: 100%;
+	width: 100%;
+	overflow: hidden;
+	font-family: 'MS UI Gothic', sans-serif;
 }
 
 .vhs-effect {
-  position: relative;
-  overflow: hidden;
+	position: relative;
+	overflow: hidden;
 }
 
 [class*="border"] {
-  background-color: #000;
-  box-shadow: 
-    0 0 1px var(--glow-color, currentColor),
-    0 0 2px var(--glow-color, currentColor),
-    0 0 3px var(--glow-color, currentColor);
-  transition: box-shadow 0.3s ease;
+	background-color: #000;
+	box-shadow:
+		0 0 1px var(--glow-color, currentColor),
+		0 0 2px var(--glow-color, currentColor),
+		0 0 3px var(--glow-color, currentColor);
+	transition: box-shadow 0.3s ease;
 }
 
-h1, h2, h3, p, span {
-  text-shadow: 0 0 10px currentColor, 0 0 30px currentColor, 0 0 50px currentColor;
+h1,
+h2,
+h3,
+p,
+span {
+	text-shadow: 0 0 10px currentColor, 0 0 30px currentColor, 0 0 50px currentColor;
 }
 
 .scanlines {

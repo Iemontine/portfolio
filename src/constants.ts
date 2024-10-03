@@ -36,17 +36,17 @@ const CONTENT =
 ;
 
 const PAGE_ASCII_ART = [
-  { id: 0, content: artPage0 },
-  { id: 1, content: artPage1 },
-  { id: 2, content: artPage2 },
-  { id: 3, content: artPage3 },
-  { id: 4, content: artPage4 },
+	{ id: 0, content: artPage0 },
+	{ id: 1, content: artPage1 },
+	{ id: 2, content: artPage2 },
+	{ id: 3, content: artPage3 },
+	{ id: 4, content: artPage4 },
 ];
 
 const TYPING_SPEED = 1;                 // Delay between typing each character in ms
 const DELETE_SPEED = 1;                 // Speed of deleting in ms
 const SCROLL_COOLDOWN = 300;            // Small cooldown between scroll events
-const BACKGROUND_COLOR = '#000000'; 
+const BACKGROUND_COLOR = '#000000';
 const INTERFACE_COLOR = '#4fae9b';
 
 export { PAGE_CONTENT, CONTENT, PAGE_ASCII_ART, TYPING_SPEED, DELETE_SPEED, SCROLL_COOLDOWN, BACKGROUND_COLOR, INTERFACE_COLOR };
