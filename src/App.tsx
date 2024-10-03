@@ -10,18 +10,9 @@ const App = () => {
   return (
     <div className="app-container">
       <div className="scanlines"></div>
-      <div style={{ backgroundColor: BACKGROUND_COLOR, color: INTERFACE_COLOR }} className="h-screen w-screen text-xl px-8 py-8 grid grid-cols-[auto,1fr,1fr] grid-rows-[1fr,1fr] gap-8 vhs-effect">
-        <div className="row-span-2 flex flex-col justify-center items-center space-y-2">
-          {PAGE_CONTENT.map((page, index) => (
-            <div
-              key={page.id}
-              style={{ borderColor: INTERFACE_COLOR, backgroundColor: index === currentPage ? INTERFACE_COLOR : 'transparent' }}
-              className="h-12 w-4 border transition-all duration-300 ease-in-out"
-            />
-          ))}
-        </div>
+      <div style={{ backgroundColor: BACKGROUND_COLOR, color: INTERFACE_COLOR }} className="h-screen w-screen text-xl px-8 py-8 grid grid-cols-[1fr,1fr] grid-rows-[1fr,1fr] gap-8 vhs-effect">
 
-        <ContentBox currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        <ContentBox />
 
         {/* LEMONTINE box */}
         <div style={{ borderColor: INTERFACE_COLOR }} className="relative border p-4 z-10">

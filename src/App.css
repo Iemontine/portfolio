@@ -52,7 +52,7 @@ h1, h2, h3, p, span {
     transparent 50%,
     rgba(32, 178, 170, 0.15) 50%
   );
-  opacity: 20%;
+  opacity: 50%;
   background-size: 100% 8px;
   z-index: 1;
   pointer-events: none;

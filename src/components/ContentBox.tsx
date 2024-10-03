@@ -1,137 +1,105 @@
+import { CONTENT, INTERFACE_COLOR, BACKGROUND_COLOR } from '../constants';
 import React, { useState, useRef, useEffect } from 'react';
-import { PAGE_CONTENT, TYPING_SPEED, DELETE_SPEED, SCROLL_COOLDOWN, INTERFACE_COLOR, BACKGROUND_COLOR } from '../constants';
 
-interface ContentBoxProps {
-    currentPage: number;
-    setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
-}
+const FONT_SIZE = '17px';
+const HEADER_FONT_SIZE = '20px';
 
-let DISPLAYED_TEXT = PAGE_CONTENT[0].content;
+const ContentBox: React.FC = () => {
+	const contentBoxRef = useRef<HTMLDivElement>(null);
+	const [charsPerLine, setCharsPerLine] = useState<number>(0);
+	const [formattedText, setFormattedText] = useState<string[]>([]);
 
-const ContentBox: React.FC<ContentBoxProps> = ({ currentPage, setCurrentPage }) => {
-  const [displayedText, setDisplayedText] = useState(DISPLAYED_TEXT); // Tracks current displayed text
-  const [isCooldown, setIsCooldown] = useState(false); // Cooldown to prevent rapid scrolls
-  const typingInterval = useRef<number | null>(null); // Track the typing interval
-  const deleteInterval = useRef<number | null>(null); // Track the deletion interval
+	// Create a markup object for dangerously setting inner HTML
+	const createMarkup = (html: string) => {
+		return { __html: html };
+	};
 
-  const startTypingAnimation = (newPage: number) => {
-    // Clear any ongoing typing/deleting intervals
-    stopTyping();
-    stopDeleting();
+	// Split the text into lines of length charsPerLine
+	const splitTextForDisplay = (text: string, charsPerLine: number, numberOfLines: number) => {
+		const paragraphs = text.split('<br>');
+		const formatted: string[] = [];
 
-    // Reset displayed text to the current page content
-    const newText = PAGE_CONTENT[newPage].content;
+		let bounded = true;
+		paragraphs.forEach(paragraph => {
+			let line = '';
+			let lastSpace = 0;
+			console.log(paragraph);
+			paragraph.split('').forEach(char => {
+				if (formatted.length >= numberOfLines) {
+					bounded = false;					
+				}
+				if (line.length >= charsPerLine) {
+					const cutOffLine = line.substring(0, lastSpace);
+					// console.log(cutOffLine);
+					formatted.push(cutOffLine);
+					line = line.substring(lastSpace + 1);
+				}
+				if (char === ' ') {
+					lastSpace = line.length;
+				}
+				if (!bounded) {
+					return;
+				}
+				line += char;
+			});
+			if (line) {
+				console.log(line);
+				formatted.push(line);
+			}
+			if (!bounded) {
+				return;
+			}
+		});
+		return formatted;
+	};
 
-    // Find the length of the common prefix
-      let commonPrefixLength = findCommonPrefixLength(DISPLAYED_TEXT, newText);
-      console.log(DISPLAYED_TEXT === newText, DISPLAYED_TEXT, newText, commonPrefixLength);
+	// Update the number of characters per line and number of lines on window resize
+	const calculateCharsPerLineAndLines = () => {
+		if (contentBoxRef.current) {
+			// TODO: Fix this hack
+			const contentBoxWidth = contentBoxRef.current.clientWidth + 75; 
+			const contentBoxHeight = contentBoxRef.current.clientHeight;
 
-    deleteInterval.current = window.setInterval(() => {
-        // Deleting text up to the common prefix, 5 characters at a time
-        if (DISPLAYED_TEXT.length > commonPrefixLength) {
-          DISPLAYED_TEXT = DISPLAYED_TEXT.slice(0, -3);
-        setDisplayedText(DISPLAYED_TEXT);
-      }
-      else {
-        // Start typing new content from the common prefix
-        stopDeleting();
+			// console.log(`Content box width: ${contentBoxWidth}`);
+			// console.log(`Content box height: ${contentBoxHeight}`);
+			
+			const charsPerLine = Math.floor(contentBoxWidth * (70 / 680));
+			const numberOfLines = Math.floor(contentBoxHeight * (28 / 850))
 
-        let typedText = DISPLAYED_TEXT;
-        const CHUNK_SIZE = 2; // Number of characters to type at a time
-        typingInterval.current = window.setInterval(() => {
-          if (typedText.length === newText.length) {
-            if (typingInterval.current !== null) {
-              clearInterval(typingInterval.current);
-              typingInterval.current = null;
-            }
-          } else {
-            const nextChunk = newText.slice(typedText.length, typedText.length + CHUNK_SIZE);
-            typedText += nextChunk;
-              DISPLAYED_TEXT = typedText;
-              
-            setDisplayedText(DISPLAYED_TEXT);
-          }
-        }, TYPING_SPEED);
-      }
-    }, DELETE_SPEED);
-  };
+			// console.log(`Chars per line: ${charsPerLine}`);
+			// console.log(`Number of lines: ${numberOfLines}`);
 
-  const stopTyping = () => {
-    if (typingInterval.current !== null) {
-      clearInterval(typingInterval.current);
-      typingInterval.current = null;
-    }
-  };
+			return { charsPerLine, numberOfLines };
+		}
+		return { charsPerLine: 0, numberOfLines: 0 };
+	};
 
-  const stopDeleting = () => {
-    if (deleteInterval.current !== null) {
-      clearInterval(deleteInterval.current);
-      deleteInterval.current = null;
-    }
-  };
+	useEffect(() => {
+		const updateCharsPerLineAndLines = () => {
+			const { charsPerLine, numberOfLines } = calculateCharsPerLineAndLines();
+			setCharsPerLine(charsPerLine);
+			setFormattedText(splitTextForDisplay(CONTENT, charsPerLine, numberOfLines));
+		};
 
-  // Handle scroll with cooldown and cancel typing
-  const handleScroll = (deltaY: number) => {
-    if (isCooldown) return;     // Prevent scrolling during cooldown
-    setIsCooldown(true);
-    setTimeout(() => setIsCooldown(false), SCROLL_COOLDOWN); // Release cooldown after a short time
+		updateCharsPerLineAndLines();
+		window.addEventListener('resize', updateCharsPerLineAndLines);
 
-    const direction = deltaY > 0 ? 'down' : 'up';
-    let newPage = currentPage;
+		return () => {
+			window.removeEventListener('resize', updateCharsPerLineAndLines);
+		};
+	}, []);
 
-    if (direction === 'down' && currentPage < PAGE_CONTENT.length - 1) {
-      newPage = currentPage + 1;
-    } else if (direction === 'up' && currentPage > 0) {
-      newPage = currentPage - 1;
-    }
-
-    // On successful scroll
-    if (newPage !== currentPage) {
-      setCurrentPage(newPage);
-      startTypingAnimation(newPage);
-    }
-  };
-
-  // Handle scroll events
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      handleScroll(e.deltaY); // Directly trigger scroll without blocking typing
-    };
-
-    window.addEventListener('wheel', handleWheel);
-    return () => window.removeEventListener('wheel', handleWheel);
-  }, [currentPage, isCooldown]);
-
-  // Trigger the loading of the first page on component mount
-  useEffect(() => {
-    startTypingAnimation(0);
-  }, []);
-
-  return (
-    <div style={{ borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR }} className={`row-span-2 border p-4`}>
-      {/* Displaying the animated text */}
-      <p>{displayedText}</p>
-    </div>
-  );
+	return (
+		<div
+			ref={contentBoxRef}
+			style={{ borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR }}
+			className="row-span-2 border p-4"
+		>
+			{formattedText.map((line, index) => (
+				<div key={index} style={{ fontSize: FONT_SIZE }} dangerouslySetInnerHTML={createMarkup(line)}></div>
+			))}
+		</div>
+	);
 };
-
-function findCommonPrefixLength(str1: string, str2: string): number {
-    let length = 0;
-
-    // Find the minimum length to avoid index out of bounds
-    const minLength = Math.min(str1.length, str2.length);
-
-    // Compare characters one by one
-    for (let i = 0; i < minLength; i++) {
-        console.log(str1[i], str2[i]);
-        if (str1[i] === str2[i]) {
-            length++;
-        } else {
-            break; // Stop when characters differ
-        }
-    }
-
-    return length;
-}
 
 export default ContentBox;
