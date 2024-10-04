@@ -24,13 +24,11 @@ const CONTENT =
   <span style='color: #ffff00;'>- Lasers</span><br>
   <span style='color: #ffff00;'>- Light bridges</span><br>
   <span style='color: #ffff00;'>- Paint-like gels that alter player movement</span><br>
-  <br>
-  <br>
-  <h2 style='color: #4fae9b;'>Coop</h2>
-  In the cooperative campaign, two players can use the same console with a split screen, or can use a separate computer or console; Windows, Mac OS X, and PlayStation 3 users can play with each other regardless of platform.[15][16] Both player-characters are robots equipped with independent portal guns, a portal pair placed by either player is usable by both.[2][8][17] Most chambers lack strict structure, and require players to use both sets of portals for laser or funnel redirection, launches, and other maneuvers.[18] The game provides voice communication between players, and online players can temporarily enter a split-screen view to help coordinate actions.[17] Players can \"ping\" to draw the other player's attention to walls or objects, start countdown timers for synchronized actions, and perform joint gestures such as waving or hugging.[2][7][18] The game tracks which chambers each player has completed and allows players to replay chambers they have completed with new partners
-  <br>
-  <br>
-  "<h2 style='color: #4fae9b;'>Educational Impacts</h2>"
+  <br></br>
+  <h2 style='color: #ae4f4f;'>Coop</h2>
+  In the cooperative campaign, two players can use the same console with a split screen, or can use a separate computer or console; Windows, Mac OS X, and PlayStation 3 users can play with each other regardless of platform.[15][16] Both player-characters are robots equipped with independent portal guns, a portal pair placed by either player is usable by both.[2][8][17] Most chambers lack strict structure, and require players to use both sets of portals for laser or funnel redirection, launches, and other maneuvers.[18] The game provides voice communication between players, and online players can temporarily enter a split-screen view to help coordinate actions.[17] Players can \"ping\" to draw the other player's attention to walls or objects, start countdown timers for synchronized actions, and perform joint gestures such as waving or hugging.[2][7][18] The game tracks which chambers each player has completed and allows players to replay chambers they have completed with new partners.<br>
+  <br></br>
+  <h2 style='color: #ae4f4f;'>Educational Impacts</h2>
   Several critics wrote that Portal 2 excels in teaching the player to solve puzzles; in a review for the New York Times, Seth Schiesel wrote, \"Somewhere out there an innovative, dynamic high school physics teacher will use Portal 2 as the linchpin of an entire series of lessons and will immediately become the most important science teacher those lucky students have ever had.\"[168] Mathematics and science teachers wrote e-mails to Valve to tell them how they had included Portal in their classroom lessons as part of a project to promote the \"gamification of learning\".
   `
 ;
@@ -43,9 +41,9 @@ const PAGE_ASCII_ART = [
 	{ id: 4, content: artPage4 },
 ];
 
-const TYPING_SPEED = 1;                 // Delay between typing each character in ms
-const DELETE_SPEED = 1;                 // Speed of deleting in ms
-const SCROLL_COOLDOWN = 300;            // Small cooldown between scroll events
+const TYPING_SPEED = 100;                 // Delay between typing each character in ms
+const DELETE_SPEED = 100;                 // Speed of deleting in ms
+const SCROLL_COOLDOWN = 10;            // Small cooldown between scroll events
 const BACKGROUND_COLOR = '#000000';
 const INTERFACE_COLOR = '#4fae9b';
 

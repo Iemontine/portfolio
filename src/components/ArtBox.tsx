@@ -10,7 +10,7 @@ let DISPLAYED_ART = PAGE_ASCII_ART[0].content;
 
 const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 	const [displayedArt, setDisplayedArt] = useState(DISPLAYED_ART); // Tracks current displayed ASCII art
-	const [isCooldown, setIsCooldown] = useState(false); // Cooldown to prevent rapid scrolls
+	const isCooldownRef = useRef(false); // Cooldown to prevent rapid scrolls
 	const typingInterval = useRef<number | null>(null); // Track the typing interval
 	const deleteInterval = useRef<number | null>(null); // Track the deletion interval
 
@@ -47,9 +47,9 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 						DISPLAYED_ART = typedText;
 						setDisplayedArt(DISPLAYED_ART);
 					}
-				}, TYPING_SPEED);
+				}, 1);
 			}
-		}, DELETE_SPEED);
+		}, 1);
 	};
 
 	const stopTyping = () => {
@@ -67,9 +67,12 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 	};
 
 	const handleScroll = (deltaY: number) => {
-		if (isCooldown) return;
-		setIsCooldown(true);
-		setTimeout(() => setIsCooldown(false), SCROLL_COOLDOWN);
+		if (isCooldownRef.current) return;
+		isCooldownRef.current = true;
+
+		setTimeout(() => {
+			isCooldownRef.current = false;
+		}, SCROLL_COOLDOWN);
 
 		const direction = deltaY > 0 ? 'down' : 'up';
 		let newPage = currentPage;
@@ -115,7 +118,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 			window.removeEventListener('wheel', handleWheel);
 			window.removeEventListener('touchstart', handleTouchStart);
 		};
-	}, [currentPage, isCooldown]);
+	});
 
 	useEffect(() => {
 		startTypingAnimation(0);
