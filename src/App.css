@@ -9,11 +9,8 @@
 
 html {
 	-webkit-text-size-adjust: 100%;
-	/* For Safari */
 	text-size-adjust: 100%;
-	/* For Chrome, Firefox, Edge, Opera */
 	font-family: 'MS UI Gothic', sans-serif;
-	/* Set font for everything */
 }
 
 body {

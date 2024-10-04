@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { PAGE_ASCII_ART, TYPING_SPEED, DELETE_SPEED, SCROLL_COOLDOWN, INTERFACE_COLOR, BACKGROUND_COLOR } from '../constants';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
+import { PAGE_ASCII_ART, SCROLL_COOLDOWN, INTERFACE_COLOR, BACKGROUND_COLOR } from '../constants';
 
 interface ArtBoxProps {
 	currentPage: number;
@@ -8,13 +8,27 @@ interface ArtBoxProps {
 
 let DISPLAYED_ART = PAGE_ASCII_ART[0].content;
 
+// TODO: reimplement artbox trigger to be based on what the topmost header is in ContentBox
 const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
-	const [displayedArt, setDisplayedArt] = useState(DISPLAYED_ART); // Tracks current displayed ASCII art
-	const isCooldownRef = useRef(false); // Cooldown to prevent rapid scrolls
-	const typingInterval = useRef<number | null>(null); // Track the typing interval
-	const deleteInterval = useRef<number | null>(null); // Track the deletion interval
+	const [displayedArt, setDisplayedArt] = useState(DISPLAYED_ART);	// Tracks current displayed ASCII art
+	const isCooldownRef = useRef(false); 								// Cooldown to prevent rapid scrolls
+	const typingInterval = useRef<number | null>(null); 				// Track the typing interval
+	const deleteInterval = useRef<number | null>(null); 				// Track the deletion interval
 
-	const startTypingAnimation = (newPage: number) => {
+	const startTypingAnimation = useCallback((newPage: number) => {
+		const stopTyping = () => {
+			if (typingInterval.current !== null) {
+				clearInterval(typingInterval.current);
+				typingInterval.current = null;
+			}
+		};
+		const stopDeleting = () => {
+			if (deleteInterval.current !== null) {
+				clearInterval(deleteInterval.current);
+				deleteInterval.current = null;
+			}
+		};
+
 		// Clear any ongoing typing/deleting intervals
 		stopTyping();
 		stopDeleting();
@@ -50,23 +64,9 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 				}, 1);
 			}
 		}, 1);
-	};
+	}, []);
 
-	const stopTyping = () => {
-		if (typingInterval.current !== null) {
-			clearInterval(typingInterval.current);
-			typingInterval.current = null;
-		}
-	};
-
-	const stopDeleting = () => {
-		if (deleteInterval.current !== null) {
-			clearInterval(deleteInterval.current);
-			deleteInterval.current = null;
-		}
-	};
-
-	const handleScroll = (deltaY: number) => {
+	const handleScroll = useCallback((deltaY: number) => {
 		if (isCooldownRef.current) return;
 		isCooldownRef.current = true;
 
@@ -77,8 +77,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 		const direction = deltaY > 0 ? 'down' : 'up';
 		let newPage = currentPage;
 
-		if (direction === 'down' && currentPage < PAGE_ASCII_ART.length
-			- 1) {
+		if (direction === 'down' && currentPage < PAGE_ASCII_ART.length - 1) {
 			newPage = currentPage + 1;
 		} else if (direction === 'up' && currentPage > 0) {
 			newPage = currentPage - 1;
@@ -88,12 +87,11 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 			setCurrentPage(newPage);
 			startTypingAnimation(newPage);
 		}
-	};
+	}, [currentPage, setCurrentPage, startTypingAnimation]);
 
-	// Handle scroll events
 	useEffect(() => {
 		const handleWheel = (e: WheelEvent) => {
-			handleScroll(e.deltaY); // Directly trigger scroll without blocking typing
+			handleScroll(e.deltaY);
 		};
 
 		const handleTouchStart = (e: TouchEvent) => {
@@ -107,6 +105,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 				window.removeEventListener('touchmove', handleTouchMove);
 				window.removeEventListener('touchend', handleTouchEnd);
 			};
+
 			window.addEventListener('touchmove', handleTouchMove);
 			window.addEventListener('touchend', handleTouchEnd);
 		};
@@ -118,16 +117,17 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 			window.removeEventListener('wheel', handleWheel);
 			window.removeEventListener('touchstart', handleTouchStart);
 		};
-	});
+	}, [handleScroll]);
 
 	useEffect(() => {
 		startTypingAnimation(0);
-	}, []);
+	}, [startTypingAnimation]);
 
+	// Creates growing text effect, esp for long ASCII art
 	const calculateFontSizeAndLineHeight = (text: string) => {
 		const lines = text.split('\n').length;
-		let fontSize = `${1}rem`; // default font size
-		let lineHeight = `${420 / lines / 17}rem`; // default line height
+		let fontSize = `${1}rem`;
+		let lineHeight = `${420 / lines / 17}rem`;
 
 		if (lines > 80) {
 			fontSize = '0.35rem';
@@ -160,9 +160,9 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 			display: 'flex',
 			justifyContent: 'center',
 			alignItems: 'center',
-			height: '500px', // Set a fixed height
-			width: '100%', // Set a fixed width
-			overflow: 'hidden' // Hide overflow content
+			height: '500px',
+			width: '100%',
+			overflow: 'hidden'
 		}} className={`border p-4 text-xs`}>
 			<pre style={{ textAlign: 'center', fontSize, lineHeight }}>{displayedArt}</pre>
 		</div>

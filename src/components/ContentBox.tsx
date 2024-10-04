@@ -1,17 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { CONTENT, INTERFACE_COLOR, BACKGROUND_COLOR, SCROLL_COOLDOWN } from '../constants';
+import React, { useState, useRef, useEffect } from "react";
+import { CONTENT, INTERFACE_COLOR, BACKGROUND_COLOR, SCROLL_COOLDOWN } from "../constants";
 
 const FONT_SIZE = 17;
 const LINE_HEIGHT = 1.5;
+const DELAY = 10;
 
 const ContentBox: React.FC = () => {
 	const contentBoxRef = useRef<HTMLDivElement>(null);
 	var [topLine, setTopLine] = useState(0);
-	const [visibleLines, setVisibleLines] = useState<{ text: string, visible: boolean }[]>([]);
-	const [allLines, setAllLines] = useState<{ text: string, visible: boolean }[]>([]);
-	const visibleLinesRef = useRef<{ text: string, visible: boolean }[]>([]);
-	const allLinesRef = useRef<{ text: string, visible: boolean }[]>([]);
-	const animationQueue = useRef<(() => void)[]>([]);
+	const [visibleLines, setVisibleLines] = useState<{ text: string; visible: boolean; writtenText: string }[]>([]);
+	const [allLines, setAllLines] = useState<{ text: string; visible: boolean }[]>([]);
+	const visibleLinesRef = useRef<{ text: string; visible: boolean; writtenText: string }[]>([]);
+	const allLinesRef = useRef<{ text: string; visible: boolean; writtenText: string }[]>([]);
 	const linesPerBox = useRef(0);
 	const totalLines = useRef(0);
 	const isCooldown = useRef(false);
@@ -42,32 +42,32 @@ const ContentBox: React.FC = () => {
 
 	// Splits the page content into and tracks visibility of lines that can fit inside the ContentBox
 	const splitContent = (text: string, charsPerLine: number, linesPerBox: number) => {
-		const lines: { text: string, visible: boolean }[] = [];
-		const paragraphs = text.split('<br>');
-		let currentLine = '';
+		const lines: { text: string; visible: boolean; writtenText: string }[] = [];
+		const paragraphs = text.split("<br>");
+		let currentLine = "";
 		let isInHtmlTag = false;
-		let htmlTagBuffer = '';
+		let htmlTagBuffer = "";
 		let visibleChars = 0;
 
 		// Processes each word in the text, splitting it into lines, tracking visible or non-visible lines
 		let outOfBounds = true;
 		const processWord = (word: string) => {
-			if (word.startsWith('<')) isInHtmlTag = true;
+			if (word.startsWith("<")) isInHtmlTag = true;
 			if (isInHtmlTag) {
-				htmlTagBuffer += word + ' ';
-				if (word.endsWith('>')) {
+				htmlTagBuffer += word + " ";
+				if (word.endsWith(">")) {
 					isInHtmlTag = false;
 					currentLine += htmlTagBuffer;
-					htmlTagBuffer = '';
+					htmlTagBuffer = "";
 				}
 			} else {
 				if (visibleChars + word.length <= charsPerLine) {
-					currentLine += (currentLine && !currentLine.endsWith('>') ? ' ' : '') + word;
+					currentLine += (currentLine && !currentLine.endsWith(">") ? " " : "") + word;
 					visibleChars += word.length;
 				} else {
 					if (currentLine) {
-						lines.push({ text: currentLine, visible: outOfBounds });
-						currentLine = '';
+						lines.push({ text: currentLine, visible: outOfBounds, writtenText: currentLine });
+						currentLine = "";
 						visibleChars = 0;
 					}
 					currentLine = word;
@@ -83,33 +83,52 @@ const ContentBox: React.FC = () => {
 		for (const paragraph of paragraphs) {
 			const words = paragraph.split(/(\s+)/).filter(Boolean);
 			for (const word of words) {
-				processWord(word)
+				processWord(word);
 			}
 
 			// Newline after each paragraph (or header, etc.)
 			if (currentLine) {
-				lines.push({ text: currentLine, visible: outOfBounds });
-				currentLine = '';
+				lines.push({ text: currentLine, visible: outOfBounds, writtenText: currentLine });
+				currentLine = "";
 				visibleChars = 0;
 			}
 		}
 		return lines;
 	};
 
-
-	const updateContent = () => {
-		const { charsPerLine, visibleLines } = calculateBounds();
-		linesPerBox.current = visibleLines;
-
-		const allContent = splitContent(CONTENT, charsPerLine, visibleLines);
-		allLinesRef.current = allContent;
-		setAllLines(allContent); // Updates the state
-
-		totalLines.current = allContent.length;
-
-		const visibleContent_filtered = allContent.filter(line => line.visible);
-		setVisibleLines(visibleContent_filtered); // Updates the state
-		visibleLinesRef.current = visibleContent_filtered; // Sync the ref
+	// Queues the deletion and writing of text for each line
+	const deleteText = (lineIndex: number, allLines: Array<any>) => {
+		return new Promise<void>((resolve) => {
+			let curText = allLines[lineIndex].writtenText;
+			const deleteInterval = setInterval(() => {
+				const CHUNK_SIZE = Math.max(1, Math.floor(curText.length / 5));
+				if (curText.length > 0) {
+					curText = curText.slice(0, -CHUNK_SIZE);
+					allLines[lineIndex].writtenText = curText;
+					const visibleContent_filtered = allLines.filter((line) => line.visible);
+					setVisibleLines([...visibleContent_filtered]);
+				} else {
+					allLines[lineIndex].visible = false;
+					clearInterval(deleteInterval);
+					resolve();
+				}
+			}, DELAY);
+		});
+	};
+	const writeText = (lineIndex: number, allLines: Array<any>) => {
+		const nextLine = allLines[lineIndex];
+		let curText = "";
+		const writeInterval = setInterval(() => {
+			const CHUNK_SIZE = Math.max(1, Math.floor(curText.length / 5));
+			const commonPrefixLength = findCommonPrefixLength(curText, nextLine.text);
+			curText = nextLine.text.slice(0, commonPrefixLength + CHUNK_SIZE);
+			nextLine.writtenText = curText;
+			const visibleContent_filtered = allLines.filter((line) => line.visible);
+			setVisibleLines([...visibleContent_filtered]);
+			if (curText === nextLine.text) {
+				clearInterval(writeInterval);
+			}
+		}, DELAY);
 	};
 
 	const handleScroll = (deltaY: number) => {
@@ -120,35 +139,48 @@ const ContentBox: React.FC = () => {
 			isCooldown.current = false;
 		}, SCROLL_COOLDOWN);
 
-		const direction = deltaY > 0 ? 'down' : 'up';
+		const direction = deltaY > 0 ? "down" : "up";
 
-		setTopLine(topLine => {
-			if (direction === 'down') {
-				if (topLine + linesPerBox.current >= totalLines.current)
-					return topLine;
-				allLinesRef.current[topLine].visible = false;
-				allLinesRef.current[topLine + linesPerBox.current].visible = true;
+		setTopLine((topLine) => {
+			if (direction === "down") {
+				// Ensure content is within bounds
+				if (topLine + linesPerBox.current >= totalLines.current) return topLine;
 
-				console.log(topLine, linesPerBox.current, topLine + linesPerBox.current);
+				// Delete the top line and write the next line
+				deleteText(topLine, allLinesRef.current).then(() => {
+					allLinesRef.current[topLine + linesPerBox.current].visible = true;
+					writeText(topLine + linesPerBox.current, allLinesRef.current);
+				});
+				return topLine + 1;
+			} else {
+				// Ensure content is within bounds
+				if (topLine === 0) return topLine;
 
-				const visibleContent_filtered = allLinesRef.current.filter(line => line.visible);
-				setVisibleLines(visibleContent_filtered); // Updates the state
-				topLine += 1;
+				// Delete the bottom line and write the previous line
+				deleteText(topLine + linesPerBox.current - 1, allLinesRef.current).then(() => {
+					allLinesRef.current[topLine - 1].visible = true;
+					writeText(topLine - 1, allLinesRef.current);
+				});
+				return topLine - 1;
 			}
-			else {
-				if (topLine === 0)
-					return topLine;
-				allLinesRef.current[topLine + linesPerBox.current - 1].visible = false;
-				allLinesRef.current[topLine - 1].visible = true;
-
-				const visibleContent_filtered = allLinesRef.current.filter(line => line.visible);
-				setVisibleLines(visibleContent_filtered); // Updates the state
-				topLine -= 1;
-			}
-			// console.log(linesPerBox.current, totalLines.current, topLine);
-
 			return topLine;
 		});
+	};
+
+	// Default update function, updates the content based on the current size of box
+	const updateContent = () => {
+		const { charsPerLine, visibleLines } = calculateBounds();
+		linesPerBox.current = visibleLines;
+
+		const allContent = splitContent(CONTENT, charsPerLine, visibleLines);
+		allLinesRef.current = allContent;
+		setAllLines(allContent);
+
+		totalLines.current = allContent.length;
+
+		const visibleContent_filtered = allContent.filter((line) => line.visible);
+		setVisibleLines(visibleContent_filtered); 
+		visibleLinesRef.current = visibleContent_filtered;
 	};
 
 	useEffect(() => {
@@ -160,12 +192,12 @@ const ContentBox: React.FC = () => {
 
 		const handleWheel = (e: WheelEvent) => {
 			handleScroll(e.deltaY);
-		}
-		window.addEventListener('wheel', handleWheel);
+		};
+		window.addEventListener("wheel", handleWheel);
 
 		return () => {
 			resizeObserver.disconnect();
-			window.removeEventListener('wheel', handleWheel);
+			window.removeEventListener("wheel", handleWheel);
 		};
 	}, []);
 
@@ -178,13 +210,26 @@ const ContentBox: React.FC = () => {
 				fontSize: `${FONT_SIZE}px`,
 				lineHeight: `${LINE_HEIGHT}`,
 			}}
-			className="row-span-2 border p-4 h-full overflow-hidden"
-		>
+			className='row-span-2 border p-4 z-20 h-full overflow-hidden'>
 			{visibleLines.map((line, index) => (
-				<div key={index} dangerouslySetInnerHTML={createMarkup(line.text)}></div>
+				<div key={index} dangerouslySetInnerHTML={createMarkup(line.writtenText)}></div>
 			))}
 		</div>
 	);
 };
+
+function findCommonPrefixLength(str1: string, str2: string): number {
+	let length = 0;
+	const minLength = Math.min(str1.length, str2.length);
+
+	for (let i = 0; i < minLength; i++) {
+		if (str1[i] === str2[i]) {
+			length++;
+		} else {
+			break;
+		}
+	}
+	return length;
+}
 
 export default ContentBox;
