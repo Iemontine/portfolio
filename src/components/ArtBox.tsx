@@ -176,7 +176,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 			justifyContent: 'center',
 			alignItems: 'center',
 			overflow: 'hidden'
-		}} className={`border p-4 text-xs artBox`}>
+		}} className={`border text-xs artBox`}>
 			<pre style={{ textAlign: 'center', fontSize, lineHeight }}>{displayedArt}</pre>
 		</div>
 	);

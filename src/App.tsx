@@ -13,7 +13,8 @@ const App = () => {
       <div className="scanlines"></div>
       <div
         style={{ backgroundColor: BACKGROUND_COLOR, color: INTERFACE_COLOR }}
-        className="h-screen w-screen text-xl p-4 sm:py-8 grid grid-cols-1 md:grid-cols-2 grid-rows-[33%,33%,33%] md:grid-rows-[1fr,2fr] gap-4 sm:gap-8 vhs-effect">
+        className="h-screen w-screen text-xl p-4 sm:py-8 grid grid-cols-1 md:grid-cols-2 grid-rows-[auto,auto,auto] md:grid-rows-[1fr,1fr] gap-4 sm:gap-4 vhs-effect">
+        
         <AboutBox />
 
         <ContentBox />
