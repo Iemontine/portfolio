@@ -9,76 +9,65 @@ const PAGE_CONTENT = [
 ];
 
 
-// <span>I'm </span><span style='color: rgb(229, 128, 0)'>I</span><span style='color: rgb(232, 136, 0)'>e</span><span style='color: rgb(235, 144, 0)'>m</span><span style='color: rgb(238, 153, 0)'>o</span><span style='color: rgb(241, 161, 0)'>n</span><span style='color: rgb(244, 170, 0)'>t</span><span style='color: rgb(247, 178, 0)'>i</span><span style='color: rgb(249, 187, 0)'>n</span><span style='color: rgb(252, 195, 0)'>e</span>!<br></br>
-// <br></br>
-// <span style='color: rgb(255, 255, 255)'>a </span>
-// <span style='color: rgb(128, 0, 0)'>computer scientist</span>
-// <span style='color: rgb(255, 255, 255)'> with a passion for all things </span>
-// <span style='color: rgb(34, 139, 34)'>machine learning</span>
-// <span style='color: rgb(255, 255, 255)'> and </span>
-// <span style='color: rgb(0, 0, 128)'>artificial intelligence</span>
-// <span style='color: rgb(255, 255, 255)'>.</span>
-// <br><br>
-// <h4 style='color: rgb(128, 128, 128)'>-- fourth year academia, seeking research and internship opportunities.</h4>
-// <br>
-// <h4 style='color: rgb(255, 255, 255)'>proficient in 
-// <span style='color: rgb(255, 203, 58)'>Python</span>, 
-// <span style='color: rgb(248, 152, 34)'>Java</span>, 
-// <span style='color: rgb(240, 219, 79)'>JavaScript</span>, 
-// <span style='color: rgb(101, 154, 210)'>C</span>, 
-// <span style='color: rgb(204, 204, 255)'>C++</span>, 
-// <span style='color: rgb(162, 135, 221)'>CSharp</span>, 
-// <span style='color: rgb(203, 65, 84)'>HTML/CSS</span>, 
-// <span style='color: rgb(255, 111, 97)'>VB.NET</span>, 
-// <span style='color: rgb(255, 83, 73)'>Bash scripting</span>.
-// </h4>
-// <br>
-// <h4 style='color: rgb(128, 128, 128)'>-- specs: RTX 4070, AMD Ryzen 9 5900X</h4>
-// <br>
-// <h4 style='color: rgb(255, 255, 255)'>favorite libraries/APIs: 
-// <span style='color: rgb(65, 105, 225)'>PyTorch</span>, 
-// <span style='color: rgb(65, 105, 225)'>OpenAI</span>, 
-// <span style='color: rgb(65, 105, 225)'>Gymnasium</span>, 
-// <span style='color: rgb(65, 105, 225)'>Pycord</span>, 
-// <span style='color: rgb(65, 105, 225)'>Pillow</span>, 
-// <span style='color: rgb(65, 105, 225)'>BeautifulSoup</span>, 
-// <span style='color: rgb(65, 105, 225)'>Microsoft Azure</span>
-// </h4>
+
 
 // TODO: variable speed for deleting/writing to account for string length including html
 const CONTENT = `
-	<h1 style='color: #ae4f4f;'>About me</h1><br>
-	I'm Iemontine!
-	<br></br>
-	a computer scientist with a passion for all things machine learning and artificial intelligence.
-	<br></br>
-	-- fourth year academia, seeking research and internship opportunities.
-	<br></br>
-	proficient in Python, Java, JavaScript, C, C++, CSharp, HTML/CSS, VB.NET, Bash scripting.
-	<br></br>
-	-- specs: RTX 4070, AMD Ryzen 9 5900X
-	<br></br>
-	favorite libraries/APIs: PyTorch, OpenAI, Gymnasium, Pycord, Pillow, BeautifulSoup, Microsoft Azure
-	<br></br>
-
-	<h2 style='color: #ae4f4f;'>Gameplay</h2><br></br>
-	Portal 2 is a first-person perspective puzzle game. The player takes the role of Chell in the single-player campaign, as one of two robots—Atlas and P-Body—in the cooperative campaign, or as a simplistic humanoid icon in community-developed puzzles. Characters can withstand limited damage but will die after sustained injury.[2][3] The goal of both campaigns is to explore the Aperture Science Laboratory—a complicated, malleable mechanized maze. While some parts of the game takes place in modular test chambers with clearly defined entrances and exits, other parts occur in behind-the-scenes areas where the objective is less clear.<br>
-	<br></br>
-	<h2 style='color: #ae4f4f;'>New Features</h2><br>
-	Like the original Portal (2007), players solve puzzles by placing portals and teleporting between them. In the single-player campaign, players control Chell, who navigates the dilapidated Aperture Science Enrichment Center during its reconstruction by the supercomputer GLaDOS (Ellen McLain); new characters include robot Wheatley (Stephen Merchant) and Aperture founder Cave Johnson (J. K. Simmons). In the new cooperative mode, players solve puzzles together as robots Atlas and P-Body (both voiced by Dee Bradley Baker). Jonathan Coulton and the National produced songs for the game.<br>
-	<br></br>
-	Portal 2 adds features including:,
-	<br><br>
-	<span style='color: #ffff00;'>- Tractor beams</span><br>
-	<span style='color: #ffff00;'>- Lasers</span><br>
-	<span style='color: #ffff00;'>- Light bridges</span><br>
-	<span style='color: #ffff00;'>- Paint-like gels that alter player movement</span><br>
-	<br></br>
-	<h2 style='color: #ae4f4f;'>Coop</h2>
-	In the cooperative campaign, two players can use the same console with a split screen, or can use a separate computer or console; Windows, Mac OS X, and PlayStation 3 users can play with each other regardless of platform.[15][16] Both player-characters are robots equipped with independent portal guns, a portal pair placed by either player is usable by both.[2][8][17] Most chambers lack strict structure, and require players to use both sets of portals for laser or funnel redirection, launches, and other maneuvers.[18] The game provides voice communication between players, and online players can temporarily enter a split-screen view to help coordinate actions.[17] Players can "ping" to draw the other player's attention to walls or objects, start countdown timers for synchronized actions, and perform joint gestures such as waving or hugging.[2][7][18] The game tracks which chambers each player has completed and allows players to replay chambers they have completed with new partners.<br>
-	<br></br>
-	<h2 style='color: #ae4f4f;'>Educational Impacts</h2>
-	Several critics wrote that Portal 2 excels in teaching the player to solve puzzles; in a review for the New York Times, Seth Schiesel wrote, "Somewhere out there an innovative, dynamic high school physics teacher will use Portal 2 as the linchpin of an entire series of lessons and will immediately become the most important science teacher those lucky students have ever had."[168] Mathematics and science teachers wrote e-mails to Valve to tell them how they had included Portal in their classroom lessons as part of a project to promote the "gamification of learning".<br></br><br></br><br></br>
+<h1 style='color: #4fae9b;'>Iemontine's portfolio [Version 1.20.21210.34]</h1>
+<h1 style='color: #4fae9b;'>(c) darroll saddi. all rights reserved.</h1>
+The design was inspired by Portal 2 and was a challenge for myself to create a single-page design. It was created on October 4, 2024. Still a major WIP!
+<br></br>
+<span style='color: rgb(255,255,255)'>I'm</span> <span style='color: rgb(229, 128, 0)'>I</span><span style='color: rgb(232, 136, 0)'>e</span><span style='color: rgb(235, 144, 0)'>m</span><span style='color: rgb(238, 153, 0)'>o</span><span style='color: rgb(241, 161, 0)'>n</span><span style='color: rgb(244, 170, 0)'>t</span><span style='color: rgb(247, 178, 0)'>i</span><span style='color: rgb(249, 187, 0)'>n</span><span style='color: rgb(252, 195, 0)'>e</span><span style='color: rgb(255,255,255)'>, you might also know me as darroll!</span>
+<br></br>
+<h4 style='color: gray'># <span style='font-size: 1.2em'>some things about me</span></h4>
+<h4 style='color: gray'>-- Fourth-Year CS at UCD</h4>
+<h4 style='color: gray'>-- hobbies: programming, video games, video editing, computer building, hackathons, and watching movies</h4>
+<h4 style='color: gray'>-- technical skills: full-stack webdev, hardware/software concepts, and machine learning & AI</h4>
+<h4 style='color: gray'>-- specs: RTX 4070, AMD Ryzen 9 5900X</h4>
+<br></br>
+<h4 style='color: rgb(255, 255, 255)'>proficient in 
+<span style='color: rgb(255, 203, 58)'>Python</span>, 
+<span style='color: rgb(248, 152, 34)'>Java</span>, 
+<span style='color: rgb(240, 219, 79)'>JavaScript</span>, 
+<span style='color: rgb(101, 154, 210)'>C</span>, 
+<span style='color: rgb(204, 204, 255)'>C++</span>, 
+<span style='color: rgb(162, 135, 221)'>CSharp</span>, 
+<span style='color: rgb(203, 65, 84)'>HTML/CSS</span>, 
+<span style='color: rgb(255, 111, 97)'>VB.NET</span>, 
+<span style='color: rgb(255, 83, 73)'>Bash scripting</span>.
+</h4>
+<h4 style='color: rgb(255, 255, 255)'>favorite libraries/APIs: 
+<span style='color: rgb(65, 105, 225)'>PyTorch</span>, 
+<span style='color: rgb(65, 105, 225)'>OpenAI</span>, 
+<span style='color: rgb(65, 105, 225)'>Gymnasium</span>, 
+<span style='color: rgb(65, 105, 225)'>Pycord</span>, 
+<span style='color: rgb(65, 105, 225)'>Pillow</span>, 
+<span style='color: rgb(65, 105, 225)'>BeautifulSoup</span>, 
+<span style='color: rgb(65, 105, 225)'>Microsoft Azure</span>
+</h4>
+<br></br>
+<h1 style='color: #4fae9b;'>projects</h1>
+<h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/cIembot' style='color: #e2e224; text-decoration: underline;'>clembot</a></h2>
+A Discord bot capable of AI chat, music playing, image processing, birthday wishing, activity tracking, and more! Features added as I continue gain experience as a developer, out of interest and curiosity, and to solve the problems my family, friends, or I encounter in daily online life. <a href='https://github.com/Iemontine/cIembot' style='color: #2480e2; text-decoration: underline;'>Link</a>
+<br></br>
+<h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/SonicGameplayingAI' style='color: #e2e224; text-decoration: underline;'>gameplaying_AI_with_PPO</a></h2>
+An exploratory and successful reimplementation of OpenAI's Proximal Policy Optimization, utilized to train an supervised learning model capable of beating the first level of Sonic the Hedgehog in just 30 seconds! <a href='https://github.com/Iemontine/SonicGameplayingAI' style='color: #2480e2; text-decoration: underline;'>Link</a>
+<br></br>
+<h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/AudioVideoDescriptiveAI' style='color: #e2e224; text-decoration: underline;'>autoMovieRecap</a></h2>
+An experimental program that increases the quality of descriptions of an AI. Completed in just 2 months, I successfully trained and utilized audio classification models to reintroduce lost temporal and audio context when feeding the video frames into an LLM (GPT-4o). <a href='https://github.com/Iemontine/AudioVideoDescriptiveAI' style='color: #2480e2; text-decoration: underline;'>Link</a>
+<br></br>
+<h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/ultrakill-hud' style='color: #e2e224; text-decoration: underline;'>gmod_ultrakill_hud</a></h2>
+A HUD Mod in popular online video game Garry's Mod, designed to mimic the HUD of the game "ULTRAKILL". With tens of thousands of active users and over 130,000 views across Steam and YouTUbe, it is my first successful mod of a video game in Lua.<a href='https://github.com/Iemontine/ultrakill-hud' style='color: #2480e2; text-decoration: underline;'>Link</a>
+<br></br>
+<h2 style='color: #e2e224;'>- <a href='https://iemontine.github.io/minigames/' style='color: #e2e224; text-decoration: underline;'>GridGame</a></h2>
+A short 2D grid-based block-pushing puzzle game representing my first large-scale group project. With the help of my friends consisting of talented artists and designers (woopco, VVVaire, casperkun, and Cyril) we created our first full game together. Game mechanics and site coded entirely in Javascript manipulating DOM elements. You can play it  <a href='https://iemontine.github.io/minigames/gridGame.html' class="text-blue-400 hover:underline"'>here</a>
+<br></br>
+<h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/FloodFinder' style='color: #e2e224; text-decoration: underline;'>FloodFinder</a></h2>
+A full-stack web application developed at Hackdavis 2023, designed to help users respond to nearby natural disasters. Although it lacked the early-warning system we hoped to implement due to a lack of foresight, we implemented AI function calling and emergency response recommendations. Utilized the Google Earth API and a simple Python backend. <a href='https://github.com/Iemontine/FloodFinder' class="text-blue-400 hover:underline"'>Link</a>
+<br></br>
+<h2 style='color: #e2e224;'>- softwareInstaller</h2>
+<br></br>
+<h2 style='color: #e2e224;'>- other.webdev</h2>
 `;
 const PAGE_ASCII_ART = [
 	{ id: 0, content: artPage0 },
