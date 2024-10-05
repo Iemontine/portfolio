@@ -1,4 +1,9 @@
 # Iemontine's personal site
+## TODO
+- [ ] Finish filling out more portfolio info
+- [ ] Make the AboutBox effects more interesting
+- [ ] Implement mobile view
+
 ## For developers
 To work in this project, move to the project directory and...
 ```

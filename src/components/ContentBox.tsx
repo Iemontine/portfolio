@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
 	CONTENT,
 	INTERFACE_COLOR,
@@ -7,19 +7,12 @@ import {
 
 const FONT_SIZE = 15;
 const LINE_HEIGHT = 1.5;
-const CHARACTERS_PER_TICK = 2;  // Number of characters to reveal/hide per tick
-const TICK_INTERVAL = 100;      // Duration of each tick in milliseconds
 
 // TODO: add a typing effect, which was previously implemented but removed for accessibility concerns with old implementation
 // Makes text within the ContentBox fade in or out based its visibility
 const ContentBox: React.FC = () => {
 	const contentBoxRef = useRef<HTMLDivElement>(null);
 	const [visibleSections, setVisibleSections] = useState<number[]>([]);
-	const [contentReady, setContentReady] = useState(false);
-
-	useEffect(() => {
-		setContentReady(true);
-	}, []);
 
 	useEffect(() => {
 		const contentBox = contentBoxRef.current;
@@ -65,7 +58,6 @@ const ContentBox: React.FC = () => {
 				lineHeight: `${LINE_HEIGHT}`,
 				overflowY: "auto",
 				height: "100%",
-
 			}}
 			className="contentBox row-span-2 border p-8 z-20 h-full "
 		>
