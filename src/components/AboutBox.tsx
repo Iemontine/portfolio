@@ -63,7 +63,7 @@ const AboutBox: React.FC = () => {
 					</div>
 				<div
 					style={{
-						color: '#2e685c', borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR, transform: "translate(-10px, -10px)", fontSize: "0.175rem", lineHeight: "1.0",
+						color: '#2e685c', borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR, transform: "translate(-10px, -10px)", fontSize: "0.14rem", lineHeight: "0.9",
 					}}
 					className='border p-2 h-32 w-32 overflow-hidden font-mono flex items-center justify-center'>
 					<div className='whitespace-pre-wrap break-words text-center'>{artPage1}</div>

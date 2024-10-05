@@ -3,23 +3,27 @@ import "./App.css";
 import ContentBox from "./components/ContentBox";
 import ArtBox from "./components/ArtBox";
 import AboutBox from "./components/AboutBox";
-import {  BACKGROUND_COLOR, INTERFACE_COLOR } from "./constants";
+import { BACKGROUND_COLOR, INTERFACE_COLOR } from "./constants";
 
 const App = () => {
-	const [currentPage, setCurrentPage] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
 
-	return (
-		<div className='app-container'>
-			<div className='scanlines'></div>
-			<div style={{ backgroundColor: BACKGROUND_COLOR, color: INTERFACE_COLOR }} className='h-screen w-screen text-xl px-8 py-8 grid grid-cols-[1fr,1fr] grid-rows-[1fr,2fr] gap-8 vhs-effect'>
-				<ContentBox />
+  return (
+    <div className="app-container">
+      <div className="scanlines"></div>
+      <div
+        style={{ backgroundColor: BACKGROUND_COLOR, color: INTERFACE_COLOR }}
+        className="h-screen w-screen text-xl p-4 sm:py-8 grid grid-cols-1 md:grid-cols-2 grid-rows-[33%,33%,33%] md:grid-rows-[1fr,2fr] gap-4 sm:gap-8 vhs-effect">
+        <AboutBox />
 
-				<AboutBox />
+        <ContentBox />
 
-				<ArtBox currentPage={currentPage} setCurrentPage={setCurrentPage} />
-			</div>
-		</div>
-	);
+        <div className="hidden md:block">
+          <ArtBox currentPage={currentPage} setCurrentPage={setCurrentPage} />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default App;

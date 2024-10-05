@@ -90,9 +90,8 @@ div {
     background: linear-gradient(to bottom,
             transparent 50%,
             rgba(0, 0, 0, 0.078) 50%);
-    opacity: 50%;
+    opacity: 70%;
     background-size: 100% 8px;
     z-index: 50;
     pointer-events: none;
 }
-

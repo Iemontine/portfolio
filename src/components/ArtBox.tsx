@@ -145,21 +145,23 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 	const calculateFontSizeAndLineHeight = (text: string) => {
 		const lines = text.split('\n').length;
 		let fontSize = `${1}rem`;
-		let lineHeight = `${420 / lines / 17}rem`;
+		let lineHeight = `${420 / lines / 13}rem`;
 
-		if (lines > 70) {
-			fontSize = '0.35rem';
-		} else if (lines > 60) {
-			fontSize = '0.6rem';
-		} else if (lines > 50) {
-			fontSize = '0.7rem';
-		} else if (lines > 40) {
-			fontSize = '0.8rem';
-		} else if (lines > 30) {
-			fontSize = '0.9rem';
-		} else {
-			fontSize = `${1}rem`;
-		}
+        if (lines > 60) {
+            fontSize = `${0.50}rem`;
+        }
+        else if (lines > 50) {
+            fontSize = `${0.60}rem`;
+        }
+        else if (lines > 40) {
+            fontSize = `${0.70}rem`;
+        }
+        else if (lines > 30) {
+            fontSize = `${0.85}rem`;
+        }
+
+
+
 
 		return { fontSize, lineHeight };
 	};
