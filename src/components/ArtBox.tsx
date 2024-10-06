@@ -13,6 +13,28 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 	const isCooldownRef = useRef(false); // Cooldown to prevent rapid scrolls
 	const typingInterval = useRef<number | null>(null); // Track the typing interval
 	const deleteInterval = useRef<number | null>(null); // Track the deletion interval
+	const artBoxRef = useRef<HTMLDivElement | null>(null);
+	const [dimensions, setDimensions] = useState({ width: 1, height: 1 });
+
+	// Determine the dimensions of the art box
+	useEffect(() => {
+		const updateDimensions = () => {
+			if (artBoxRef.current) {
+				setDimensions({
+					width: artBoxRef.current.offsetWidth,
+					height: artBoxRef.current.offsetHeight,
+				});
+			}
+		};
+
+		updateDimensions();
+		window.addEventListener("resize", updateDimensions);
+
+		return () => {
+			window.removeEventListener("resize", updateDimensions);
+		};
+	}, []);
+
 
 	const startTypingAnimation = useCallback((newPage: number) => {
 		if (isCooldownRef.current) {
@@ -142,19 +164,23 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 	// Creates growing text effect, esp for long ASCII art
 	const calculateFontSizeAndLineHeight = (text: string) => {
 		const lines = text.split("\n").length;
-		let fontSize = `${1}rem`;
-		let lineHeight = `${400 / lines / 16}rem`;
+
+		const containerWidth = dimensions.width;
+		const containerHeight = dimensions.height;
+
+		let fontSize = ``;
+		let lineHeight = `${400 / lines / 16 * (containerHeight/ 500)}rem`;
 
 		if (lines > 70) {
-			fontSize = `${0.45}rem`;
+			fontSize = `${0.45 * (containerWidth / 1000)}rem`;
 		} else if (lines > 60) {
-			fontSize = `${0.5}rem`;
+			fontSize = `${0.55 * (containerWidth / 1000)}rem`;
 		} else if (lines > 50) {
-			fontSize = `${0.65}rem`;
+			fontSize = `${0.65 * (containerWidth / 1000)}rem`;
 		} else if (lines > 40) {
-			fontSize = `${0.7}rem`;
-		} else if (lines > 30) {
-			fontSize = `${0.75}rem`;
+			fontSize = `${0.7* (containerWidth / 1000)}rem`;
+		} else {
+			fontSize = `${0.8 * (containerWidth / 1000)}rem`;
 		}
 
 		return { fontSize, lineHeight };
@@ -164,6 +190,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 
 	return (
 		<div
+			ref={artBoxRef}
 			style={{
 				backgroundColor: BACKGROUND_COLOR,
 				display: "flex",

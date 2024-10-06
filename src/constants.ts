@@ -14,17 +14,10 @@ const CONTENT = `
 <h1 style='color: #4fae9b;' id='header_portfolio'>
 	Iemontine [Version 1.20.21210.34]
 </h1>
-
 	This single-page design was inspired by Portal 2. It was created on October 4, 2024.
 <br></br>
 <span style='color: rgb(255,255,255)'>
 	I'm</span> <span style='color: rgb(229, 128, 0)'>I</span><span style='color: rgb(232, 136, 0)'>e</span><span style='color: rgb(235, 144, 0)'>m</span><span style='color: rgb(238, 153, 0)'>o</span><span style='color: rgb(241, 161, 0)'>n</span><span style='color: rgb(244, 170, 0)'>t</span><span style='color: rgb(247, 178, 0)'>i</span><span style='color: rgb(249, 187, 0)'>n</span><span style='color: rgb(252, 195, 0)'>e</span><span style='color: rgb(255,255,255)'>, you might also know me as darroll!</span>
-<br></br>
-<h4 style='color: gray'># <span style='font-size: 1.2em'>some things about me</span></h4>
-<h4 style='color: gray'>-- Fourth-Year CS at UCD</h4>
-<h4 style='color: gray'>-- hobbies: programming, video games, video editing, computer building, hackathons, and watching movies</h4>
-<h4 style='color: gray'>-- technical skills: full-stack webdev, hardware/software concepts, and machine learning & AI</h4>
-<h4 style='color: gray'>-- specs: RTX 4070, AMD Ryzen 9 5900X</h4>
 <br></br>
 <h4 style='color: rgb(255, 255, 255)'>proficient in 
 <span style='color: rgb(255, 203, 58)'>Python</span>, 
@@ -38,13 +31,13 @@ const CONTENT = `
 <span style='color: rgb(255, 83, 73)'>Bash scripting</span>.
 </h4>
 <h4 style='color: rgb(255, 255, 255)'>favorite libraries/APIs: 
-<span style='color: rgb(65, 105, 225)'>PyTorch</span>, 
-<span style='color: rgb(65, 105, 225)'>OpenAI</span>, 
-<span style='color: rgb(65, 105, 225)'>Gymnasium</span>, 
-<span style='color: rgb(65, 105, 225)'>Pycord</span>, 
+<span style='color: rgb(65, 105, 225)'>pytorch</span>, 
+<span style='color: rgb(65, 105, 225)'>Microsoft Azure</span>,
+<span style='color: rgb(65, 105, 225)'>openai</span>, 
+<span style='color: rgb(65, 105, 225)'>gymnasium</span>, 
+<span style='color: rgb(65, 105, 225)'>pycord</span>, 
 <span style='color: rgb(65, 105, 225)'>Pillow</span>, 
-<span style='color: rgb(65, 105, 225)'>BeautifulSoup</span>, 
-<span style='color: rgb(65, 105, 225)'>Microsoft Azure</span>
+<span style='color: rgb(65, 105, 225)'>BeautifulSoup</span>
 </h4>
 <br></br>
 <h1 style='color: #4fae9b;' id='header_research'>research</h1>
@@ -75,12 +68,14 @@ I built a user-friendly & maintainable VB.Net application for the UC Davis Libra
 <h2 style='color: #e2e224;'>- other.webdev</h2>
 This website, GridGame, in addition to a study functionality/CSS reimplementation of the Official OMORI Website, and a microblog site utilizing a SQLite database backend were developed as practice projects to improve webdev.
 <br></br>
+<h1 style='color: #4fae9b;' id='header_favorites'>favorites</h1>
 
 `;
 const PAGE_ASCII_ART = [
 	{ id: 0, headerId: "header_portfolio", content: artPage0 },
 	{ id: 1, headerId: "header_research", content: artPage2 },
 	{ id: 2, headerId: "header_projects", content: artPage1 },
+	{ id: 3, headerId: "header_favorites", content: artPage3 },
 ];
 
 const CHARS_PER_TICK = 2;   // content: Number of characters to type per tick

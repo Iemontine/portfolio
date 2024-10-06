@@ -46,13 +46,16 @@ const AboutBox: React.FC = () => {
 		<div style={{ borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR }} className='relative border p-4 z-10'>
 			<div className='relative z-10'>
 				<h1 className='text-2xl'>
-					LEMONTINE
+                LEMONTINE
 				</h1>
 				<br/>
 				<br/>
-				<p>welcome to my site!</p>
-				<p>many features planned.</p>
-				<p>still a major WIP!</p>
+				<br/>
+                <h4 className="text-gray-600 text-base">  # some things about me</h4>
+                <h4 className="text-gray-600 text-base">-- Fourth-Year CS at UCD</h4>
+                <h4 className="text-gray-600 text-base">-- hobbies: programming, video games, video editing, computer building, hackathons, and watching movies</h4>
+                <h4 className="text-gray-600 text-base">-- technical skills: full-stack webdev, hardware/software concepts, and machine learning & AI</h4>
+                <h4 className="text-gray-600 text-base">-- specs: RTX 4070, AMD Ryzen 9 5900X</h4>
 			</div>
 			<div className='absolute right-0 top-0 flex space-x-4 z-1'>
 				<OverlayBox className='h-32 w-64'>
@@ -65,7 +68,7 @@ const AboutBox: React.FC = () => {
 						{"(c) darroll saddi. all rights reserved."}
 					</div>
 				</OverlayBox>
-				<OverlayBox className='h-32 w-32 flex items-center justify-center' style={{ fontSize: "0.14rem", lineHeight: "0.9" }}>
+				<OverlayBox className='h-32 w-32 flex items-center justify-center p-0' style={{ fontSize: "0.139rem", lineHeight: "0.9" }}>
 					<div className='whitespace-pre-wrap break-words text-center' style={{ color: "#2e685c" }}>
 						{artPage1}
 					</div>
