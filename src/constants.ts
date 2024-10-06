@@ -51,7 +51,7 @@ An experimental program that increases the quality of descriptions of an AI. Com
 <h2 style='color: #e2e224;'>
   - <a href="https://github.com/Iemontine/cIembot" style='color: #e2e224;' class="no-underline hover:underline">clembot</a>
 </h2>
-A Discord bot capable of AI chat, music playing, image processing, birthday wishing, activity tracking, and more! Features added as I continue gain experience as a developer, out of interest and curiosity, and to solve the problems my family, friends, or I encounter in daily online life. <a href='https://github.com/Iemontine/cIembot' style='color: #e2e224;' class="no-underline hover:underline"''>GitHub</a>
+A Discord bot capable of AI chat, music playing, image processing, birthday wishing, activity tracking, and more! Features added as I continue to gain experience as a developer, out of interest and curiosity, and to solve the problems my family, friends, or I encounter in daily online life. <a href='https://github.com/Iemontine/cIembot' style='color: #e2e224;' class="no-underline hover:underline"''>GitHub</a>
 <br></br>
 <h2 style='color: #e2e224;'>- <a href='https://steamcommunity.com/sharedfiles/filedetails/?id=2988658929' style='color: #e2e224;' class="no-underline hover:underline"'>gmod_ultrakill_hud</a></h2>
 A HUD Mod in popular online video game Garry's Mod, designed to mimic the HUD of the game "ULTRAKILL". With tens of thousands of active users and over 130,000 views across Steam and YouTube, it is my first successful mod of a video game in Lua. <a href='https://github.com/Iemontine/ultrakill-hud' style='color: #e2e224;' class="no-underline hover:underline"''>GitHub</a>

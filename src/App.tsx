@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "./App.css";
 import ContentBox from "./components/ContentBox";
 import ArtBox from "./components/ArtBox";
@@ -7,9 +7,18 @@ import { INTERFACE_COLOR } from "./constants";
 
 const App = () => {
     const [currentPage, setCurrentPage] = useState(0);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 900);
 
-    const isMobile = window.innerWidth <= 900;
+    const handleResize = () => {
+        setIsMobile(window.innerWidth <= 900);
+    };
 
+    useEffect(() => {
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
     const renderBoxes = () => {
         if (isMobile) {
             return (

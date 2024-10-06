@@ -68,7 +68,7 @@ const AboutBox: React.FC = () => {
 						{"(c) darroll saddi. all rights reserved."}
 					</div>
 				</OverlayBox>
-				<OverlayBox className='h-32 w-32 flex items-center justify-center p-0' style={{ fontSize: "0.139rem", lineHeight: "0.9" }}>
+				<OverlayBox className='h-32 w-32 flex items-center justify-center p-0' style={{ fontSize: "2px", lineHeight: "1" }}>
 					<div className='whitespace-pre-wrap break-words text-center' style={{ color: "#2e685c" }}>
 						{artPage1}
 					</div>

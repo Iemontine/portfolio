@@ -65,12 +65,12 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 		let commonPrefixLength = findCommonPrefixLength(DISPLAYED_ART, newText);
 		isCooldownRef.current = false;
 
+        // Start the typing/deleting animation
 		const ITERS = 25;
 		let deleteSize = Math.ceil((DISPLAYED_ART.length - commonPrefixLength) / ITERS);
 		let writeSize = Math.ceil((newText.length - commonPrefixLength) / ITERS);
-
 		deleteInterval.current = window.setInterval(() => {
-			if (DISPLAYED_ART.length > commonPrefixLength) {
+			if (DISPLAYED_ART.length > commonPrefixLength) {         // Allows writing or deleting to be interuppted and resumed
 				DISPLAYED_ART = DISPLAYED_ART.slice(0, -deleteSize);
 				setDisplayedArt(DISPLAYED_ART);
 			} else {
@@ -169,18 +169,20 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 		const containerHeight = dimensions.height;
 
 		let fontSize = ``;
-		let lineHeight = `${400 / lines / 16 * (containerHeight/ 500)}rem`;
+		let lineHeight = `${400 / lines / 16 * (containerHeight/ 450)}rem`;
+
+        console.log(containerHeight);
 
 		if (lines > 70) {
-			fontSize = `${0.45 * (containerWidth / 1000)}rem`;
+			fontSize = `${0.40 * ((containerHeight / 500))}rem`;
 		} else if (lines > 60) {
-			fontSize = `${0.55 * (containerWidth / 1000)}rem`;
+			fontSize = `${0.55 * ((containerHeight / 500))}rem`;
 		} else if (lines > 50) {
-			fontSize = `${0.65 * (containerWidth / 1000)}rem`;
+			fontSize = `${0.65 * ((containerHeight / 500))}rem`;
 		} else if (lines > 40) {
-			fontSize = `${0.7* (containerWidth / 1000)}rem`;
+			fontSize = `${0.7* ((containerHeight / 500))}rem`;
 		} else {
-			fontSize = `${0.8 * (containerWidth / 1000)}rem`;
+			fontSize = `${0.8 * ((containerHeight / 500))}rem`;
 		}
 
 		return { fontSize, lineHeight };
