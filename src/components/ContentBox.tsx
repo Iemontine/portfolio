@@ -1,9 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-	CONTENT,
-	INTERFACE_COLOR,
-	BACKGROUND_COLOR,
-} from "../constants";
+import { CONTENT, INTERFACE_COLOR, BACKGROUND_COLOR } from "../constants";
 
 const FONT_SIZE = 15;
 const LINE_HEIGHT = 1.5;
@@ -27,20 +23,17 @@ const ContentBox: React.FC = () => {
 					if (entry.isIntersecting) {
 						setVisibleSections((prev) => [...prev, index]);
 					} else {
-						setVisibleSections((prev) =>
-							prev.filter((sectionIndex) => sectionIndex !== index)
-						);
+						setVisibleSections((prev) => prev.filter((sectionIndex) => sectionIndex !== index));
 					}
 				});
 			},
 			{
 				root: contentBox,
-				threshold: 0.3,    // Trigger fade when x% of the element is visible
+				threshold: 0.3, // Trigger fade when x% of the element is visible
 			}
 		);
 
 		sections.forEach((section, index) => {
-
 			section.setAttribute("data-index", index.toString());
 			observer.observe(section);
 		});
@@ -59,15 +52,14 @@ const ContentBox: React.FC = () => {
 				overflowY: "auto",
 				height: "100%",
 			}}
-			className="contentBox row-span-2 border p-8 z-20 h-full "
-		>
+			className='contentBox row-span-2 border p-8 z-20 h-full '>
 			{CONTENT.split("<br>").map((section, index) => (
 				<div
 					key={index}
 					data-index={index}
 					style={{
 						opacity: visibleSections.includes(index) ? 1 : 0,
-						color: 'white',
+						color: "white",
 						transition: "opacity 1s ease",
 						willChange: "opacity",
 					}}

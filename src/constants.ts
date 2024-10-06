@@ -10,12 +10,10 @@ const PAGE_CONTENT = [
 
 // TODO: variable speed for deleting/writing to account for string length including html
 const CONTENT = `
-<h1 style='color: #4fae9b;'>
+<h1 style='color: #4fae9b;' id='header_portfolio'>
 	Iemontine [Version 1.20.21210.34]
 </h1>
-<h1 style='color: #4fae9b;' id='header_portfolio'>
-	(c) darroll saddi. all rights reserved.
-</h1>
+
 	This single-page design was inspired by Portal 2. It was created on October 4, 2024.
 <br></br>
 <span style='color: rgb(255,255,255)'>
@@ -50,38 +48,38 @@ const CONTENT = `
 <br></br>
 <h1 style='color: #4fae9b;' id='header_research'>research</h1>
 <h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/SonicGameplayingAI' style='color: #e2e224;' class="no-underline hover:underline"'>Gameplaying AI with Proximal Policy Optimization</a></h2>
-An successful reimplementation of OpenAI's Proximal Policy Optimization, which was used to train a supervised learning model capable of beating the first level of Sonic the Hedgehog in just 30 seconds! <a href='https://www.linkedin.com/in/darrolls/details/projects/' style='color: #e2e224;' class="no-underline hover:underline"'>LinkedIn</a>
+A successful reimplementation of OpenAI's Proximal Policy Optimization, which was used to train a supervised learning model capable of beating the first level of Sonic the Hedgehog in just 30 seconds! <a href='https://www.linkedin.com/in/darrolls/details/projects/' style='color: #e2e224;' class="no-underline hover:underline"'>LinkedIn</a>
 <br></br>
 <h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/AudioVideoDescriptiveAI' style='color: #e2e224;' class="no-underline hover:underline"'>Embedded Temporal/Audio Context for Enhanced Video Content Description by LLM</a></h2>
 An experimental program that increases the quality of descriptions of an AI. Completed in just 2 months, I successfully trained and utilized audio classification models to reintroduce lost temporal and audio context when feeding the video frames into an LLM (GPT-4o). <a href='https://www.linkedin.com/in/darrolls/details/projects/' style='color: #e2e224;' class="no-underline hover:underline"'>LinkedIn</a>
 <br></br>
 <h1 style='color: #4fae9b;' id='header_projects'>projects</h1>
 <h2 style='color: #e2e224;'>
-  - <a href="https://github.com/Iemontine/clembot" style='color: #e2e224;' class="no-underline hover:underline">clembot</a>
+  - <a href="https://github.com/Iemontine/cIembot" style='color: #e2e224;' class="no-underline hover:underline">clembot</a>
 </h2>
 A Discord bot capable of AI chat, music playing, image processing, birthday wishing, activity tracking, and more! Features added as I continue gain experience as a developer, out of interest and curiosity, and to solve the problems my family, friends, or I encounter in daily online life. <a href='https://github.com/Iemontine/cIembot' style='color: #e2e224;' class="no-underline hover:underline"''>GitHub</a>
 <br></br>
-<h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/ultrakill-hud' style='color: #e2e224;' class="no-underline hover:underline"'>gmod_ultrakill_hud</a></h2>
+<h2 style='color: #e2e224;'>- <a href='https://steamcommunity.com/sharedfiles/filedetails/?id=2988658929' style='color: #e2e224;' class="no-underline hover:underline"'>gmod_ultrakill_hud</a></h2>
 A HUD Mod in popular online video game Garry's Mod, designed to mimic the HUD of the game "ULTRAKILL". With tens of thousands of active users and over 130,000 views across Steam and YouTube, it is my first successful mod of a video game in Lua. <a href='https://github.com/Iemontine/ultrakill-hud' style='color: #e2e224;' class="no-underline hover:underline"''>GitHub</a>
 <br></br>
 <h2 style='color: #e2e224;'>- <a href='https://iemontine.github.io/minigames/' style='color: #e2e224;' class="no-underline hover:underline"'>GridGame</a></h2>
-A short 2D grid-based block-pushing puzzle game representing my first large-scale group project. With the help of my friends consisting of talented artists and designers (woopco, VVVaire, casperkun, and Cyril) we created our first full game together. Game mechanics and site coded entirely in Javascript manipulating DOM elements. You can play it <a href='https://iemontine.github.io/minigames/gridGame.html' style='color: #e2e224;' class="no-underline hover:underline"''>here!</a>
+A short 2D grid-based block-pushing puzzle game representing my first large-scale group project. With the help of my friends consisting of talented artists and designers (woopco, VVVaire, casperkun, and Cyril) we created our first full game together. Game mechanics and site coded entirely in Javascript manipulating DOM elements. You can play it <a href='https://iemontine.github.io/minigames' style='color: #e2e224;' class="no-underline hover:underline"''>here!</a>
 <br></br>
 <h2 style='color: #e2e224;'>- <a href='https://github.com/Iemontine/FloodFinder' style='color: #e2e224;' class="no-underline hover:underline"'>FloodFinder</a></h2>
 A full-stack web application developed at Hackdavis 2023, designed to help users respond to nearby natural disasters. Although it lacked the early-warning system we hoped to implement due to a lack of foresight, we implemented AI function calling and emergency response recommendations. Utilized the Google Earth API and a simple Python backend. <a href='https://github.com/Iemontine/FloodFinder' style='color: #e2e224;' class="no-underline hover:underline"''>GitHub</a>
 <br></br>
 <h2 style='color: #e2e224;'>- softwareInstaller</h2>
-I built a user-friendly easy-to-maintain VB.Net application for the UC Davis Library IT department to automate the installation of software on new computers. The program significantly increased efficiency and reduced the time required to set up or image new computers, including adding them to the network's Active Directory, installing software, maintaining a device naming convention, and configuring settings.
+I built a user-friendly & maintainable VB.Net application for the UC Davis Library IT department to automate the installation of software on new computers. The program significantly increased efficiency and reduced the time required to set up or image new computers, including adding them to the network's Active Directory, installing software, maintaining a device naming convention, and configuring settings.
 <br></br>
 <h2 style='color: #e2e224;'>- other.webdev</h2>
-This website, GridGame, in addition to a study CSS reimplementation of the Official OMORI Website, and a microblog site utilizing a SQLite database backend were developed as practice projects to improve webdev.
+This website, GridGame, in addition to a study functionality/CSS reimplementation of the Official OMORI Website, and a microblog site utilizing a SQLite database backend were developed as practice projects to improve webdev.
 <br></br>
 
 `;
 const PAGE_ASCII_ART = [
-	{ id: 0, headerId: 'header_portfolio', content: artPage0 },
-	{ id: 1, headerId: 'header_research', content: artPage2 },
-	{ id: 2, headerId: 'header_projects', content: artPage1 },
+	{ id: 0, headerId: "header_portfolio", content: artPage0 },
+	{ id: 1, headerId: "header_research", content: artPage2 },
+	{ id: 2, headerId: "header_projects", content: artPage1 },
 ];
 
 const TYPING_SPEED = 10; // Delay between typing each character in ms

@@ -1,5 +1,5 @@
-import React, { useCallback, useState, useRef, useEffect } from 'react';
-import { PAGE_ASCII_ART, INTERFACE_COLOR, BACKGROUND_COLOR } from '../constants';
+import React, { useCallback, useState, useRef, useEffect } from "react";
+import { PAGE_ASCII_ART, INTERFACE_COLOR, BACKGROUND_COLOR, TYPING_SPEED, DELETE_SPEED } from "../constants";
 
 interface ArtBoxProps {
 	currentPage: number;
@@ -9,10 +9,10 @@ interface ArtBoxProps {
 let DISPLAYED_ART = PAGE_ASCII_ART[0].content;
 
 const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
-	const [displayedArt, setDisplayedArt] = useState(DISPLAYED_ART);	// Tracks current displayed ASCII art
-	const isCooldownRef = useRef(false); 								// Cooldown to prevent rapid scrolls
-	const typingInterval = useRef<number | null>(null); 				// Track the typing interval
-	const deleteInterval = useRef<number | null>(null); 				// Track the deletion interval
+	const [displayedArt, setDisplayedArt] = useState(DISPLAYED_ART); // Tracks current displayed ASCII art
+	const isCooldownRef = useRef(false); // Cooldown to prevent rapid scrolls
+	const typingInterval = useRef<number | null>(null); // Track the typing interval
+	const deleteInterval = useRef<number | null>(null); // Track the deletion interval
 
 	const startTypingAnimation = useCallback((newPage: number) => {
 		if (isCooldownRef.current) {
@@ -43,7 +43,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 		let commonPrefixLength = findCommonPrefixLength(DISPLAYED_ART, newText);
 		isCooldownRef.current = false;
 
-		const ITERS = 100;
+		const ITERS = 25;
 		let deleteSize = Math.ceil((DISPLAYED_ART.length - commonPrefixLength) / ITERS);
 		let writeSize = Math.ceil((newText.length - commonPrefixLength) / ITERS);
 
@@ -66,16 +66,15 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 						DISPLAYED_ART = typedText;
 						setDisplayedArt(DISPLAYED_ART);
 					}
-				}, 1);
+				}, TYPING_SPEED);
 			}
-		}, 1);
+		}, DELETE_SPEED);
 	}, []);
 
 	useEffect(() => {
 		const detectHeaders = () => {
 			const visibleHeaders: Set<string> = new Set();
 			const observer = new IntersectionObserver(
-	
 				(entries) => {
 					entries.forEach((entry) => {
 						if (entry.isIntersecting) {
@@ -111,28 +110,27 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 					}
 				}
 			}
-	
-			const headers = document.querySelectorAll('h1[id], h2[id], h3[id]');
+
+			const headers = document.querySelectorAll("h1[id], h2[id], h3[id]");
 			headers.forEach((header) => {
 				observer.observe(header);
 			});
-	
+
 			return () => {
 				observer.disconnect();
 			};
 		};
 
-
-		const contentBox = document.querySelector('.contentBox');
+		const contentBox = document.querySelector(".contentBox");
 		if (contentBox) {
 			const handleScroll = () => {
 				detectHeaders();
 			};
 
-			contentBox.addEventListener('scroll', handleScroll);
+			contentBox.addEventListener("scroll", handleScroll);
 
 			return () => {
-				contentBox.removeEventListener('scroll', handleScroll);
+				contentBox.removeEventListener("scroll", handleScroll);
 			};
 		}
 	});
@@ -143,25 +141,21 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 
 	// Creates growing text effect, esp for long ASCII art
 	const calculateFontSizeAndLineHeight = (text: string) => {
-		const lines = text.split('\n').length;
+		const lines = text.split("\n").length;
 		let fontSize = `${1}rem`;
-		let lineHeight = `${420 / lines / 13}rem`;
+		let lineHeight = `${420 / lines / 15.75}rem`;
 
-        if (lines > 60) {
-            fontSize = `${0.50}rem`;
-        }
-        else if (lines > 50) {
-            fontSize = `${0.60}rem`;
-        }
-        else if (lines > 40) {
-            fontSize = `${0.70}rem`;
-        }
-        else if (lines > 30) {
-            fontSize = `${0.85}rem`;
-        }
-
-
-
+		if (lines > 70) {
+			fontSize = `${0.45}rem`;
+		} else if (lines > 60) {
+			fontSize = `${0.5}rem`;
+		} else if (lines > 50) {
+			fontSize = `${0.65}rem`;
+		} else if (lines > 40) {
+			fontSize = `${0.7}rem`;
+		} else if (lines > 30) {
+			fontSize = `${0.75}rem`;
+		}
 
 		return { fontSize, lineHeight };
 	};
@@ -169,15 +163,19 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 	const { fontSize, lineHeight } = calculateFontSizeAndLineHeight(displayedArt);
 
 	return (
-		<div style={{
-			borderColor: INTERFACE_COLOR,
-			backgroundColor: BACKGROUND_COLOR,
-			display: 'flex',
-			justifyContent: 'center',
-			alignItems: 'center',
-			overflow: 'hidden'
-		}} className={`border text-xs artBox`}>
-			<pre style={{ textAlign: 'center', fontSize, lineHeight }}>{displayedArt}</pre>
+		<div
+			style={{
+				backgroundColor: BACKGROUND_COLOR,
+				display: "flex",
+				justifyContent: "center",
+				alignItems: "center",
+				overflow: "hidden",
+				borderColor: INTERFACE_COLOR,
+			}}
+			className='md:border'>
+			<pre className='hidden md:block text-center' style={{ fontSize, lineHeight }}>
+				{displayedArt}
+			</pre>
 		</div>
 	);
 };
