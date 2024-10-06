@@ -2,7 +2,9 @@
 ## TODO
 - [ ] Finish filling out more portfolio info
 - [ ] Make the AboutBox effects more interesting
-- [ ] Implement mobile view
+- [x] Implement mobile view
+- [ ] Add background
+- [ ] Change font?
 
 ## For developers
 To work in this project, move to the project directory and...

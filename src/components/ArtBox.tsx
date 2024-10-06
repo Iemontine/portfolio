@@ -143,7 +143,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 	const calculateFontSizeAndLineHeight = (text: string) => {
 		const lines = text.split("\n").length;
 		let fontSize = `${1}rem`;
-		let lineHeight = `${420 / lines / 15.75}rem`;
+		let lineHeight = `${400 / lines / 16}rem`;
 
 		if (lines > 70) {
 			fontSize = `${0.45}rem`;
@@ -168,11 +168,11 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 				backgroundColor: BACKGROUND_COLOR,
 				display: "flex",
 				justifyContent: "center",
-				alignItems: "center",
+				alignItems: "center", // Align items to the top
 				overflow: "hidden",
 				borderColor: INTERFACE_COLOR,
 			}}
-			className='md:border'>
+			className='md:border z-20'>
 			<pre className='hidden md:block text-center' style={{ fontSize, lineHeight }}>
 				{displayedArt}
 			</pre>

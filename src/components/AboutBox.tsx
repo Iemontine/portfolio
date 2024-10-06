@@ -26,7 +26,7 @@ interface OverlayBoxProps {
 }
 
 const OverlayBox: React.FC<OverlayBoxProps> = ({ style, className, children }) => (
-	<div style={{ borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR, transform: "translate(-10px, -10px)", ...style }} className={`border p-2 overflow-hidden font-mono ${className}`}>
+	<div style={{ borderColor: INTERFACE_COLOR, backgroundColor: 'BACKGROUND_COLOR', transform: "translate(-10px, -10px)", ...style }} className={`border p-2 overflow-hidden font-mono ${className}`}>
 		{children}
 	</div>
 );
@@ -43,18 +43,18 @@ const AboutBox: React.FC = () => {
 	}, []);
 
 	return (
-		<div style={{ borderColor: INTERFACE_COLOR }} className='relative border p-4'>
-			<div className='relative z-20'>
-				<h1 className='text-2xl' data-text='LEMONTINE'>
+		<div style={{ borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR }} className='relative border p-4 z-10'>
+			<div className='relative z-10'>
+				<h1 className='text-2xl'>
 					LEMONTINE
 				</h1>
-				<br />
-				<br />
+				<br/>
+				<br/>
 				<p>welcome to my site!</p>
 				<p>many features planned.</p>
 				<p>still a major WIP!</p>
 			</div>
-			<div className='absolute right-0 top-0 flex space-x-4 z-10'>
+			<div className='absolute right-0 top-0 flex space-x-4 z-1'>
 				<OverlayBox className='h-32 w-64'>
 					<div className='text-xs whitespace-pre-wrap break-words' style={{ color: "#2e685c" }}>
 						{asciiContent}

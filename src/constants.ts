@@ -9,6 +9,7 @@ const PAGE_CONTENT = [
 ];
 
 // TODO: variable speed for deleting/writing to account for string length including html
+
 const CONTENT = `
 <h1 style='color: #4fae9b;' id='header_portfolio'>
 	Iemontine [Version 1.20.21210.34]
@@ -82,10 +83,11 @@ const PAGE_ASCII_ART = [
 	{ id: 2, headerId: "header_projects", content: artPage1 },
 ];
 
-const TYPING_SPEED = 10; // Delay between typing each character in ms
-const DELETE_SPEED = 10; // Speed of deleting in ms
+const CHARS_PER_TICK = 2;   // content: Number of characters to type per tick
+const TYPING_SPEED = 15;    // art: Delay between typing each character in ms
+const DELETE_SPEED = 15;    // art: Speed of deleting in ms
 const SCROLL_COOLDOWN = 100; // Small cooldown between scroll events
 const BACKGROUND_COLOR = "#000000";
 const INTERFACE_COLOR = "#4fae9b";
 
-export { PAGE_CONTENT, CONTENT, PAGE_ASCII_ART, TYPING_SPEED, DELETE_SPEED, SCROLL_COOLDOWN, BACKGROUND_COLOR, INTERFACE_COLOR };
+export { PAGE_CONTENT, CONTENT, PAGE_ASCII_ART, TYPING_SPEED, DELETE_SPEED, CHARS_PER_TICK, SCROLL_COOLDOWN, BACKGROUND_COLOR, INTERFACE_COLOR };
