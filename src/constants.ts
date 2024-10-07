@@ -10,6 +10,7 @@ const PAGE_CONTENT = [
 
 // TODO: variable speed for deleting/writing to account for string length including html
 
+// Dangerously set HTML for now
 const CONTENT = `
 <h1 style='color: #4fae9b;' id='header_portfolio'>
 	Iemontine [Version 1.20.21210.34]
@@ -68,14 +69,39 @@ I built a user-friendly & maintainable VB.Net application for the UC Davis Libra
 <h2 style='color: #e2e224;'>- other.webdev</h2>
 This website, GridGame, in addition to a study functionality/CSS reimplementation of the Official OMORI Website, and a microblog site utilizing a SQLite database backend were developed as practice projects to improve webdev.
 <br></br>
-<h1 style='color: #4fae9b;' id='header_favorites'>favorites</h1>
 
+<h1 style='color: #4fae9b;' id='header_experience'>experience</h1><br>
+<h2 class="text-xl text-purple-600">- Information Technology Infrastructure Services, <span class="text-sm"> UC DAVIS LIBRARY </span></h2><br>
+<h4 class="text-gray-500 text-base">Dec 2023 - PRESENT [11 months]</h4>
+<ul class="list-none pl-5">
+    <li class="before:content-['-'] before:pr-2">Developed software with .NET framework to accelerate setup of workstations for student, staff, and public use, a self-led and maintained effort.</li>
+    <li class="before:content-['-'] before:pr-2">Troubleshooting and setup of computer equipment and software for several departments each with dozens of staff.</li>
+    <li class="before:content-['-'] before:pr-2">Responsible for maintaining efficient communication coming from the ITIS department, when technical support is needed.</li>
+</ul><br></br>
+
+<h2 class="text-xl text-purple-600">- System Developer and Administrator, <span class="text-sm"> COMFORT LIVING FOR SENIORS </span></h2><br>
+<h4 class="text-gray-500 text-base">2021 - PRESENT [3 years]</h4><br>
+<ul class="list-none pl-5">
+    <li class="before:content-['-'] before:pr-2">Created a web interface and several user-friendly tools allowing employees to electronically input a variety of elderly patient data, allowing the business to go paperless.</li>
+    <li class="before:content-['-'] before:pr-2">Formatted data, made accessible online by staff and inspection, using semi-complex spreadsheet functionality.</li>
+    <li class="before:content-['-'] before:pr-2">Performed routine system maintenance to ensure operations are smooth and to remove errors, and adding new features or functionality as requested.</li>
+</ul><br></br>
+
+<h2 class="text-xl text-purple-600">- President of the STEM Club, <span class="text-sm"> SOLANO COMMUNITY COLLEGE </span></h2><br>
+<h4 class="text-gray-500 text-base">Fall 2021 - Spring 2023 [2 years]</h4>
+<ul class="list-none pl-5">
+    <li class="before:content-['-'] before:pr-2">Maintained position-specific responsibilities while facilitating the meetings and discussions held for a club of nearly 200 members.</li>
+    <li class="before:content-['-'] before:pr-2">Planned many fun & educational events, including coastal clean-ups, a science fair, peer networking and tutoring opportunities, and museum field trips.</li>
+</ul><br></br>
 `;
+
+// Map header name to art, used to determine which page to display based on which header is in view
 const PAGE_ASCII_ART = [
 	{ id: 0, headerId: "header_portfolio", content: artPage0 },
 	{ id: 1, headerId: "header_research", content: artPage2 },
 	{ id: 2, headerId: "header_projects", content: artPage1 },
-	{ id: 3, headerId: "header_favorites", content: artPage3 },
+	{ id: 3, headerId: "header_experience", content: artPage4 },
+	{ id: 4, headerId: "header_favorites", content: artPage3 },
 ];
 
 const CHARS_PER_TICK = 2;   // content: Number of characters to type per tick

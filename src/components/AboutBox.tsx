@@ -8,23 +8,13 @@ const ASCII_LENGTH = 248;
 const UPDATE_INTERVAL = 250;
 const UPDATE_CHARS = 10;
 
-const generateRandomAscii = (length: number) => Array.from({ length }, () => String.fromCharCode(Math.floor(Math.random() * (ASCII_MAX - ASCII_MIN + 1)) + ASCII_MIN)).join("");
-
-const updateRandomCharacters = (content: string, count: number) => {
-	const contentArray = content.split("");
-	for (let i = 0; i < count; i++) {
-		const randomIndex = Math.floor(Math.random() * contentArray.length);
-		contentArray[randomIndex] = String.fromCharCode(Math.floor(Math.random() * (ASCII_MAX - ASCII_MIN + 1)) + ASCII_MIN);
-	}
-	return contentArray.join("");
-};
-
 interface OverlayBoxProps {
 	style?: React.CSSProperties;
 	className?: string;
 	children: React.ReactNode;
 }
 
+// Cosmetic boxes with border and background color
 const OverlayBox: React.FC<OverlayBoxProps> = ({ style, className, children }) => (
 	<div style={{ borderColor: INTERFACE_COLOR, backgroundColor: 'BACKGROUND_COLOR', transform: "translate(-10px, -10px)", ...style }} className={`border p-2 overflow-hidden font-mono ${className}`}>
 		{children}
@@ -51,11 +41,18 @@ const AboutBox: React.FC = () => {
 				<br/>
 				<br/>
 				<br/>
-                <h4 className="text-gray-600 text-base">  # some things about me</h4>
-                <h4 className="text-gray-600 text-base">-- Fourth-Year CS at UCD</h4>
-                <h4 className="text-gray-600 text-base">-- hobbies: programming, video games, video editing, computer building, hackathons, and watching movies</h4>
-                <h4 className="text-gray-600 text-base">-- technical skills: full-stack webdev, hardware/software concepts, and machine learning & AI</h4>
-                <h4 className="text-gray-600 text-base">-- specs: RTX 4070, AMD Ryzen 9 5900X</h4>
+                <h4 className="text-gray-500 text-base">  # some things about me</h4>
+                <h4 className="text-gray-500 text-base">-- Fourth-Year CS at UCD</h4>
+                <h4 className="text-gray-500 text-base">-- hobbies: programming, video games, video editing, computer building, hackathons, and watching movies</h4>
+                <h4 className="text-gray-500 text-base">-- technical skills: full-stack webdev, hardware/software concepts, and machine learning & AI</h4>
+				<h4 className="text-gray-500 text-base">-- specs: RTX 4070, AMD Ryzen 9 5900X</h4><br></br>
+				<h3 style={{ color: "#4fae9b" }} id='header_favorites'>favorites</h3>
+					<ul className="list-none pl-5 text-base">
+						<li className="before:content-['-'] before:pr-2">Shows:</li>
+						<li className="before:content-['-'] before:pr-2">Video Games:</li>
+						<li className="before:content-['-'] before:pr-2">Artists: </li>
+						<li className="before:content-['-'] before:pr-2">Movies:</li>
+					</ul>
 			</div>
 			<div className='absolute right-0 top-0 flex space-x-4 z-1'>
 				<OverlayBox className='h-32 w-64'>
@@ -65,7 +62,7 @@ const AboutBox: React.FC = () => {
 				</OverlayBox>
 				<OverlayBox className='h-32 w-16'>
 					<div className='text-xs whitespace-pre-wrap break-words' style={{ color: "#2e685c" }}>
-						{"(c) darroll saddi. all rights reserved."}
+						{"(c) darrolls. all rights reserved."}
 					</div>
 				</OverlayBox>
 				<OverlayBox className='h-32 w-32 flex items-center justify-center p-0' style={{ fontSize: "2px", lineHeight: "1" }}>
@@ -76,6 +73,17 @@ const AboutBox: React.FC = () => {
 			</div>
 		</div>
 	);
+};
+
+// For random text effect in first cosmetic box
+const generateRandomAscii = (length: number) => Array.from({ length }, () => String.fromCharCode(Math.floor(Math.random() * (ASCII_MAX - ASCII_MIN + 1)) + ASCII_MIN)).join("");
+const updateRandomCharacters = (content: string, count: number) => {
+	const contentArray = content.split("");
+	for (let i = 0; i < count; i++) {
+		const randomIndex = Math.floor(Math.random() * contentArray.length);
+		contentArray[randomIndex] = String.fromCharCode(Math.floor(Math.random() * (ASCII_MAX - ASCII_MIN + 1)) + ASCII_MIN);
+	}
+	return contentArray.join("");
 };
 
 export default AboutBox;

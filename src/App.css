@@ -59,6 +59,10 @@ div {
 	text-shadow: 0 0 1px currentColor, 0 0 10px currentColor
 }
 
+ul li {
+	padding-left: 20px;
+}
+
 ::-webkit-scrollbar {
 	width: 10px;
 }
@@ -89,10 +93,9 @@ div {
 	height: 100%;
 	background: linear-gradient(to bottom,
 			transparent 50%,
-			rgba(0, 0, 0, 0.078) 50%);
-	opacity: 70%;
-	background-size: 100% 8px;
-	z-index: 50;
+			rgba(0, 0, 0, 0.1) 50%);
+	background-size: 100% 10px;
+	z-index: 100;
 	pointer-events: none;
 }
 
@@ -102,7 +105,7 @@ div {
 	height: 300%;
 	top: -100%;
 	left: -50%;
-	opacity: 0.04;
+	opacity: 0.01;
 	position: fixed;
 	z-index: 50;
 	pointer-events: none;

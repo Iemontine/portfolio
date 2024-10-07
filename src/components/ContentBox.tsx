@@ -48,7 +48,7 @@ const ContentBox: React.FC = () => {
 				typeSectionText(sectionIndex); // Start typing text when section becomes visible
 			}
 		});
-	}, [visibleSections]);
+	}, [visibleSections, typedText]);
 
 	const typeSectionText = (sectionIndex: number) => {
 		const sectionText = CONTENT.split("<br>")[sectionIndex];

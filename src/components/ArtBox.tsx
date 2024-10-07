@@ -165,7 +165,7 @@ const ArtBox: React.FC<ArtBoxProps> = ({ currentPage, setCurrentPage }) => {
 	const calculateFontSizeAndLineHeight = (text: string) => {
 		const lines = text.split("\n").length;
 
-		const containerWidth = dimensions.width;
+		// const containerWidth = dimensions.width;
 		const containerHeight = dimensions.height;
 
 		let fontSize = ``;
