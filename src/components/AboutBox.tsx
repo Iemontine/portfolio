@@ -38,19 +38,17 @@ const AboutBox: React.FC = () => {
 				<h1 className='text-2xl'>
                 LEMONTINE
 				</h1>
-				<br/>
-				<br/>
 				<br />
-				
-				<h3 style={{ color: "#4fae9b" }} id='header_favorites'>favorites</h3>
-				<ul className="list-none pl-5 text-base">
+				<br />
+				<br />
+				<h3 style={{ color: "#4fae9b" }} className="text-lg" id='header_favorites'>favorites</h3>
+				<ul className="list-none pl-5 text-sm">
 					<li className="before:content-['-'] before:pr-2" style={{ color: "#ae4f4f" }}>TV/Movies<span className='text-white'>: Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man</span></li>
 					<li className="before:content-['-'] before:pr-2" style={{ color: "#4fae67" }}>Video Games<span className="text-white">: Minecraft, Team Fortress 2, Warframe, Zenless Zone Zero </span></li>
 					<li className="before:content-['-'] before:pr-2" style={{ color: "#4f6dae" }}>Artists<span className="text-white">: Carpenter Brut, Ricky Montgomery, Jerma</span></li>
 				</ul>
-				<br></br>
-				<h3 style={{ color: "#4fae9b" }} id="header_currents">currents</h3>
-				<ul className="list-none pl-5 text-base">
+				<h3 style={{ color: "#4fae9b" }} className="text-lg" id="header_currents">currents</h3>
+				<ul className="list-none pl-5 text-sm">
 					<li className="before:content-['-'] before:pr-2" style={{ color: "#ae4f4f" }}>Watching<span className='text-white'>: Dandadan</span></li>
 					<li className="before:content-['-'] before:pr-2" style={{ color: "#4fae67" }}>Playing<span className='text-white'>: Zenless Zone Zero</span></li>
 					<li className="before:content-['-'] before:pr-2" style={{ color: "#4f6dae" }}>Listening to <span className='text-white'>: ???</span></li>

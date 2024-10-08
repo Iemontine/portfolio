@@ -40,7 +40,7 @@ const App = () => {
     return (
         <div id="app-container">
             <div className='scanlines'></div>
-            <div style={{ backgroundColor: '#001615', color: INTERFACE_COLOR }} className='h-screen w-screen text-xl p-4 sm:py-8 grid grid-cols-1 md:grid-cols-2 grid-rows-[auto,auto,auto] md:grid-rows-[1fr,1fr] gap-4 sm:gap-4 vhs-effect'>
+            <div style={{ backgroundColor: '#001615', color: INTERFACE_COLOR }} className='h-screen w-screen text-xl px-4 py-8 sm:px-8 sm:py-8 grid grid-cols-1 md:grid-cols-2 grid-rows-[auto,auto,auto] md:grid-rows-[1fr,2fr] gap-4 sm:gap-4 vhs-effect'>
                 {renderBoxes()}
                 <ArtBox currentPage={currentPage} setCurrentPage={setCurrentPage} />
             </div>
