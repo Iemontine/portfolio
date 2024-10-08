@@ -45,12 +45,7 @@ span {
 	text-shadow: 0 0 4px currentColor, 0 0 25px currentColor;
 }
 
-h1 {
-	font-size: 1.5em;
-}
-
 h2 {
-	font-size: 1.25em;
 	text-shadow: 0 0 1px currentColor, 0 0 10px currentColor
 }
 

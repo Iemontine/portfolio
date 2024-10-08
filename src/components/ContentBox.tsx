@@ -104,7 +104,7 @@ const ContentBox: React.FC = () => {
 						transition: "opacity 0.5s ease",
 						willChange: "opacity",
 					}}
-					className="text-white">
+					className="text-white text-xs md:text-base">
 					<span dangerouslySetInnerHTML={{ __html: typedText[index] ?? "" }} />
 				</div>
 			))}
