@@ -40,19 +40,21 @@ const AboutBox: React.FC = () => {
 				</h1>
 				<br/>
 				<br/>
-				<br/>
-                <h4 className="text-gray-500 text-base">  # some things about me</h4>
-                <h4 className="text-gray-500 text-base">-- Fourth-Year CS at UCD</h4>
-                <h4 className="text-gray-500 text-base">-- hobbies: programming, video games, video editing, computer building, hackathons, and watching movies</h4>
-                <h4 className="text-gray-500 text-base">-- technical skills: full-stack webdev, hardware/software concepts, and machine learning & AI</h4>
-				<h4 className="text-gray-500 text-base">-- specs: RTX 4070, AMD Ryzen 9 5900X</h4><br></br>
+				<br />
+				
 				<h3 style={{ color: "#4fae9b" }} id='header_favorites'>favorites</h3>
-					<ul className="list-none pl-5 text-base">
-						<li className="before:content-['-'] before:pr-2">Shows:</li>
-						<li className="before:content-['-'] before:pr-2">Video Games:</li>
-						<li className="before:content-['-'] before:pr-2">Artists: </li>
-						<li className="before:content-['-'] before:pr-2">Movies:</li>
-					</ul>
+				<ul className="list-none pl-5 text-base">
+					<li className="before:content-['-'] before:pr-2" style={{ color: "#ae4f4f" }}>TV/Movies<span className='text-white'>: Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man</span></li>
+					<li className="before:content-['-'] before:pr-2" style={{ color: "#4fae67" }}>Video Games<span className="text-white">: Minecraft, Team Fortress 2, Warframe, Zenless Zone Zero </span></li>
+					<li className="before:content-['-'] before:pr-2" style={{ color: "#4f6dae" }}>Artists<span className="text-white">: Carpenter Brut, Ricky Montgomery, Jerma</span></li>
+				</ul>
+				<br></br>
+				<h3 style={{ color: "#4fae9b" }} id="header_currents">currents</h3>
+				<ul className="list-none pl-5 text-base">
+					<li className="before:content-['-'] before:pr-2" style={{ color: "#ae4f4f" }}>Watching<span className='text-white'>: Dandadan</span></li>
+					<li className="before:content-['-'] before:pr-2" style={{ color: "#4fae67" }}>Playing<span className='text-white'>: Zenless Zone Zero</span></li>
+					<li className="before:content-['-'] before:pr-2" style={{ color: "#4f6dae" }}>Listening to <span className='text-white'>: ???</span></li>
+				</ul>
 			</div>
 			<div className='absolute right-0 top-0 flex space-x-4 z-1'>
 				<OverlayBox className='h-32 w-64'>

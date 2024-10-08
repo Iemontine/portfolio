@@ -20,6 +20,13 @@ const CONTENT = `
 <span style='color: rgb(255,255,255)'>
 	I'm</span> <span style='color: rgb(229, 128, 0)'>I</span><span style='color: rgb(232, 136, 0)'>e</span><span style='color: rgb(235, 144, 0)'>m</span><span style='color: rgb(238, 153, 0)'>o</span><span style='color: rgb(241, 161, 0)'>n</span><span style='color: rgb(244, 170, 0)'>t</span><span style='color: rgb(247, 178, 0)'>i</span><span style='color: rgb(249, 187, 0)'>n</span><span style='color: rgb(252, 195, 0)'>e</span><span style='color: rgb(255,255,255)'>, you might also know me as darroll!</span>
 <br></br>
+<span style='color:rgb(124, 124, 124)'>
+	<h4>  # some things about me</h4>
+	<h4>-- Fourth-Year CS at UCD</h4>
+	<h4>-- hobbies: programming, video games, video editing, computer building, hackathons, and watching movies</h4>
+	<h4>-- technical skills: full-stack webdev, hardware/software concepts, and machine learning & AI</h4>
+	<h4>-- specs: RTX 4070, AMD Ryzen 9 5900X</h4><br></br>
+</span>
 <h4 style='color: rgb(255, 255, 255)'>proficient in 
 <span style='color: rgb(255, 203, 58)'>Python</span>, 
 <span style='color: rgb(248, 152, 34)'>Java</span>, 

@@ -101,10 +101,10 @@ const ContentBox: React.FC = () => {
 					data-index={index}
 					style={{
 						opacity: visibleSections.includes(index) ? 1 : 0,
-						color: "white",
 						transition: "opacity 0.5s ease",
 						willChange: "opacity",
-					}}>
+					}}
+					className="text-white">
 					<span dangerouslySetInnerHTML={{ __html: typedText[index] ?? "" }} />
 				</div>
 			))}
