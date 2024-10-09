@@ -41,12 +41,6 @@ const AboutBox: React.FC = () => {
 				<br />
 				<br />
 				<br />
-				<h3 style={{ color: "#4fae9b" }} className="text-sm md:text-lg" id='header_favorites'>favorites</h3>
-				<ul className="list-none pl-1 md:pl-5 text-xs md:text-sm">
-					<li className="before:content-['-']" style={{ color: "#ae4f4f" }}>TV/Movies<span className='text-white'>: Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man</span></li>
-					<li className="before:content-['-']" style={{ color: "#4fae67" }}>Video Games<span className="text-white">: Minecraft, Team Fortress 2, Warframe, Zenless Zone Zero </span></li>
-					<li className="before:content-['-']" style={{ color: "#4f6dae" }}>Artists<span className="text-white">: Carpenter Brut, Ricky Montgomery, Jerma</span></li>
-				</ul>
 				<h3 style={{ color: "#4fae9b" }} className="text-sm md:text-lg" id="header_currents">currents</h3>
 				<ul className="list-none pl-1 md:pl-5 text-xs md:text-sm">
 					<li className="before:content-['-']" style={{ color: "#ae4f4f" }}>Watching<span className='text-white'>: Dandadan</span></li>
