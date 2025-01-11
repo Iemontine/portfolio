@@ -81,7 +81,7 @@ const CONTENT = `
 <br></br>
 <h2 style='color: #e2e224;'>- 
 	<a href='https://github.com/Iemontine/SonicGameplayingAI' style='color: #e2e224;' class='no-underline hover:underline''>
-		Gamification for Education in AI/ML
+		Gamification of Education in AI/ML
 	</a>
 </h2>
 <h4 class='text-gray-500 text:sm md:text-base'>PRESENT [1 month]</h4>
@@ -170,7 +170,7 @@ I built a user-friendly & maintainable VB.Net application for the UC Davis Libra
 <ul class='list-disc pl-1 md:pl-5'>
 	<li class='before:content-['-'] pr-5'>A 2D RPG where you work part-time jobs for townsfolk who turn into monsters during the night; developed in Godot with a team of six for a quarter-long course project.</li>
 	<li class='before:content-['-'] pr-5'>Learned and applied a variety of game development and general software engineering techniques (e.g. factory pattern, singleton, encapsulation, inheritance).</li>
-	<li class='before:content-['-'] pr-5'>As project direcotr, managed version control via git, managed Agile workloads, ideation/discussions, branch merging for nearly 500 commits, fixing bugs when they appear.</li>
+	<li class='before:content-['-'] pr-5'>As project director, managed version control via git, managed Agile workloads, ideation/discussions, branch merging for nearly 500 commits, fixing bugs when they appear.</li>
 	<li class='before:content-['-'] pr-5'>Implemented many of the game's vital infrastructure. (e.g. interactable objects, scene switchers, cutscene authoring tools, character customizer, some shaders).</li>
 	<li class='before:content-['-'] pr-5'>Gained experience working with asset pack and building worlds with them, taking creative liberties, drawing inspiration from a variety of existing games (e.g. Stardew Valley, OMORI, Signalis), pre-planning game design.</li>
 	<li class='before:content-['-'] pr-5'>For more information about the game and my contributions, check out it out <a href='https://github.com/Iemontine/MonstersShift/blob/main/ProjectDocument.md#treehouse-exterior.' style='color: #e2e224;' class='no-underline hover:underline''>here</a>.</li>
