@@ -128,7 +128,7 @@ I built a user-friendly & maintainable VB.Net application for the UC Davis Libra
 <br></br>
 <h2 style='color: #e2e224;'>- misc.dev</h2>
 	<ul class='list-none pl-1 md:pl-5'>
-	<li class='before:content-['-'] pr-5'><a href='https://iemontine.github.io/portfolio' style='color: #e2e224;' class='no-underline hover:underline''>this.website</a> - (Typescript, TailwindCSS)</li>
+	<li class='before:content-['-'] pr-5'><a href='https://github.com/Iemontine/portfolio' style='color: #e2e224;' class='no-underline hover:underline''>this.website</a> - (Typescript, TailwindCSS)</li>
 	<li class='before:content-['-'] pr-5'><a href='https://github.com/Iemontine/WebDevPractice-OMORI' style='color: #e2e224;' class='no-underline hover:underline''>omori-themed-web-design-practice</a></li>
 	<li class='before:content-['-'] pr-5'><a href='https://github.com/Iemontine/minigames' style='color: #e2e224;' class='no-underline hover:underline''>web-based-javascript-minigames</a></li>
 	<li class='before:content-['-'] pr-5'><a href='https://github.com/Iemontine/microblog' style='color: #e2e224;' class='no-underline hover:underline''>online.blog.design</a> - (Node.js, SQLite, Google OAuth)</li>
@@ -155,7 +155,7 @@ I built a user-friendly & maintainable VB.Net application for the UC Davis Libra
 </ul>
 <br></br>
 
-<h2 class='text-sm md:text-lg text-purple-600'>- AI Developer on Project Volare <span class='text-xs md:text-sm'> CODELAB at UC DAVIS </span></h2><br>
+<h2 class='text-sm md:text-lg text-purple-600'>- AI Developer on Project Volare, <span class='text-xs md:text-sm'> CODELAB at UC DAVIS </span></h2><br>
 <h4 class='text-gray-500 text:sm md:text-base'>FALL 2024 - PRESENT [4 months]</h4>
 <ul class='list-disc pl-1 md:pl-5'>
 	<li class='before:content-['-'] pr-5'>Became familiarized with formal software engineering development processes within a large software development agency.</li>
@@ -165,7 +165,7 @@ I built a user-friendly & maintainable VB.Net application for the UC Davis Libra
 	<li class='before:content-['-'] pr-5'>General web development skills (Typescript, API Design, TailwindCSS).</li>
 </ul><br></br>
 
-<h2 class='text-sm md:text-lg text-purple-600'>- Monsters' Shift <span class='text-xs md:text-sm'> UC DAVIS </span></h2><br>
+<h2 class='text-sm md:text-lg text-purple-600'>- Monsters' Shift, <span class='text-xs md:text-sm'> UC DAVIS </span></h2><br>
 <h4 class='text-gray-500 text:sm md:text-base'>SEP 2024 - DEC 2024 [4 months]</h4>
 <ul class='list-disc pl-1 md:pl-5'>
 	<li class='before:content-['-'] pr-5'>A 2D RPG where you work part-time jobs for townsfolk who turn into monsters during the night; developed in Godot with a team of six for a quarter-long course project.</li>
