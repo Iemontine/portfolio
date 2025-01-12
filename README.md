@@ -1,4 +1,7 @@
 # Iemontine's personal site
+
+### Check it out [here](https://iemontine.github.io/portfolio/)!
+
 ## TODO
 - [ ] Finish filling out more portfolio info
 - [ ] Make the AboutBox effects more interesting
