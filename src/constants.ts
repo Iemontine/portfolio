@@ -12,46 +12,48 @@ const PAGE_CONTENT = [
 
 // Dangerously set HTML for now
 const CONTENT = `
-<h1 style='color: #4fae9b;' class='text-base md:text-xl'>
+<h1 style='color: #4fae9b;' class='text-base md:text-xl' id='header_portfolio'>
 	Iemontine [Version 1.10.41.1125]
 </h1>
-<span style='color: rgb(255,255,255)'>
-	I'm</span> <span style='color: rgb(229, 128, 0)'>I</span><span style='color: rgb(232, 136, 0)'>e</span><span style='color: rgb(235, 144, 0)'>m</span><span style='color: rgb(238, 153, 0)'>o</span><span style='color: rgb(241, 161, 0)'>n</span><span style='color: rgb(244, 170, 0)'>t</span><span style='color: rgb(247, 178, 0)'>i</span><span style='color: rgb(249, 187, 0)'>n</span><span style='color: rgb(252, 195, 0)'>e</span><span style='color: rgb(255,255,255)'>, you might also know me as darroll!</span>
+<div class='block md:hidden'>
+	<span style='color: rgb(255,255,255)'>I'm</span> <span style='color: rgb(229, 128, 0)'>I</span><span style='color: rgb(232, 136, 0)'>e</span><span style='color: rgb(235, 144, 0)'>m</span><span style='color: rgb(238, 153, 0)'>o</span><span style='color: rgb(241, 161, 0)'>n</span><span style='color: rgb(244, 170, 0)'>t</span><span style='color: rgb(247, 178, 0)'>i</span><span style='color: rgb(249, 187, 0)'>n</span><span style='color: rgb(252, 195, 0)'>e</span><span style='color: rgb(255,255,255)'>, you might also know me as darroll!</span>
+</div>
 <br></br>
-<h1 style='color: #4fae9b;' class='text-base md:text-xl' id='header_portfolio'>about me</h1>
-<ul class='list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'><li class='before:content-['--'] before:pr-1'>LEMONTINES: A fourth-year computer science student at UCD, with a focus on machine learning and AI.</li></ul><br>
-<ul class='list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'><li class='before:content-['--'] before:pr-1'>HOBBIES: Programming, video games, video editing, computer building, & hackathons.</li></ul><br>
-<ul class='list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'><li class='before:content-['--'] before:pr-1'>ENJOYS: Learning about and applying machine learning and AI, full-stack web development, hardware/software concepts.</li></ul><br>
-<ul class='list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'><li class='before:content-['--'] before:pr-1'>SPECS: RTX 4070 and an AMD Ryzen 9 5900X.</li></ul><br>
-<ul class='list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'>
-	<li class='before:content-['--'] before:pr-1'>FAVORITES:</li>
-	<ul class='list-none pl-1 md:pl-5 text-xs md:text-sm'>
-		<li class='before:content-['-']' style='color: #ae4f4f'>Anime/TV/Movies<span class='text-white'>: Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man, Dandadan </span></li>
-		<li class='before:content-['-']' style='color: #4fae67'>Video Games<span class='text-white'>: Minecraft, Portal 2, Team Fortress 2, Warframe, Zenless Zone Zero, Fortnite </span></li>
-		<li class='before:content-['-']' style='color: #4f6dae'>Artists<span class='text-white'>: Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People</span></li>
-	</ul>
-</ul><br></br>
-	
-<h4 style='color: rgb(255, 255, 255)'>proficient in 
-<span style='color: rgb(255, 203, 58)'>Python</span>, 
-<span style='color: rgb(248, 152, 34)'>Java</span>, 
-<span style='color: rgb(240, 219, 79)'>Typescript</span>, 
-<span style='color: rgb(101, 154, 210)'>C</span>, 
-<span style='color: rgb(204, 204, 255)'>C++</span>, 
-<span style='color: rgb(162, 135, 221)'>CSharp</span>, 
-<span style='color: rgb(203, 65, 84)'>HTML/TailwindCSS</span>, 
-<span style='color: rgb(255, 111, 97)'>VB.Net</span>, 
-<span style='color: rgb(255, 83, 73)'>Bash scripting</span>.
-</h4>
-<h4 style='color: rgb(255, 255, 255)'>favorite libraries/APIs: 
-<span style='color: rgb(65, 105, 225)'>pytorch</span>, 
-<span style='color: rgb(65, 105, 225)'>Microsoft Azure</span>,
-<span style='color: rgb(65, 105, 225)'>openai</span>, 
-<span style='color: rgb(65, 105, 225)'>gymnasium</span>, 
-<span style='color: rgb(65, 105, 225)'>pycord</span>, 
-<span style='color: rgb(65, 105, 225)'>Pillow</span>, 
-<span style='color: rgb(65, 105, 225)'>BeautifulSoup</span>
-</h4>
+	<h1 style='color: #4fae9b;' class='block md:hidden text-base md:text-xl' id='header_portfolio'>about me</h1>
+	<ul class='block md:hidden list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'><li class='before:content-['--'] before:pr-1'>LEMONTINES: A fourth-year computer science student at UCD, with a focus on machine learning and AI.</li></ul><br>
+	<ul class='block md:hidden list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'><li class='before:content-['--'] before:pr-1'>HOBBIES: Programming, video games, video editing, computer building, & hackathons.</li></ul><br>
+	<ul class='block md:hidden list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'><li class='before:content-['--'] before:pr-1'>ENJOYS: Learning about and applying machine learning and AI, full-stack web development, hardware/software concepts.</li></ul><br>
+	<ul class='block md:hidden list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'><li class='before:content-['--'] before:pr-1'>SPECS: RTX 4070 and an AMD Ryzen 9 5900X.</li></ul><br>
+	<ul class='block md:hidden list-none pl-1 md:pl-5 text-xs md:text-sm' style='color: #409584'>
+		<li class='before:content-['--'] before:pr-1'>FAVORITES:</li>
+		<ul class='list-none pl-1 md:pl-5 text-xs md:text-sm'>
+			<li class='before:content-['-']' style='color: #ae4f4f'>Anime/TV/Movies<span class='text-white'>: Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man, Dandadan </span></li>
+			<li class='before:content-['-']' style='color: #4fae67'>Video Games<span class='text-white'>: Minecraft, Portal 2, Team Fortress 2, Warframe, Zenless Zone Zero, Fortnite </span></li>
+			<li class='before:content-['-']' style='color: #4f6dae'>Artists<span class='text-white'>: Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People</span></li>
+		</ul>
+	</ul><br></br>
+		
+	<h4 style='color: rgb(255, 255, 255)' class='block md:hidden'>proficient in 
+		<span style='color: rgb(255, 203, 58)'>Python</span>, 
+		<span style='color: rgb(248, 152, 34)'>Java</span>, 
+		<span style='color: rgb(240, 219, 79)'>Typescript</span>, 
+		<span style='color: rgb(101, 154, 210)'>C</span>, 
+		<span style='color: rgb(204, 204, 255)'>C++</span>, 
+		<span style='color: rgb(162, 135, 221)'>CSharp</span>, 
+		<span style='color: rgb(203, 65, 84)'>HTML/TailwindCSS</span>, 
+		<span style='color: rgb(255, 111, 97)'>VB.Net</span>, 
+		<span style='color: rgb(255, 83, 73)'>Bash scripting</span>.
+	</h4><br></br>
+	<h4 style='color: rgb(255, 255, 255)' class='block md:hidden'>favorite libraries/APIs: 
+		<span style='color: rgb(65, 105, 225)'>pytorch</span>, 
+		<span style='color: rgb(65, 105, 225)'>Microsoft Azure</span>,
+		<span style='color: rgb(65, 105, 225)'>openai</span>, 
+		<span style='color: rgb(65, 105, 225)'>gymnasium</span>, 
+		<span style='color: rgb(65, 105, 225)'>pycord</span>, 
+		<span style='color: rgb(65, 105, 225)'>Pillow</span>, 
+		<span style='color: rgb(65, 105, 225)'>BeautifulSoup</span>
+	</h4>
+
 <br></br>
 <h1 style='color: #4fae9b;' class='text-base md:text-xl' id='header_research'>research</h1>
 <h2 style='color: #e2e224;'>-
@@ -77,7 +79,6 @@ const CONTENT = `
 	<li class='pr-5'>Identifies sound effects present within video content via Resnet50 architecture trained on Log-mel spectrograms to classify diverse frequency patterns within underlying audio data.</li>
 	<li class='pr-5'>Resulted in noticably more detailed descriptions of videos, albeit susceptible to LLM (GPT-4o) hallucination. <a href='https://www.linkedin.com/in/darrolls/details/projects/' style='color: #e2e224;' class='no-underline hover:underline''>LinkedIn</a></li>
 </ul>
-
 <br></br>
 <h2 style='color: #e2e224;'>- 
 	<a href='https://github.com/Iemontine/SonicGameplayingAI' style='color: #e2e224;' class='no-underline hover:underline''>
@@ -90,7 +91,7 @@ const CONTENT = `
 	<li class='pr-5'>Interfaced custom Godot games and Python RL libraries, applying PPO and adjusting reward weights to train ML agents within games; analyzing results using Tensorflow.</li>
 	<li class='pr-5'>Familiarized with existing research and the types of design features and paradigms required when developing an educational games.</li>
 </ul>
-<br></br>
+<br></br><br></br><br></br>
 <h1 style='color: #4fae9b;' class='text-base md:text-xl' id='header_projects'>projects</h1>
 <h2 style='color: #e2e224;'>- 
 	<a href='https://github.com/Iemontine/cIembot' style='color: #e2e224;' class='no-underline hover:underline'>
@@ -134,8 +135,7 @@ I built a user-friendly & maintainable VB.Net application for the UC Davis Libra
 	<li class='before:content-['-'] pr-5'><a href='https://github.com/Iemontine/microblog' style='color: #e2e224;' class='no-underline hover:underline''>online.blog.design</a> - (Node.js, SQLite, Google OAuth)</li>
 	<li class='before:content-['-'] pr-5'><a href='https://github.com/Iemontine/plaque-counter' style='color: #e2e224;' class='no-underline hover:underline''>plaque-counter</a> - (Python, OpenCV, NumPy)</li>
 	</ul>
-<br></br>
-
+<br></br><br></br><br></br>
 <h1 style='color: #4fae9b;' class='text-base md:text-xl' id='header_experience'>experience</h1><br>
 
 <h2 class='text-sm md:text-lg text-purple-600'>- Information Technology Infrastructure Services, <span class='text-xs md:text-sm'> UC DAVIS LIBRARY </span></h2><br>
