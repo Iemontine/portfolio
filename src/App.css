@@ -101,7 +101,7 @@ div {
 	z-index: 50;
 	pointer-events: none;
 	animation: grain 8s steps(10) infinite;
-	background-image: url("/public/noise-image.png");
+	background-image: url("/noise-image.png");
 }
 #app-container::before {
 	content: "";
