@@ -16,13 +16,14 @@ interface OverlayBoxProps {
 
 // Cosmetic boxes with border and background color
 const OverlayBox: React.FC<OverlayBoxProps> = ({ style, className, children }) => (
-	<div style={{ borderColor: INTERFACE_COLOR, backgroundColor: 'BACKGROUND_COLOR', transform: "translate(-10px, -10px)", ...style }} className={`border p-2 overflow-hidden font-mono ${className}`}>
+	<div style={{ borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR, transform: "translate(-10px, -10px)", ...style }} className={`border p-2 overflow-hidden font-mono ${className}`}>
 		{children}
 	</div>
 );
 
 const AboutBox: React.FC = () => {
 	const [asciiContent, setAsciiContent] = useState<string>("");
+	const [headline, setHeadline] = useState<string>("");
 
 	useEffect(() => {
 		setAsciiContent(generateRandomAscii(ASCII_LENGTH));
@@ -32,10 +33,20 @@ const AboutBox: React.FC = () => {
 		return () => clearInterval(interval);
 	}, []);
 
+	useEffect(() => {
+		const message = "Iemontine — CLI portfolio";
+		let i = 0;
+		const timer = setInterval(() => {
+			setHeadline((prev) => (i < message.length ? prev + message[i++] : prev));
+			if (i >= message.length) clearInterval(timer);
+		}, 40);
+		return () => clearInterval(timer);
+	}, []);
+
 	return (
 		<div style={{ borderColor: INTERFACE_COLOR, backgroundColor: BACKGROUND_COLOR }} className='relative border p-4 z-10'>
 			<div className='relative z-10'>
-				<h1 className='text-2xl'>LEMONTINE</h1><br/>
+				<h1 className='text-2xl'>{headline}</h1><br/>
 				<span className="block md:hidden"><br/><br/></span>
 				<h3 style={{ color: "#4fae9b" }} className="text-sm md:text-lg" id="header_currents">currents</h3>
 				<ul className="list-none pl-1 md:pl-5 text-xs md:text-sm">
