@@ -1,4 +1,5 @@
 import './style.css';
+import { asciiArts, defaultAscii } from './ascii-art';
 
 // ============================
 // INTERFACES & TYPES
@@ -29,16 +30,48 @@ interface DesktopIcon {
 class WindowManager {
   private windows: Map<string, HTMLElement> = new Map();
   private zIndexCounter: number = 100;
+  private currentContentWindow: string | null = null;
+  private asciiWindow: HTMLElement | null = null;
+  private typingAnimation: number | null = null;
+  
+  // Advanced ASCII animation state management
+  private currentDisplayedText: string = '';
+  private targetText: string = '';
+  private targetWindowId: string | null = null;
+  private animationState: 'idle' | 'typing' | 'deleting' = 'idle';
+  private currentProgress: number = 0; // 0-1, percentage of current animation complete
+  private pendingTarget: string | null = null; // For handling rapid clicks
+  private animationFrameId: number | null = null; // For RAF-based animations
+  private lastAnimationTime: number = 0; // For frame rate limiting
+  
+  // Window state management for maximize/restore
+  private originalWindowStates: Map<string, {width: string, height: string, left: string, top: string}> = new Map();
+  
+  // Persistent maximization state - shared state for all content windows (not About Me)
+  private isContentWindowMaximized: boolean = false;
 
   constructor() {
     this.initializeDesktop();
     this.createTopRightBoxes();
     this.createAboutMeWindow();
+    this.createAsciiWindow();
   }
 
   private initializeDesktop(): void {
     const desktop = document.getElementById('desktop')!;
-    desktop.className = 'w-full h-full absolute top-10 left-10 z-2 p-5 grid grid-cols-[repeat(auto-fit,80px)] grid-rows-[repeat(auto-fit,100px)] gap-5 content-start justify-start';
+    desktop.style.width = 'calc(100% - 80px)';
+    desktop.style.height = 'calc(100% - 80px)';
+    desktop.style.position = 'absolute';
+    desktop.style.top = '40px';
+    desktop.style.left = '40px';
+    desktop.style.zIndex = '2';
+    desktop.style.padding = '20px';
+    desktop.style.display = 'grid';
+    desktop.style.gridTemplateColumns = 'repeat(auto-fit, 80px)';
+    desktop.style.gridTemplateRows = 'repeat(auto-fit, 100px)';
+    desktop.style.gap = '20px';
+    desktop.style.alignContent = 'start';
+    desktop.style.justifyContent = 'start';
     
     const icons: DesktopIcon[] = [
       { id: 'research-icon', label: 'Research', windowId: 'research' },
@@ -51,6 +84,9 @@ class WindowManager {
       const iconElement = this.createDesktopIcon(icon);
       desktop.appendChild(iconElement);
     });
+
+    // Create About Me icon positioned behind the About Me window
+    this.createAboutMeIcon();
   }
 
   private createDesktopIcon(icon: DesktopIcon): HTMLElement {
@@ -72,6 +108,7 @@ class WindowManager {
 
   private createTopRightBoxes(): void {
     const container = document.getElementById('top-right-container')!;
+    container.className = 'top-right-container';
     
     // Box 1: Data Matrix
     const dataBox = document.createElement('div');
@@ -115,6 +152,30 @@ class WindowManager {
     }
     
     return result;
+  }
+
+  private createAboutMeIcon(): void {
+    const aboutIcon = document.createElement('div');
+    aboutIcon.className = 'desktop-icon about-me-icon';
+    aboutIcon.setAttribute('data-window', 'about-me');
+    
+    aboutIcon.innerHTML = `
+      <div class="icon"></div>
+      <div class="label">About Me</div>
+    `;
+
+    aboutIcon.addEventListener('click', () => {
+      this.openWindow('about-me');
+    });
+
+    // Position it behind the About Me window
+    aboutIcon.style.position = 'absolute';
+    aboutIcon.style.bottom = '0px';
+    aboutIcon.style.right = '0px';
+    aboutIcon.style.zIndex = '1'; // Low z-index within desktop context
+
+    const desktop = document.getElementById('desktop')!;
+    desktop.appendChild(aboutIcon);
   }
 
   private createAboutMeWindow(): void {
@@ -176,6 +237,10 @@ class WindowManager {
   }
 
   public openWindow(windowId: string): void {
+    // Close all non-fixed windows first
+    this.closeNonFixedWindows();
+
+    // If the same window is already open, just bring it to front
     if (this.windows.has(windowId)) {
       this.bringToFront(windowId);
       return;
@@ -184,42 +249,74 @@ class WindowManager {
     const config = this.getWindowConfig(windowId);
     if (config) {
       this.createWindow(config);
+      
+      // Update current content window for ASCII display
+      if (!config.isFixed) {
+        this.currentContentWindow = windowId;
+        this.updateAsciiWindow();
+      }
     }
   }
 
+  private closeNonFixedWindows(): void {
+    // Close all windows except fixed ones (like About Me)
+    this.windows.forEach((windowElement, windowId) => {
+      if (!windowElement.classList.contains('about-window')) {
+        this.closeWindow(windowId);
+      }
+    });
+    
+    // Update ASCII window when content windows are closed
+    this.currentContentWindow = null;
+    this.updateAsciiWindow();
+  }
+
   private getWindowConfig(windowId: string): WindowConfig | null {
+    // Standardized dimensions for all content windows
+    const standardWidth = 650;
+    const standardHeight = 500;
+    
     const configs: Record<string, WindowConfig> = {
       research: {
         id: 'research',
         title: 'Research Projects',
         content: this.getResearchContent(),
-        width: 700,
-        height: 550,
+        width: standardWidth,
+        height: standardHeight,
         theme: 'portal-orange'
       },
       projects: {
         id: 'projects',
         title: 'Development Projects',
         content: this.getProjectsContent(),
-        width: 720,
-        height: 580,
+        width: standardWidth,
+        height: standardHeight,
         theme: 'default'
       },
       experience: {
         id: 'experience',
         title: 'Work Experience',
         content: this.getExperienceContent(),
-        width: 700,
-        height: 550,
+        width: standardWidth,
+        height: standardHeight,
         theme: 'portal-blue'
       },
       contact: {
         id: 'contact',
         title: 'Contact Information',
         content: this.getContactContent(),
-        width: 500,
-        height: 400,
+        width: standardWidth,
+        height: standardHeight,
         theme: 'portal-orange'
+      },
+      'about-me': {
+        id: 'about-me',
+        title: 'Darroll Saddi - About Me',
+        content: this.getAboutMeContent(),
+        width: 380,
+        height: 280,
+        theme: 'portal-blue',
+        isFixed: true
       }
     };
 
@@ -242,14 +339,24 @@ class WindowManager {
     if (config.height) windowElement.style.height = `${config.height}px`;
     
     if (!config.isFixed) {
-      // Center windows perfectly in viewport
-      const windowWidth = config.width || 400;
-      const windowHeight = config.height || 300;
-      const x = (window.innerWidth - windowWidth) / 2;
-      const y = (window.innerHeight - windowHeight) / 2;
-      
-      windowElement.style.left = `${Math.max(20, x)}px`;
-      windowElement.style.top = `${Math.max(20, y)}px`;
+      // Check shared maximization state for all content windows
+      if (this.isContentWindowMaximized) {
+        // Content windows should start maximized
+        console.log(`[WINDOW] ${config.id} opening in maximized state (shared state = true)`);
+        this.applyMaximizedState(windowElement, config);
+        windowElement.dataset.maximized = 'true';
+      } else {
+        // Content windows should start in normal size
+        console.log(`[WINDOW] ${config.id} opening in normal state (shared state = false)`);
+        const windowWidth = config.width || 400;
+        const windowHeight = config.height || 300;
+        const x = (window.innerWidth - windowWidth) / 2;
+        const y = (window.innerHeight - windowHeight) / 2;
+        
+        windowElement.style.left = `${Math.max(20, x)}px`;
+        windowElement.style.top = `${Math.max(20, y)}px`;
+        windowElement.dataset.maximized = 'false';
+      }
     }
 
     windowElement.style.zIndex = String(this.zIndexCounter++);
@@ -321,6 +428,12 @@ class WindowManager {
       setTimeout(() => {
         windowElement.remove();
         this.windows.delete(windowId);
+        
+        // Update ASCII window when a content window is closed
+        if (windowId === this.currentContentWindow) {
+          this.currentContentWindow = null;
+          this.updateAsciiWindow();
+        }
       }, 300);
     }
   }
@@ -333,22 +446,74 @@ class WindowManager {
   private maximizeWindow(windowId: string): void {
     const windowElement = this.windows.get(windowId);
     if (windowElement && !windowElement.classList.contains('about-window')) {
-      const isMaximized = windowElement.style.width === '100vw';
+      const isCurrentlyMaximized = windowElement.dataset.maximized === 'true';
       
-      if (isMaximized) {
-        // Restore
-        windowElement.style.width = '600px';
-        windowElement.style.height = '500px';
-        windowElement.style.left = '100px';
-        windowElement.style.top = '100px';
+      if (isCurrentlyMaximized) {
+        // RESTORE: Window is currently maximized, restore to normal size
+        const originalState = this.originalWindowStates.get(windowId);
+        if (originalState) {
+          windowElement.style.width = originalState.width;
+          windowElement.style.height = originalState.height;
+          windowElement.style.left = originalState.left;
+          windowElement.style.top = originalState.top;
+        }
+        
+        // Update window state to non-maximized
+        windowElement.dataset.maximized = 'false';
+        
+        // Update shared state: ALL content windows should now open in normal size
+        this.isContentWindowMaximized = false;
+        
+        console.log(`[WINDOW] ${windowId} restored to normal size. Shared state: maximized = false`);
       } else {
-        // Maximize
-        windowElement.style.width = 'calc(100vw - 40px)';
-        windowElement.style.height = 'calc(100vh - 40px)';
-        windowElement.style.left = '20px';
-        windowElement.style.top = '20px';
+        // MAXIMIZE: Window is currently normal, maximize it
+        
+        // Store current state before maximizing for restoration
+        this.originalWindowStates.set(windowId, {
+          width: windowElement.style.width,
+          height: windowElement.style.height,
+          left: windowElement.style.left,
+          top: windowElement.style.top
+        });
+        
+        // Apply maximized dimensions and positioning
+        this.applyMaximizedState(windowElement);
+        
+        // Update window state to maximized
+        windowElement.dataset.maximized = 'true';
+        
+        // Update shared state: ALL content windows should now open maximized
+        this.isContentWindowMaximized = true;
+        
+        console.log(`[WINDOW] ${windowId} maximized. Shared state: maximized = true`);
       }
     }
+  }
+
+  private applyMaximizedState(windowElement: HTMLElement, config?: WindowConfig): void {
+    // Make window slightly larger (30% increase) and center within border area
+    const standardWidth = config?.width || 650;
+    const standardHeight = config?.height || 500;
+    
+    const newWidth = Math.floor(standardWidth * 1.3);
+    const newHeight = Math.floor(standardHeight * 1.3);
+    
+    // Calculate position to center within the border area (40px padding on all sides)
+    const borderPadding = 40;
+    const availableWidth = window.innerWidth - (borderPadding * 2);
+    const availableHeight = window.innerHeight - (borderPadding * 2);
+    
+    // Ensure the enlarged window fits within the border area
+    const finalWidth = Math.min(newWidth, availableWidth - 40); // Extra 20px margin
+    const finalHeight = Math.min(newHeight, availableHeight - 40);
+    
+    const centerX = borderPadding + (availableWidth - finalWidth) / 2;
+    const centerY = borderPadding + (availableHeight - finalHeight) / 2;
+    
+    windowElement.style.width = `${finalWidth}px`;
+    windowElement.style.height = `${finalHeight}px`;
+    windowElement.style.left = `${centerX}px`;
+    windowElement.style.top = `${centerY}px`;
   }
 
   // ============================
@@ -501,6 +666,162 @@ class WindowManager {
         </div>
       </div>
     `;
+  }
+
+  // ============================
+  // ASCII WINDOW SYSTEM
+  // ============================
+
+  private createAsciiWindow(): void {
+    const asciiWindow = document.createElement('div');
+    asciiWindow.className = 'ascii-window';
+    asciiWindow.id = 'ascii-window';
+    
+    asciiWindow.innerHTML = `
+      <div class="ascii-content">
+        <pre class="ascii-art"></pre>
+      </div>
+    `;
+
+    document.body.appendChild(asciiWindow);
+    this.asciiWindow = asciiWindow;
+    this.updateAsciiWindow();
+  }
+
+  private getAsciiArt(windowId: string | null): string {
+    return asciiArts[windowId || 'about-me'] || defaultAscii;
+  }
+
+  private updateAsciiWindow(): void {
+    if (!this.asciiWindow) return;
+
+    const shouldShow = this.currentContentWindow !== null || this.windows.has('about-me');
+    
+    if (!shouldShow) {
+      this.asciiWindow.style.display = 'none';
+      return;
+    }
+
+    this.asciiWindow.style.display = 'block';
+    const activeWindow = this.currentContentWindow || 'about-me';
+    const asciiArt = this.getAsciiArt(activeWindow);
+    
+    this.typeAsciiArt(asciiArt);
+  }
+
+  private typeAsciiArt(text: string): void {
+    if (!this.asciiWindow) return;
+    
+    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
+    if (!asciiElement) return;
+
+    // IMMEDIATE INTERRUPTION: Stop any running animations
+    if (this.typingAnimation) {
+      clearTimeout(this.typingAnimation);
+      this.typingAnimation = null;
+    }
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+
+    this.targetText = text;
+    this.currentDisplayedText = asciiElement.textContent || '';
+    
+    // If target is same as current, do nothing
+    if (this.currentDisplayedText.trim() === this.targetText.trim()) {
+      this.animationState = 'idle';
+      return;
+    }
+
+    // If there's existing content and it's different, always delete first
+    if (this.currentDisplayedText.length > 0) {
+      this.startOptimizedDeletion();
+    } else {
+      // No existing content, start typing immediately
+      this.startOptimizedTyping();
+    }
+  }
+
+  private startOptimizedDeletion(): void {
+    if (!this.asciiWindow) return;
+    
+    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
+    if (!asciiElement) return;
+
+    this.animationState = 'deleting';
+    this.lastAnimationTime = performance.now();
+    
+    // Optimized deletion: fewer, larger chunks for better performance
+    const totalDuration = 300; // Slightly faster
+    const textLength = this.currentDisplayedText.length;
+    let currentLength = textLength;
+
+    const deleteFrame = (currentTime: number) => {
+      const elapsed = currentTime - this.lastAnimationTime;
+      const progress = Math.min(elapsed / totalDuration, 1);
+      
+      if (progress >= 1) {
+        // Deletion complete
+        this.currentDisplayedText = '';
+        asciiElement.textContent = '';
+        this.animationState = 'idle';
+        this.startOptimizedTyping();
+        return;
+      }
+
+      // Calculate how much text to show based on progress (reverse progress for deletion)
+      const targetLength = Math.floor(textLength * (1 - progress));
+      if (targetLength !== currentLength) {
+        currentLength = targetLength;
+        this.currentDisplayedText = this.currentDisplayedText.substring(0, currentLength);
+        asciiElement.textContent = this.currentDisplayedText;
+      }
+      
+      this.animationFrameId = requestAnimationFrame(deleteFrame);
+    };
+
+    this.animationFrameId = requestAnimationFrame(deleteFrame);
+  }
+
+  private startOptimizedTyping(): void {
+    if (!this.asciiWindow) return;
+    
+    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
+    if (!asciiElement) return;
+
+    this.animationState = 'typing';
+    this.lastAnimationTime = performance.now();
+    
+    // Optimized typing with requestAnimationFrame and larger chunks
+    const totalDuration = 800; // Slightly faster for better UX
+    const textLength = this.targetText.length;
+    let lastIndex = 0;
+
+    const typeFrame = (currentTime: number) => {
+      const elapsed = currentTime - this.lastAnimationTime;
+      const progress = Math.min(elapsed / totalDuration, 1);
+      
+      if (progress >= 1) {
+        // Typing complete
+        this.currentDisplayedText = this.targetText;
+        asciiElement.textContent = this.currentDisplayedText;
+        this.animationState = 'idle';
+        return;
+      }
+
+      // Calculate how much text to show based on progress
+      const currentIndex = Math.floor(textLength * progress);
+      if (currentIndex !== lastIndex) {
+        lastIndex = currentIndex;
+        this.currentDisplayedText = this.targetText.substring(0, currentIndex);
+        asciiElement.textContent = this.currentDisplayedText;
+      }
+      
+      this.animationFrameId = requestAnimationFrame(typeFrame);
+    };
+
+    this.animationFrameId = requestAnimationFrame(typeFrame);
   }
 }
 

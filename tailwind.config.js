@@ -14,6 +14,23 @@ export default {
       fontFamily: {
         'terminal': ['"MS UI Gothic"', 'monospace'],
       },
+      spacing: {
+        '7.5': '1.875rem',
+        '15': '3.75rem',
+        '25': '6.25rem',
+        '30': '7.5rem',
+        '70': '17.5rem',
+        '95': '23.75rem',
+      },
+      height: {
+        '25': '6.25rem',
+      },
+      width: {
+        '30': '7.5rem',
+      },
+      borderWidth: {
+        '3': '3px',
+      },
       animation: {
         'noise': 'noise 0.05s infinite linear',
         'scanlines': 'scanlines 0.1s linear infinite',
@@ -35,6 +52,21 @@ export default {
           '0%': { backgroundPosition: '0 0' },
           '100%': { backgroundPosition: '0 4px' },
         },
+        flicker: {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.98' },
+        },
+        'rotate': {
+          'from': { transform: 'rotate(0deg)' },
+          'to': { transform: 'rotate(360deg)' },
+        },
+        'counter-rotate': {
+          'from': { transform: 'rotate(0deg)' },
+          'to': { transform: 'rotate(-180deg)' },
+        },
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
     },
   },
