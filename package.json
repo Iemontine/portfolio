@@ -1,41 +1,22 @@
 {
-	"name": "frontend",
-	"version": "0.1.0",
-	"private": true,
-	"dependencies": {
-		"@testing-library/jest-dom": "^6.8.0",
-		"@testing-library/react": "^16.3.0",
-		"@testing-library/user-event": "^14.6.1",
-		"@types/node": "^18.19.64",
-		"@types/react": "^18.3.10",
-		"@types/react-dom": "^18.3.0",
-		"gh-pages": "^6.1.1",
-		"lucide-react": "^0.542.0",
-		"react": "^18.3.1",
-		"react-dom": "^18.3.1",
-		"svgo": "^4.0.0",
-		"typescript": "^4.9.5",
-		"web-vitals": "^5.1.0"
-	},
-	"scripts": {
-		"dev": "vite",
-		"build": "vite build",
-		"preview": "vite preview",
-		"test": "vitest",
-		"test:run": "vitest run",
-		"test:ui": "vitest --ui",
-		"typecheck": "tsc --noEmit",
-		"predeploy": "npm run build",
-		"deploy": "gh-pages -d dist"
-	},
-	"devDependencies": {
-		"@vitejs/plugin-react": "^4.7.0",
-		"autoprefixer": "^10.4.20",
-		"jsdom": "^25.0.1",
-		"postcss": "^8.4.47",
-		"tailwindcss": "^3.4.17",
-		"vite": "^5.4.19",
-		"vitest": "^2.1.9"
-	},
-	"homepage": "https://Iemontine.github.io/portfolio"
+  "name": "darroll-saddi-portfolio",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Portal 2-themed retro terminal portfolio website",
+  "author": "Darroll Saddi",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && gh-pages -d dist"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "gh-pages": "^6.1.1",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.13",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2"
+  }
 }

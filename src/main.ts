@@ -1,0 +1,544 @@
+import './style.css';
+
+// ============================
+// INTERFACES & TYPES
+// ============================
+
+interface WindowConfig {
+  id: string;
+  title: string;
+  content: string;
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
+  theme?: 'default' | 'portal-blue' | 'portal-orange';
+  isFixed?: boolean;
+}
+
+interface DesktopIcon {
+  id: string;
+  label: string;
+  windowId: string;
+}
+
+// ============================
+// WINDOW MANAGER CLASS
+// ============================
+
+class WindowManager {
+  private windows: Map<string, HTMLElement> = new Map();
+  private zIndexCounter: number = 100;
+
+  constructor() {
+    this.initializeDesktop();
+    this.createTopRightBoxes();
+    this.createAboutMeWindow();
+  }
+
+  private initializeDesktop(): void {
+    const desktop = document.getElementById('desktop')!;
+    desktop.className = 'w-full h-full absolute top-10 left-10 z-2 p-5 grid grid-cols-[repeat(auto-fit,80px)] grid-rows-[repeat(auto-fit,100px)] gap-5 content-start justify-start';
+    
+    const icons: DesktopIcon[] = [
+      { id: 'research-icon', label: 'Research', windowId: 'research' },
+      { id: 'projects-icon', label: 'Projects', windowId: 'projects' },
+      { id: 'experience-icon', label: 'Experience', windowId: 'experience' },
+      { id: 'contact-icon', label: 'Contact', windowId: 'contact' }
+    ];
+
+    icons.forEach(icon => {
+      const iconElement = this.createDesktopIcon(icon);
+      desktop.appendChild(iconElement);
+    });
+  }
+
+  private createDesktopIcon(icon: DesktopIcon): HTMLElement {
+    const iconElement = document.createElement('div');
+    iconElement.className = 'desktop-icon';
+    iconElement.setAttribute('data-window', icon.windowId);
+    
+    iconElement.innerHTML = `
+      <div class="icon"></div>
+      <div class="label">${icon.label}</div>
+    `;
+
+    iconElement.addEventListener('click', () => {
+      this.openWindow(icon.windowId);
+    });
+
+    return iconElement;
+  }
+
+  private createTopRightBoxes(): void {
+    const container = document.getElementById('top-right-container')!;
+    
+    // Box 1: Data Matrix
+    const dataBox = document.createElement('div');
+    dataBox.className = 'info-box data-matrix';
+    dataBox.innerHTML = this.generateMatrixData();
+    container.appendChild(dataBox);
+    
+    // Box 2: Stats
+    const statsBox = document.createElement('div');
+    statsBox.className = 'info-box stats';
+    statsBox.innerHTML = `
+      <div>2.67</div>
+      <div>1002</div>
+      <div>45.6</div>
+    `;
+    container.appendChild(statsBox);
+    
+    // Box 3: Rotating Logo
+    const logoBox = document.createElement('div');
+    logoBox.className = 'info-box logo';
+    logoBox.innerHTML = '<div class="rotating-logo"></div>';
+    container.appendChild(logoBox);
+    
+    // Animate matrix data
+    setInterval(() => {
+      dataBox.innerHTML = this.generateMatrixData();
+    }, 2000);
+  }
+
+  private generateMatrixData(): string {
+    const chars = '01';
+    const rows = 8;
+    const cols = 12;
+    let result = '';
+    
+    for (let i = 0; i < rows; i++) {
+      for (let j = 0; j < cols; j++) {
+        result += chars[Math.floor(Math.random() * chars.length)];
+      }
+      if (i < rows - 1) result += '<br>';
+    }
+    
+    return result;
+  }
+
+  private createAboutMeWindow(): void {
+    const aboutConfig: WindowConfig = {
+      id: 'about-me',
+      title: 'Darroll Saddi - About Me',
+      content: this.getAboutMeContent(),
+      width: 380,
+      height: 280,
+      theme: 'portal-blue',
+      isFixed: true
+    };
+
+    this.createWindow(aboutConfig);
+  }
+
+  private getAboutMeContent(): string {
+    return `
+      <div class="terminal-text">
+        <div class="system-header">lemontine [Version 1.12.41.1125]</div>
+        
+        <div class="section">
+          <div class="section-title">LEMONTINE</div>
+          
+          <div class="currents-section">
+            <div class="currents-title">currents</div>
+            <div class="current-item"><span class="status-watching">~Watching:</span> Speed Racer (2008)</div>
+            <div class="current-item"><span class="status-playing">~Playing:</span> Zenless Zone Zero</div>
+            <div class="current-item"><span class="status-listening">~Listening to:</span> Good Kid, The Vanished People</div>
+          </div>
+          
+          <div class="intro-text">I'm <span class="highlight-name">lemontine</span>, you might also know me as darroll!</div>
+          
+          <div class="about-section">
+            <div class="about-title">about me</div>
+            <div class="about-line"><span class="about-label">LEMONTINE:</span> A fourth-year computer science student at UCD, with a focus on machine learning and AI.</div>
+            <div class="about-line"><span class="about-label">HOBBIES:</span> Programming, video games, video editing, computer building, & hackathons.</div>
+            <div class="about-line"><span class="about-label">ENJOYS:</span> Learning about and applying machine learning and AI, full-stack web development,</div>
+            <div class="about-line indent">hardware/software concepts.</div>
+            <div class="about-line"><span class="about-label">SPECS:</span> RTX 4070 and an AMD Ryzen 9 5900X.</div>
+            
+            <div class="favorites-section">
+              <div class="about-label">FAVORITES:</div>
+              <div class="about-line indent"><span class="fav-category">~Anime/TV/Movies:</span> Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man, Dandadan</div>
+              <div class="about-line indent"><span class="fav-category">~Video Games:</span> Minecraft, Portal 2, Team Fortress 2, Letframe, Zenless Zone Zero, Fortnite</div>
+              <div class="about-line indent"><span class="fav-category">~Artists:</span> Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People</div>
+            </div>
+            
+            <div class="skills-line">
+              proficient in <span class="skill-highlight">Python</span>, <span class="skill-highlight">Java</span>, <span class="skill-highlight">Typescript</span>, <span class="skill-highlight">C</span>, <span class="skill-highlight">C++</span>, <span class="skill-highlight">CSharp</span>, <span class="skill-highlight">HTML/Tailwind/CSS</span>, <span class="skill-highlight">VB.Net</span>, <span class="skill-highlight">Bash scripting</span>.
+            </div>
+            <div class="apis-line">
+              favorite libraries/APIs: <span class="api-highlight">pytorch</span>, <span class="api-highlight">Microsoft Azure</span>, <span class="api-highlight">openai</span>, <span class="api-highlight">gymnasium</span>, <span class="api-highlight">pycord</span>, <span class="api-highlight">Pillow</span>, <span class="api-highlight">BeautifulSoup</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  public openWindow(windowId: string): void {
+    if (this.windows.has(windowId)) {
+      this.bringToFront(windowId);
+      return;
+    }
+
+    const config = this.getWindowConfig(windowId);
+    if (config) {
+      this.createWindow(config);
+    }
+  }
+
+  private getWindowConfig(windowId: string): WindowConfig | null {
+    const configs: Record<string, WindowConfig> = {
+      research: {
+        id: 'research',
+        title: 'Research Projects',
+        content: this.getResearchContent(),
+        width: 700,
+        height: 550,
+        theme: 'portal-orange'
+      },
+      projects: {
+        id: 'projects',
+        title: 'Development Projects',
+        content: this.getProjectsContent(),
+        width: 720,
+        height: 580,
+        theme: 'default'
+      },
+      experience: {
+        id: 'experience',
+        title: 'Work Experience',
+        content: this.getExperienceContent(),
+        width: 700,
+        height: 550,
+        theme: 'portal-blue'
+      },
+      contact: {
+        id: 'contact',
+        title: 'Contact Information',
+        content: this.getContactContent(),
+        width: 500,
+        height: 400,
+        theme: 'portal-orange'
+      }
+    };
+
+    return configs[windowId] || null;
+  }
+
+  private createWindow(config: WindowConfig): void {
+    const windowContainer = document.getElementById('window-container')!;
+    
+    const windowElement = document.createElement('div');
+    windowElement.className = `terminal-window ${config.theme || 'default'}`;
+    windowElement.id = `window-${config.id}`;
+    
+    if (config.isFixed) {
+      windowElement.classList.add('about-window');
+    }
+
+    // Set dimensions and position
+    if (config.width) windowElement.style.width = `${config.width}px`;
+    if (config.height) windowElement.style.height = `${config.height}px`;
+    
+    if (!config.isFixed) {
+      // Center windows perfectly in viewport
+      const windowWidth = config.width || 400;
+      const windowHeight = config.height || 300;
+      const x = (window.innerWidth - windowWidth) / 2;
+      const y = (window.innerHeight - windowHeight) / 2;
+      
+      windowElement.style.left = `${Math.max(20, x)}px`;
+      windowElement.style.top = `${Math.max(20, y)}px`;
+    }
+
+    windowElement.style.zIndex = String(this.zIndexCounter++);
+
+    windowElement.innerHTML = `
+      <div class="window-titlebar">
+        <div class="window-controls">
+          <div class="window-control close" data-action="close"></div>
+          <div class="window-control minimize" data-action="minimize"></div>
+          <div class="window-control maximize" data-action="maximize"></div>
+        </div>
+        <div class="window-title">${config.title}</div>
+      </div>
+      <div class="window-content">
+        ${config.content}
+      </div>
+    `;
+
+    // Add window controls event listeners
+    this.setupWindowControls(windowElement, config.id);
+
+    // Add enter animation
+    windowElement.classList.add('window-enter');
+    setTimeout(() => windowElement.classList.remove('window-enter'), 400);
+
+    windowContainer.appendChild(windowElement);
+    this.windows.set(config.id, windowElement);
+
+    // Focus the window
+    windowElement.addEventListener('mousedown', () => {
+      this.bringToFront(config.id);
+    });
+  }
+
+  private setupWindowControls(windowElement: HTMLElement, windowId: string): void {
+    const controls = windowElement.querySelectorAll('.window-control');
+    
+    controls.forEach(control => {
+      control.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = (control as HTMLElement).dataset.action;
+        
+        switch (action) {
+          case 'close':
+            this.closeWindow(windowId);
+            break;
+          case 'minimize':
+            this.minimizeWindow(windowId);
+            break;
+          case 'maximize':
+            this.maximizeWindow(windowId);
+            break;
+        }
+      });
+    });
+  }
+
+  private bringToFront(windowId: string): void {
+    const windowElement = this.windows.get(windowId);
+    if (windowElement) {
+      windowElement.style.zIndex = String(this.zIndexCounter++);
+    }
+  }
+
+  private closeWindow(windowId: string): void {
+    const windowElement = this.windows.get(windowId);
+    if (windowElement) {
+      windowElement.classList.add('window-exit');
+      setTimeout(() => {
+        windowElement.remove();
+        this.windows.delete(windowId);
+      }, 300);
+    }
+  }
+
+  private minimizeWindow(windowId: string): void {
+    // For this demo, minimize will just close the window
+    this.closeWindow(windowId);
+  }
+
+  private maximizeWindow(windowId: string): void {
+    const windowElement = this.windows.get(windowId);
+    if (windowElement && !windowElement.classList.contains('about-window')) {
+      const isMaximized = windowElement.style.width === '100vw';
+      
+      if (isMaximized) {
+        // Restore
+        windowElement.style.width = '600px';
+        windowElement.style.height = '500px';
+        windowElement.style.left = '100px';
+        windowElement.style.top = '100px';
+      } else {
+        // Maximize
+        windowElement.style.width = 'calc(100vw - 40px)';
+        windowElement.style.height = 'calc(100vh - 40px)';
+        windowElement.style.left = '20px';
+        windowElement.style.top = '20px';
+      }
+    }
+  }
+
+  // ============================
+  // CONTENT METHODS
+  // ============================
+
+  private getResearchContent(): string {
+    return `
+      <div class="terminal-text">
+        <h1>$ ls research/</h1>
+        
+        <h2>PPO Gameplaying AI</h2>
+        <p>Implemented Proximal Policy Optimization for autonomous game agents. Developed reinforcement learning models that achieve superhuman performance in classic Atari games through policy gradient methods and reward engineering.</p>
+        <p><strong>Technologies:</strong> Python, PyTorch, OpenAI Gym, Stable Baselines3</p>
+        
+        <h2>Video Content Description with LLM</h2>
+        <p>Created a multi-modal AI system that generates detailed descriptions of video content using large language models. Combines computer vision and natural language processing for automated video analysis and captioning.</p>
+        <p><strong>Technologies:</strong> Python, Transformers, OpenCV, CLIP, GPT-4 API</p>
+        
+        <h2>Gamification of Education</h2>
+        <p>Research into applying game design principles to educational platforms. Studied engagement metrics and learning outcomes when traditional coursework is transformed into interactive, game-like experiences.</p>
+        <p><strong>Focus Areas:</strong> UX Design, Educational Psychology, Data Analysis</p>
+        
+        <h3>Publications & Presentations</h3>
+        <ul>
+          <li>UC Davis Undergraduate Research Conference 2024</li>
+          <li>AI/ML Research Symposium - "Reward Shaping in RL Agents"</li>
+          <li>Educational Technology Workshop - "Games as Learning Tools"</li>
+        </ul>
+      </div>
+    `;
+  }
+
+  private getProjectsContent(): string {
+    return `
+      <div class="terminal-text">
+        <h1>$ ls projects/</h1>
+        
+        <h2>clembot</h2>
+        <p>Discord bot for UC Davis computer science students with course management, study group coordination, and academic resource sharing. Serves 500+ active users with automated scheduling and notification systems.</p>
+        <p><strong>Tech Stack:</strong> Node.js, Discord.js, PostgreSQL, Docker</p>
+        
+        <h2>gmod_ultrakill_hud</h2>
+        <p>Custom HUD modification for Garry's Mod inspired by ULTRAKILL's visual design. Features dynamic health/armor displays, style meter, and weapon switching animations with smooth UI transitions.</p>
+        <p><strong>Tech Stack:</strong> Lua, GLua, Source Engine</p>
+        
+        <h2>GridGame</h2>
+        <p>Multiplayer puzzle game built with real-time synchronization. Players collaborate to solve grid-based challenges with physics simulation and networking architecture supporting up to 8 concurrent players.</p>
+        <p><strong>Tech Stack:</strong> Java, LibGDX, WebSocket, Maven</p>
+        
+        <h2>FloodFinder</h2>
+        <p>Machine learning application for flood risk prediction using satellite imagery and weather data. Provides early warning system for coastal communities with 85% accuracy in flood detection.</p>
+        <p><strong>Tech Stack:</strong> Python, TensorFlow, Satellite APIs, Flask</p>
+        
+        <h2>softwareInstaller</h2>
+        <p>Cross-platform software deployment tool with dependency resolution and rollback capabilities. Automates installation processes across Windows, macOS, and Linux environments.</p>
+        <p><strong>Tech Stack:</strong> Rust, Cross-compilation, Package Management</p>
+        
+        <h2>misc.dev</h2>
+        <p>Collection of developer utilities and tools including code formatters, API testing helpers, and development environment setup scripts. Open source toolkit used by 100+ developers.</p>
+        <p><strong>Tech Stack:</strong> TypeScript, CLI Tools, GitHub Actions</p>
+        
+        <p><a href="https://github.com/darrollsaddi" target="_blank">View all projects on GitHub →</a></p>
+      </div>
+    `;
+  }
+
+  private getExperienceContent(): string {
+    return `
+      <div class="terminal-text">
+        <h1>$ cat experience.log</h1>
+        
+        <h2>CODELAB AI Developer</h2>
+        <p><em>Software Engineering Intern | Summer 2024</em></p>
+        <ul>
+          <li>Developed machine learning pipelines for natural language processing</li>
+          <li>Optimized model inference speed by 40% through quantization techniques</li>
+          <li>Built RESTful APIs for ML model deployment using FastAPI and Docker</li>
+          <li>Collaborated with cross-functional teams on AI product features</li>
+        </ul>
+        
+        <h2>UC Davis Library IT</h2>
+        <p><em>Technical Support Specialist | 2023 - Present</em></p>
+        <ul>
+          <li>Provide technical support for 40,000+ students and faculty</li>
+          <li>Maintain and troubleshoot campus network infrastructure</li>
+          <li>Develop automation scripts for system maintenance tasks</li>
+          <li>Train new staff on help desk procedures and ticketing systems</li>
+        </ul>
+        
+        <h2>Comfort Living</h2>
+        <p><em>IT Assistant | 2022 - 2023</em></p>
+        <ul>
+          <li>Managed database systems for property management operations</li>
+          <li>Implemented digital workflows reducing processing time by 30%</li>
+          <li>Provided technical support for office software and hardware</li>
+          <li>Created documentation for IT procedures and best practices</li>
+        </ul>
+        
+        <h2>Monsters' Shift</h2>
+        <p><em>Game Development Intern | Summer 2022</em></p>
+        <ul>
+          <li>Contributed to indie game development using Unity and C#</li>
+          <li>Implemented game mechanics and user interface components</li>
+          <li>Participated in agile development cycles and code reviews</li>
+          <li>Gained experience in game design and player experience testing</li>
+        </ul>
+        
+        <h2>STEM Club President</h2>
+        <p><em>Leadership Role | 2021 - 2022</em></p>
+        <ul>
+          <li>Led organization of 200+ members focused on STEM education</li>
+          <li>Organized hackathons, coding workshops, and tech talks</li>
+          <li>Secured sponsorships and partnerships with local tech companies</li>
+          <li>Mentored underclassmen in programming and career development</li>
+        </ul>
+      </div>
+    `;
+  }
+
+  private getContactContent(): string {
+    return `
+      <div class="terminal-text">
+        <h1>$ contact --info</h1>
+        
+        <h2>Get in Touch</h2>
+        <p>I'm always interested in discussing new opportunities, collaborations, or just chatting about technology and games!</p>
+        
+        <h3>Professional Channels</h3>
+        <p><strong>Email:</strong> <a href="mailto:dsaddi@ucdavis.edu">dsaddi@ucdavis.edu</a></p>
+        <p><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/darroll-saddi" target="_blank">linkedin.com/in/darroll-saddi</a></p>
+        <p><strong>GitHub:</strong> <a href="https://github.com/darrollsaddi" target="_blank">github.com/darrollsaddi</a></p>
+        
+        <h3>Gaming & Social</h3>
+        <p><strong>Steam:</strong> Iemontine</p>
+        <p><strong>Discord:</strong> iemontine</p>
+        
+        <h3>Portfolio & Resume</h3>
+        <p><strong>Website:</strong> <a href="https://darrollsaddi.github.io/portfolio" target="_blank">darrollsaddi.github.io/portfolio</a></p>
+        <p><strong>Resume:</strong> <a href="/resume.pdf" target="_blank">Download PDF</a></p>
+        
+        <div style="margin-top: 20px; padding: 10px; border: 1px solid var(--portal-blue); border-radius: 4px; background: rgba(0, 153, 255, 0.1);">
+          <h3>Looking for opportunities in:</h3>
+          <ul>
+            <li>Machine Learning Engineering</li>
+            <li>Software Development</li>
+            <li>AI Research Internships</li>
+            <li>Game Development</li>
+          </ul>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ============================
+// APPLICATION INITIALIZATION
+// ============================
+
+document.addEventListener('DOMContentLoaded', () => {
+  new WindowManager();
+  
+  // Add some terminal-style loading text
+  console.log('%c[TERMINAL] Portal 2 Portfolio System Initialized', 'color: #FFA500; font-family: monospace;');
+  console.log('%c[SYSTEM] Welcome to the Aperture Science Portfolio Interface', 'color: #00FF41; font-family: monospace;');
+  console.log('%c[GLaDOS] The cake is a lie, but this portfolio is real.', 'color: #FF6600; font-family: monospace;');
+});
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', (e) => {
+  // Alt + number keys to open windows quickly
+  if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+    switch (e.key) {
+      case '1':
+        e.preventDefault();
+        const windowManager = (window as any).windowManager;
+        if (windowManager) windowManager.openWindow('research');
+        break;
+      case '2':
+        e.preventDefault();
+        break;
+      case '3':
+        e.preventDefault();
+        break;
+      case '4':
+        e.preventDefault();
+        break;
+    }
+  }
+});
+
+// Export for potential external use
+(window as any).WindowManager = WindowManager;
