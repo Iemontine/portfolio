@@ -1,26 +1,26 @@
-import './style.css';
-import { asciiArts, defaultAscii } from './ascii-art';
+import "./style.css";
+import { asciiArts, defaultAscii } from "./ascii-art";
 
 // ============================
 // INTERFACES & TYPES
 // ============================
 
 interface WindowConfig {
-  id: string;
-  title: string;
-  content: string;
-  width?: number;
-  height?: number;
-  x?: number;
-  y?: number;
-  theme?: 'default' | 'portal-blue' | 'portal-orange';
-  isFixed?: boolean;
+	id: string;
+	title: string;
+	content: string;
+	width?: number;
+	height?: number;
+	x?: number;
+	y?: number;
+	theme?: "default";
+	isFixed?: boolean;
 }
 
 interface DesktopIcon {
-  id: string;
-  label: string;
-  windowId: string;
+	id: string;
+	label: string;
+	windowId: string;
 }
 
 // ============================
@@ -28,204 +28,211 @@ interface DesktopIcon {
 // ============================
 
 class WindowManager {
-  private windows: Map<string, HTMLElement> = new Map();
-  private zIndexCounter: number = 400; // Start higher than static elements
-  private currentContentWindow: string | null = null;
-  private asciiWindow: HTMLElement | null = null;
-  
-  // Advanced ASCII animation state management
-  private currentDisplayedText: string = '';
-  private targetText: string = '';
-  private animationFrameId: number | null = null; // For RAF-based animations
-  private lastAnimationTime: number = 0; // For frame rate limiting
-  
-  // Window state management for maximize/restore
-  private originalWindowStates: Map<string, {width: string, height: string, left: string, top: string}> = new Map();
-  
-  // Persistent maximization state - shared state for all content windows (not About Me)
-  private isContentWindowMaximized: boolean = false;
+	private windows: Map<string, HTMLElement> = new Map();
+	private zIndexCounter: number = 400; // Start higher than static elements
+	private currentContentWindow: string | null = null;
+	private asciiWindow: HTMLElement | null = null;
 
-  // Separate About Me window storage - completely independent from content windows
-  private aboutMeWindow: HTMLElement | null = null;
+	// Advanced ASCII animation state management
+	private currentDisplayedText: string = "";
+	private targetText: string = "";
+	private animationFrameId: number | null = null; // For RAF-based animations
+	private lastAnimationTime: number = 0; // For frame rate limiting
 
-  constructor() {
-    this.initializeDesktop();
-    this.createTopRightBoxes();
-    this.showAboutMe(); // About Me appears automatically on load
-    this.createAsciiWindow();
-    
-    // Handle window resize for responsive updates
-    window.addEventListener('resize', () => {
-      this.handleResize();
-      // Recompute ASCII font-size on resize when visible
-      if (this.asciiWindow && this.asciiWindow.style.display !== 'none') {
-        const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
-        if (asciiElement) {
-          const size = this.calculateOptimalFontSize(asciiElement.textContent || '');
-          if (size > 0) asciiElement.style.fontSize = `${size}px`;
-        }
-      }
-    });
-  }
-  
-  private handleResize(): void {
-    const isMobile = window.innerWidth <= 768;
-    
-    // Defer ASCII visibility to unified logic
-    this.updateAsciiWindow();
-    
-    // Reset maximization state on mobile
-    if (isMobile) {
-      this.isContentWindowMaximized = false;
-    }
-    
-    // Handle About Me icon positioning
-    const aboutIcon = document.querySelector('.about-me-icon') as HTMLElement;
-    if (aboutIcon) {
-      if (isMobile) {
-        aboutIcon.style.position = 'static';
-        aboutIcon.style.bottom = 'auto';
-        aboutIcon.style.right = 'auto';
-      } else {
-        aboutIcon.style.position = 'absolute';
-        aboutIcon.style.bottom = '0px';
-        aboutIcon.style.right = '0px';
-      }
-    }
-    
-    // Ensure About Me window is always visible on mobile
-    if (isMobile && !this.aboutMeWindow) {
-      this.showAboutMe();
-    }
-  }
+	// Window state management for maximize/restore
+	private originalWindowStates: Map<
+		string,
+		{ width: string; height: string; left: string; top: string }
+	> = new Map();
 
-  private initializeDesktop(): void {
-    const desktop = document.getElementById('desktop')!;
-    desktop.style.width = 'calc(100% - 80px)';
-    desktop.style.height = 'calc(100% - 80px)';
-    desktop.style.position = 'absolute';
-    desktop.style.top = '40px';
-    desktop.style.left = '40px';
-    desktop.style.zIndex = '2';
-    desktop.style.padding = '20px';
-    desktop.style.display = 'grid';
-    desktop.style.gridTemplateColumns = 'repeat(auto-fit, 80px)';
-    desktop.style.gridTemplateRows = 'repeat(auto-fit, 100px)';
-    desktop.style.gap = '20px';
-    desktop.style.alignContent = 'start';
-    desktop.style.justifyContent = 'start';
-    
-    const icons: DesktopIcon[] = [
-      { id: 'research-icon', label: 'Research', windowId: 'research' },
-      { id: 'projects-icon', label: 'Projects', windowId: 'projects' },
-      { id: 'experience-icon', label: 'Experience', windowId: 'experience' },
-      { id: 'contact-icon', label: 'Contact', windowId: 'contact' }
-    ];
+	// Persistent maximization state - shared state for all content windows (not About Me)
+	private isContentWindowMaximized: boolean = false;
 
-    icons.forEach(icon => {
-      const iconElement = this.createDesktopIcon(icon);
-      desktop.appendChild(iconElement);
-    });
+	// Separate About Me window storage - completely independent from content windows
+	private aboutMeWindow: HTMLElement | null = null;
 
-    // Create About Me icon positioned behind the About Me window
-    this.createAboutMeIcon();
-  }
+	constructor() {
+		this.initializeDesktop();
+		this.createTopRightBoxes();
+		this.showAboutMe(); // About Me appears automatically on load
+		this.createAsciiWindow();
 
-  private createDesktopIcon(icon: DesktopIcon): HTMLElement {
-    const iconElement = document.createElement('div');
-    iconElement.className = 'desktop-icon';
-    iconElement.setAttribute('data-window', icon.windowId);
-    
-    iconElement.innerHTML = `
+		// Handle window resize for responsive updates
+		window.addEventListener("resize", () => {
+			this.handleResize();
+			// Recompute ASCII font-size on resize when visible
+			if (this.asciiWindow && this.asciiWindow.style.display !== "none") {
+				const asciiElement = this.asciiWindow.querySelector(
+					".ascii-art"
+				) as HTMLElement;
+				if (asciiElement) {
+					const size = this.calculateOptimalFontSize(
+						asciiElement.textContent || ""
+					);
+					if (size > 0) asciiElement.style.fontSize = `${size}px`;
+				}
+			}
+		});
+	}
+
+	private handleResize(): void {
+		const isMobile = window.innerWidth <= 768;
+
+		// Defer ASCII visibility to unified logic
+		this.updateAsciiWindow();
+
+		// Reset maximization state on mobile
+		if (isMobile) {
+			this.isContentWindowMaximized = false;
+		}
+
+		// Handle About Me icon positioning
+		const aboutIcon = document.querySelector(".about-me-icon") as HTMLElement;
+		if (aboutIcon) {
+			if (isMobile) {
+				aboutIcon.style.position = "static";
+				aboutIcon.style.bottom = "auto";
+				aboutIcon.style.right = "auto";
+			} else {
+				aboutIcon.style.position = "absolute";
+				aboutIcon.style.bottom = "0px";
+				aboutIcon.style.right = "0px";
+			}
+		}
+
+		// Ensure About Me window is always visible on mobile
+		if (isMobile && !this.aboutMeWindow) {
+			this.showAboutMe();
+		}
+	}
+
+	private initializeDesktop(): void {
+		const desktop = document.getElementById("desktop")!;
+		desktop.style.width = "calc(100% - 80px)";
+		desktop.style.height = "calc(100% - 80px)";
+		desktop.style.position = "absolute";
+		desktop.style.top = "40px";
+		desktop.style.left = "40px";
+		desktop.style.zIndex = "2";
+		desktop.style.padding = "20px";
+		desktop.style.display = "grid";
+		desktop.style.gridTemplateColumns = "repeat(auto-fit, 80px)";
+		desktop.style.gridTemplateRows = "repeat(auto-fit, 100px)";
+		desktop.style.gap = "20px";
+		desktop.style.alignContent = "start";
+		desktop.style.justifyContent = "start";
+
+		const icons: DesktopIcon[] = [
+			{ id: "research-icon", label: "Research", windowId: "research" },
+			{ id: "projects-icon", label: "Projects", windowId: "projects" },
+			{ id: "experience-icon", label: "Experience", windowId: "experience" },
+			{ id: "contact-icon", label: "Contact", windowId: "contact" },
+		];
+
+		icons.forEach((icon) => {
+			const iconElement = this.createDesktopIcon(icon);
+			desktop.appendChild(iconElement);
+		});
+
+		// Create About Me icon positioned behind the About Me window
+		this.createAboutMeIcon();
+	}
+
+	private createDesktopIcon(icon: DesktopIcon): HTMLElement {
+		const iconElement = document.createElement("div");
+		iconElement.className = "desktop-icon";
+		iconElement.setAttribute("data-window", icon.windowId);
+
+		iconElement.innerHTML = `
       <div class="icon"></div>
       <div class="label">${icon.label}</div>
     `;
 
-    iconElement.addEventListener('click', () => {
-      this.openWindow(icon.windowId);
-    });
+		iconElement.addEventListener("click", () => {
+			this.openWindow(icon.windowId);
+		});
 
-    return iconElement;
-  }
+		return iconElement;
+	}
 
-  private createTopRightBoxes(): void {
-    const container = document.getElementById('top-right-container')!;
-    container.className = 'top-right-container';
-    
-    // Box 1: Data Matrix
-    const dataBox = document.createElement('div');
-    dataBox.className = 'info-box data-matrix';
-    dataBox.innerHTML = this.generateMatrixData();
-    container.appendChild(dataBox);
-    
-    // Box 2: Stats
-    const statsBox = document.createElement('div');
-    statsBox.className = 'info-box stats';
-    statsBox.innerHTML = `
+	private createTopRightBoxes(): void {
+		const container = document.getElementById("top-right-container")!;
+		container.className = "top-right-container";
+
+		// Box 1: Data Matrix
+		const dataBox = document.createElement("div");
+		dataBox.className = "info-box data-matrix";
+		dataBox.innerHTML = this.generateMatrixData();
+		container.appendChild(dataBox);
+
+		// Box 2: Stats
+		const statsBox = document.createElement("div");
+		statsBox.className = "info-box stats";
+		statsBox.innerHTML = `
       <div>2.67</div>
       <div>1002</div>
       <div>45.6</div>
     `;
-    container.appendChild(statsBox);
-    
-    // Box 3: Rotating Logo
-    const logoBox = document.createElement('div');
-    logoBox.className = 'info-box logo';
-    logoBox.innerHTML = '<div class="rotating-logo"></div>';
-    container.appendChild(logoBox);
-    
-    // Animate matrix data
-    setInterval(() => {
-      dataBox.innerHTML = this.generateMatrixData();
-    }, 2000);
-  }
+		container.appendChild(statsBox);
 
-  private generateMatrixData(): string {
-    const chars = '01';
-    const rows = 8;
-    const cols = 12;
-    let result = '';
-    
-    for (let i = 0; i < rows; i++) {
-      for (let j = 0; j < cols; j++) {
-        result += chars[Math.floor(Math.random() * chars.length)];
-      }
-      if (i < rows - 1) result += '<br>';
-    }
-    
-    return result;
-  }
+		// Box 3: Rotating Logo
+		const logoBox = document.createElement("div");
+		logoBox.className = "info-box logo";
+		logoBox.innerHTML = '<div class="rotating-logo"></div>';
+		container.appendChild(logoBox);
 
-  private createAboutMeIcon(): void {
-    const aboutIcon = document.createElement('div');
-    aboutIcon.className = 'desktop-icon about-me-icon';
-    aboutIcon.setAttribute('data-window', 'about-me');
-    
-    aboutIcon.innerHTML = `
+		// Animate matrix data
+		setInterval(() => {
+			dataBox.innerHTML = this.generateMatrixData();
+		}, 2000);
+	}
+
+	private generateMatrixData(): string {
+		const chars = "01";
+		const rows = 8;
+		const cols = 12;
+		let result = "";
+
+		for (let i = 0; i < rows; i++) {
+			for (let j = 0; j < cols; j++) {
+				result += chars[Math.floor(Math.random() * chars.length)];
+			}
+			if (i < rows - 1) result += "<br>";
+		}
+
+		return result;
+	}
+
+	private createAboutMeIcon(): void {
+		const aboutIcon = document.createElement("div");
+		aboutIcon.className = "desktop-icon about-me-icon";
+		aboutIcon.setAttribute("data-window", "about-me");
+
+		aboutIcon.innerHTML = `
       <div class="icon"></div>
       <div class="label">About Me</div>
     `;
 
-    aboutIcon.addEventListener('click', () => {
-      // About Me should just toggle visibility, not interfere with content windows
-      this.toggleAboutMe();
-    });
+		aboutIcon.addEventListener("click", () => {
+			// About Me should just toggle visibility, not interfere with content windows
+			this.toggleAboutMe();
+		});
 
-    // Position it behind the About Me window on desktop, in grid on mobile
-    const isMobile = window.innerWidth <= 768;
-    if (!isMobile) {
-      aboutIcon.style.position = 'absolute';
-      aboutIcon.style.bottom = '0px';
-      aboutIcon.style.right = '0px';
-      aboutIcon.style.zIndex = '1'; // Low z-index within desktop context
-    }
+		// Position it behind the About Me window on desktop, in grid on mobile
+		const isMobile = window.innerWidth <= 768;
+		if (!isMobile) {
+			aboutIcon.style.position = "absolute";
+			aboutIcon.style.bottom = "0px";
+			aboutIcon.style.right = "0px";
+			aboutIcon.style.zIndex = "1"; // Low z-index within desktop context
+		}
 
-    const desktop = document.getElementById('desktop')!;
-    desktop.appendChild(aboutIcon);
-  }
+		const desktop = document.getElementById("desktop")!;
+		desktop.appendChild(aboutIcon);
+	}
 
-  private getAboutMeContent(): string {
-    return `
+	private getAboutMeContent(): string {
+		return `
       <div class="terminal-text">
         <div class="system-header">lemontine [Version 1.12.41.1125]</div>
         
@@ -266,87 +273,88 @@ class WindowManager {
         </div>
       </div>
     `;
-  }
+	}
 
-  public openWindow(windowId: string): void {
-    const isMobile = window.innerWidth <= 768;
-    
-    // Close other content windows first (About Me is separate)
-    if (!isMobile) {
-      this.closeNonFixedWindows();
-    } else {
-      // On mobile, close other content windows
-      this.windows.forEach((_, wId) => {
-        if (wId !== windowId) {
-          this.closeWindow(wId);
-        }
-      });
-    }
+	public openWindow(windowId: string): void {
+		const isMobile = window.innerWidth <= 768;
 
-    // If the same window is already open, just bring it to front
-    if (this.windows.has(windowId)) {
-      this.bringToFront(windowId);
-      return;
-    }
+		// Close other content windows first (About Me is separate)
+		if (!isMobile) {
+			this.closeNonFixedWindows();
+		} else {
+			// On mobile, close other content windows
+			this.windows.forEach((_, wId) => {
+				if (wId !== windowId) {
+					this.closeWindow(wId);
+				}
+			});
+		}
 
-    const config = this.getWindowConfig(windowId);
-    if (config) {
-      this.createWindow(config);
-      
-      // Update current content window for ASCII display
-      this.currentContentWindow = windowId;
-      this.updateAsciiWindow();
-    }
-  }
+		// If the same window is already open, just bring it to front
+		if (this.windows.has(windowId)) {
+			this.bringToFront(windowId);
+			return;
+		}
 
-  private closeNonFixedWindows(): void {
-    // Close all content windows (About Me is separate and not affected)
-    this.windows.forEach((_, windowId) => {
-      this.closeWindow(windowId);
-    });
-    
-    // Update ASCII window when content windows are closed
-    this.currentContentWindow = null;
-    this.updateAsciiWindow();
-  }
+		const config = this.getWindowConfig(windowId);
+		if (config) {
+			this.createWindow(config);
 
-  public toggleAboutMe(): void {
-    if (this.aboutMeWindow) {
-      // About Me exists, toggle its visibility
-      if (this.aboutMeWindow.style.display === 'none') {
-        this.aboutMeWindow.style.display = 'block';
-        this.bringAboutMeToFront();
-      } else {
-        this.aboutMeWindow.style.display = 'none';
-      }
-      // Update ASCII art when About Me visibility changes
-      this.updateAsciiWindow();
-    } else {
-      // About Me doesn't exist, create it
-      this.showAboutMe();
-    }
-  }
+			// Update current content window for ASCII display
+			this.currentContentWindow = windowId;
+			this.updateAsciiWindow();
+		}
+	}
 
-  private showAboutMe(): void {
-    // Create About Me window completely independently of the normal window system
-    const windowContainer = document.getElementById('window-container')!;
-    
-  const aboutElement = document.createElement('div');
-  // Absolute so it anchors to the inner bordered container
-  aboutElement.className = 'terminal-window portal-blue about-window transition-all duration-300 ease-in-out';
-    aboutElement.id = 'about-me-window';
-    
-  // Apply consistent positioning and sizing to match ASCII art (relative to container)
-  aboutElement.style.position = 'absolute';
-  aboutElement.style.bottom = '20px';
-  aboutElement.style.right = '20px';
-  aboutElement.style.width = 'calc((100% - 60px) / 2)';
-  aboutElement.style.minWidth = '280px';
-  aboutElement.style.maxWidth = '600px';
-    aboutElement.style.height = '200px';
-    aboutElement.style.zIndex = '100'; // High z-index but separate from content windows
+	private closeNonFixedWindows(): void {
+		// Close all content windows (About Me is separate and not affected)
+		this.windows.forEach((_, windowId) => {
+			this.closeWindow(windowId);
+		});
 
-    aboutElement.innerHTML = `
+		// Update ASCII window when content windows are closed
+		this.currentContentWindow = null;
+		this.updateAsciiWindow();
+	}
+
+	public toggleAboutMe(): void {
+		if (this.aboutMeWindow) {
+			// About Me exists, toggle its visibility
+			if (this.aboutMeWindow.style.display === "none") {
+				this.aboutMeWindow.style.display = "block";
+				this.bringAboutMeToFront();
+			} else {
+				this.aboutMeWindow.style.display = "none";
+			}
+			// Update ASCII art when About Me visibility changes
+			this.updateAsciiWindow();
+		} else {
+			// About Me doesn't exist, create it
+			this.showAboutMe();
+		}
+	}
+
+	private showAboutMe(): void {
+		// Create About Me window completely independently of the normal window system
+		const windowContainer = document.getElementById("window-container")!;
+
+		const aboutElement = document.createElement("div");
+		// Absolute so it anchors to the inner bordered container
+		aboutElement.className =
+			"terminal-window about-window transition-all duration-300 ease-in-out";
+		aboutElement.id = "about-me-window";
+
+		// Apply consistent positioning and sizing to match ASCII art (relative to container)
+		aboutElement.style.position = "absolute";
+		aboutElement.style.bottom = "20px";
+		aboutElement.style.right = "20px";
+		aboutElement.style.width = "calc((100% - 60px) / 2)";
+		aboutElement.style.minWidth = "280px";
+		aboutElement.style.maxWidth = "600px";
+		aboutElement.style.height = "200px";
+		aboutElement.style.zIndex = "100"; // High z-index but separate from content windows
+
+		aboutElement.innerHTML = `
       <div class="window-titlebar">
         <div class="window-controls">
           <div class="window-control close" data-action="close"></div>
@@ -360,180 +368,191 @@ class WindowManager {
       </div>
     `;
 
-    // Add window controls event listeners for About Me
-    this.setupAboutMeControls(aboutElement);
+		// Add window controls event listeners for About Me
+		this.setupAboutMeControls(aboutElement);
 
-    // Add enter animation
-    aboutElement.classList.add('window-enter');
-    setTimeout(() => aboutElement.classList.remove('window-enter'), 400);
+		// Add enter animation
+		aboutElement.classList.add("window-enter");
+		setTimeout(() => aboutElement.classList.remove("window-enter"), 400);
 
-    windowContainer.appendChild(aboutElement);
-    this.aboutMeWindow = aboutElement; // Store separately from main windows
-    
-    // Update ASCII art now that About Me is visible
-    this.updateAsciiWindow();
-  }
+		windowContainer.appendChild(aboutElement);
+		this.aboutMeWindow = aboutElement; // Store separately from main windows
 
-  private setupAboutMeControls(aboutElement: HTMLElement): void {
-    const controls = aboutElement.querySelectorAll('.window-control');
-    
-    controls.forEach(control => {
-      control.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const action = (control as HTMLElement).dataset.action;
-        
-        switch (action) {
-          case 'close':
-            this.aboutMeWindow!.style.display = 'none';
-            this.updateAsciiWindow();
-            break;
-          case 'minimize':
-            // For About Me, minimize just hides it
-            this.aboutMeWindow!.style.display = 'none';
-            this.updateAsciiWindow();
-            break;
-          case 'maximize':
-            this.maximizeAboutMe();
-            break;
-        }
-      });
-    });
-  }
+		// Update ASCII art now that About Me is visible
+		this.updateAsciiWindow();
+	}
 
-  private maximizeAboutMe(): void {
-    if (!this.aboutMeWindow) return;
-    
-    const isCurrentlyMaximized = this.aboutMeWindow.dataset.maximized === 'true';
-    
-    if (isCurrentlyMaximized) {
-      // RESTORE: Return to normal size
-      this.aboutMeWindow.style.width = 'calc((100% - 60px) / 2)';
-      this.aboutMeWindow.style.minWidth = '280px';
-      this.aboutMeWindow.style.maxWidth = '600px';
-      this.aboutMeWindow.style.height = '200px';
-      this.aboutMeWindow.style.bottom = '20px';
-      this.aboutMeWindow.style.right = '20px';
-      this.aboutMeWindow.dataset.maximized = 'false';
-    } else {
-      // MAXIMIZE: Make larger while keeping same positioning approach as content windows
-      const container = document.getElementById('window-container');
-      const rect = container ? container.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight } as DOMRect;
-      const baseWidth = 600; // previous max width
-      const baseHeight = 200;
-      const newWidth = Math.floor(baseWidth * 1.3);
-      const newHeight = Math.floor(baseHeight * 1.3);
+	private setupAboutMeControls(aboutElement: HTMLElement): void {
+		const controls = aboutElement.querySelectorAll(".window-control");
 
-      // Keep 60px total inner margin (20px on each side plus 20px between boxes)
-      const maxWidth = Math.max(0, rect.width - 60);
-      const maxHeight = Math.max(0, rect.height - 60);
+		controls.forEach((control) => {
+			control.addEventListener("click", (e) => {
+				e.stopPropagation();
+				const action = (control as HTMLElement).dataset.action;
 
-      const finalWidth = Math.min(newWidth, maxWidth);
-      const finalHeight = Math.min(newHeight, maxHeight);
+				switch (action) {
+					case "close":
+						this.aboutMeWindow!.style.display = "none";
+						this.updateAsciiWindow();
+						break;
+					case "minimize":
+						// For About Me, minimize just hides it
+						this.aboutMeWindow!.style.display = "none";
+						this.updateAsciiWindow();
+						break;
+					case "maximize":
+						this.maximizeAboutMe();
+						break;
+				}
+			});
+		});
+	}
 
-      this.aboutMeWindow.style.width = `${finalWidth}px`;
-      this.aboutMeWindow.style.minWidth = '';
-      this.aboutMeWindow.style.maxWidth = '';
-      this.aboutMeWindow.style.height = `${finalHeight}px`;
-      this.aboutMeWindow.style.bottom = '20px';
-      this.aboutMeWindow.style.right = '20px';
-      this.aboutMeWindow.dataset.maximized = 'true';
-    }
-  }
+	private maximizeAboutMe(): void {
+		if (!this.aboutMeWindow) return;
 
-  private bringAboutMeToFront(): void {
-    if (this.aboutMeWindow) {
-      this.aboutMeWindow.style.zIndex = '100';
-    }
-  }
+		const isCurrentlyMaximized =
+			this.aboutMeWindow.dataset.maximized === "true";
 
-  private getWindowConfig(windowId: string): WindowConfig | null {
-    // Check if we're on mobile
-    const isMobile = window.innerWidth <= 768;
-    
-    // Responsive dimensions
-    const standardWidth = isMobile ? Math.min(window.innerWidth - 20, 500) : 650;
-    const standardHeight = isMobile ? Math.min(window.innerHeight - 20, 600) : 500;
-    
-    const configs: Record<string, WindowConfig> = {
-      research: {
-        id: 'research',
-        title: 'Research Projects',
-        content: this.getResearchContent(),
-        width: standardWidth,
-        height: standardHeight,
-        theme: 'portal-orange'
-      },
-      projects: {
-        id: 'projects',
-        title: 'Development Projects',
-        content: this.getProjectsContent(),
-        width: standardWidth,
-        height: standardHeight,
-        theme: 'default'
-      },
-      experience: {
-        id: 'experience',
-        title: 'Work Experience',
-        content: this.getExperienceContent(),
-        width: standardWidth,
-        height: standardHeight,
-        theme: 'portal-blue'
-      },
-      contact: {
-        id: 'contact',
-        title: 'Contact Information',
-        content: this.getContactContent(),
-        width: standardWidth,
-        height: standardHeight,
-        theme: 'portal-orange'
-      }
-    };
+		if (isCurrentlyMaximized) {
+			// RESTORE: Return to normal size
+			this.aboutMeWindow.style.width = "calc((100% - 60px) / 2)";
+			this.aboutMeWindow.style.minWidth = "280px";
+			this.aboutMeWindow.style.maxWidth = "600px";
+			this.aboutMeWindow.style.height = "200px";
+			this.aboutMeWindow.style.bottom = "20px";
+			this.aboutMeWindow.style.right = "20px";
+			this.aboutMeWindow.dataset.maximized = "false";
+		} else {
+			// MAXIMIZE: Make larger while keeping same positioning approach as content windows
+			const container = document.getElementById("window-container");
+			const rect = container
+				? container.getBoundingClientRect()
+				: ({ width: window.innerWidth, height: window.innerHeight } as DOMRect);
+			const baseWidth = 600; // previous max width
+			const baseHeight = 200;
+			const newWidth = Math.floor(baseWidth * 1.3);
+			const newHeight = Math.floor(baseHeight * 1.3);
 
-    return configs[windowId] || null;
-  }
+			// Keep 60px total inner margin (20px on each side plus 20px between boxes)
+			const maxWidth = Math.max(0, rect.width - 60);
+			const maxHeight = Math.max(0, rect.height - 60);
 
-  private createWindow(config: WindowConfig): void {
-    const windowContainer = document.getElementById('window-container')!;
-    const isMobile = window.innerWidth <= 768;
-    
-    const windowElement = document.createElement('div');
-    
-    // Base classes with Tailwind positioning - responsive design for content windows only
-    let baseClasses = `terminal-window transition-all duration-300 ease-in-out ${config.theme || 'default'}`;
-    
-    if (isMobile) {
-      // Mobile content windows - top positioning
-      baseClasses += ' fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[calc(100%-20px)] max-w-[500px] h-[50vh] max-h-[400px]';
-    } else {
-      // Desktop content windows - center positioning
-      baseClasses += ' fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
-    }
-    
-    windowElement.className = baseClasses;
-    windowElement.id = `window-${config.id}`;
+			const finalWidth = Math.min(newWidth, maxWidth);
+			const finalHeight = Math.min(newHeight, maxHeight);
 
-    // Set responsive dimensions
-    if (isMobile) {
-      // Mobile dimensions are handled by Tailwind classes above
-    } else {
-      // Desktop dimensions
-      if (config.width) windowElement.style.width = `${config.width}px`;
-      if (config.height) windowElement.style.height = `${config.height}px`;
-      
-      // Check shared maximization state for all content windows
-      if (this.isContentWindowMaximized && !isMobile) {
-        // Start maximized
-        this.applyMaximizedState(windowElement, config);
-        windowElement.dataset.maximized = 'true';
-      } else {
-        // Start normal
-        windowElement.dataset.maximized = 'false';
-      }
-    }
+			this.aboutMeWindow.style.width = `${finalWidth}px`;
+			this.aboutMeWindow.style.minWidth = "";
+			this.aboutMeWindow.style.maxWidth = "";
+			this.aboutMeWindow.style.height = `${finalHeight}px`;
+			this.aboutMeWindow.style.bottom = "20px";
+			this.aboutMeWindow.style.right = "20px";
+			this.aboutMeWindow.dataset.maximized = "true";
+		}
+	}
 
-    windowElement.style.zIndex = String(this.zIndexCounter++);
+	private bringAboutMeToFront(): void {
+		if (this.aboutMeWindow) {
+			this.aboutMeWindow.style.zIndex = "100";
+		}
+	}
 
-    windowElement.innerHTML = `
+	private getWindowConfig(windowId: string): WindowConfig | null {
+		// Check if we're on mobile
+		const isMobile = window.innerWidth <= 768;
+
+		// Responsive dimensions
+		const standardWidth = isMobile
+			? Math.min(window.innerWidth - 20, 500)
+			: 650;
+		const standardHeight = isMobile
+			? Math.min(window.innerHeight - 20, 600)
+			: 500;
+
+		const configs: Record<string, WindowConfig> = {
+			research: {
+				id: "research",
+				title: "Research Projects",
+				content: this.getResearchContent(),
+				width: standardWidth,
+				height: standardHeight,
+				theme: "default",
+			},
+			projects: {
+				id: "projects",
+				title: "Development Projects",
+				content: this.getProjectsContent(),
+				width: standardWidth,
+				height: standardHeight,
+				theme: "default",
+			},
+			experience: {
+				id: "experience",
+				title: "Work Experience",
+				content: this.getExperienceContent(),
+				width: standardWidth,
+				height: standardHeight,
+				theme: "default",
+			},
+			contact: {
+				id: "contact",
+				title: "Contact Information",
+				content: this.getContactContent(),
+				width: standardWidth,
+				height: standardHeight,
+				theme: "default",
+			},
+		};
+
+		return configs[windowId] || null;
+	}
+
+	private createWindow(config: WindowConfig): void {
+		const windowContainer = document.getElementById("window-container")!;
+		const isMobile = window.innerWidth <= 768;
+
+		const windowElement = document.createElement("div");
+
+		// Base classes with Tailwind positioning - responsive design for content windows only
+		let baseClasses = `terminal-window transition-all duration-300 ease-in-out ${
+			config.theme || "default"
+		}`;
+
+		if (isMobile) {
+			// Mobile content windows - top positioning
+			baseClasses +=
+				" fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[calc(100%-20px)] max-w-[500px] h-[50vh] max-h-[400px]";
+		} else {
+			// Desktop content windows - center positioning
+			baseClasses +=
+				" fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2";
+		}
+
+		windowElement.className = baseClasses;
+		windowElement.id = `window-${config.id}`;
+
+		// Set responsive dimensions
+		if (isMobile) {
+			// Mobile dimensions are handled by Tailwind classes above
+		} else {
+			// Desktop dimensions
+			if (config.width) windowElement.style.width = `${config.width}px`;
+			if (config.height) windowElement.style.height = `${config.height}px`;
+
+			// Check shared maximization state for all content windows
+			if (this.isContentWindowMaximized && !isMobile) {
+				// Start maximized
+				this.applyMaximizedState(windowElement, config);
+				windowElement.dataset.maximized = "true";
+			} else {
+				// Start normal
+				windowElement.dataset.maximized = "false";
+			}
+		}
+
+		windowElement.style.zIndex = String(this.zIndexCounter++);
+
+		windowElement.innerHTML = `
       <div class="window-titlebar">
         <div class="window-controls">
           <div class="window-control close" data-action="close"></div>
@@ -547,158 +566,162 @@ class WindowManager {
       </div>
     `;
 
-    // Add window controls event listeners
-    this.setupWindowControls(windowElement, config.id);
+		// Add window controls event listeners
+		this.setupWindowControls(windowElement, config.id);
 
-    // Add enter animation
-    windowElement.classList.add('window-enter');
-    setTimeout(() => windowElement.classList.remove('window-enter'), 400);
+		// Add enter animation
+		windowElement.classList.add("window-enter");
+		setTimeout(() => windowElement.classList.remove("window-enter"), 400);
 
-    windowContainer.appendChild(windowElement);
-    this.windows.set(config.id, windowElement);
+		windowContainer.appendChild(windowElement);
+		this.windows.set(config.id, windowElement);
 
-    // Focus the window
-    windowElement.addEventListener('mousedown', () => {
-      this.bringToFront(config.id);
-    });
-  }
+		// Focus the window
+		windowElement.addEventListener("mousedown", () => {
+			this.bringToFront(config.id);
+		});
+	}
 
-  private setupWindowControls(windowElement: HTMLElement, windowId: string): void {
-    const controls = windowElement.querySelectorAll('.window-control');
-    
-    controls.forEach(control => {
-      control.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const action = (control as HTMLElement).dataset.action;
-        
-        switch (action) {
-          case 'close':
-            this.closeWindow(windowId);
-            break;
-          case 'minimize':
-            this.minimizeWindow(windowId);
-            break;
-          case 'maximize':
-            this.maximizeWindow(windowId);
-            break;
-        }
-      });
-    });
-  }
+	private setupWindowControls(
+		windowElement: HTMLElement,
+		windowId: string
+	): void {
+		const controls = windowElement.querySelectorAll(".window-control");
 
-  private bringToFront(windowId: string): void {
-    const windowElement = this.windows.get(windowId);
-    if (windowElement) {
-      windowElement.style.zIndex = String(this.zIndexCounter++);
-    }
-  }
+		controls.forEach((control) => {
+			control.addEventListener("click", (e) => {
+				e.stopPropagation();
+				const action = (control as HTMLElement).dataset.action;
 
-  private closeWindow(windowId: string): void {
-    const windowElement = this.windows.get(windowId);
-    if (windowElement) {
-      windowElement.classList.add('window-exit');
-      setTimeout(() => {
-        windowElement.remove();
-        this.windows.delete(windowId);
-        
-        // Update ASCII window when a content window is closed
-        if (windowId === this.currentContentWindow) {
-          this.currentContentWindow = null;
-          this.updateAsciiWindow();
-        }
-      }, 300);
-    }
-  }
+				switch (action) {
+					case "close":
+						this.closeWindow(windowId);
+						break;
+					case "minimize":
+						this.minimizeWindow(windowId);
+						break;
+					case "maximize":
+						this.maximizeWindow(windowId);
+						break;
+				}
+			});
+		});
+	}
 
-  private minimizeWindow(windowId: string): void {
-    // For this demo, minimize will just close the window
-    this.closeWindow(windowId);
-  }
+	private bringToFront(windowId: string): void {
+		const windowElement = this.windows.get(windowId);
+		if (windowElement) {
+			windowElement.style.zIndex = String(this.zIndexCounter++);
+		}
+	}
 
-  private maximizeWindow(windowId: string): void {
-    const windowElement = this.windows.get(windowId);
-    const isMobile = window.innerWidth <= 768;
-    
-    // Don't maximize on mobile (About Me is separate and not in this system)
-    if (windowElement && !isMobile) {
-      const isCurrentlyMaximized = windowElement.dataset.maximized === 'true';
-      
-      if (isCurrentlyMaximized) {
-        // RESTORE: Window is currently maximized, restore to normal size
-        const originalState = this.originalWindowStates.get(windowId);
-        if (originalState) {
-          windowElement.style.width = originalState.width;
-          windowElement.style.height = originalState.height;
-          // Remove maximized z-index boost
-          windowElement.classList.remove('z-20');
-        }
-        
-        // Update window state to non-maximized
-        windowElement.dataset.maximized = 'false';
-        
-        // Update shared state: ALL content windows should now open in normal size
-        this.isContentWindowMaximized = false;
-        
-      } else {
-        // MAXIMIZE: Window is currently normal, maximize it
-        
-        // Store current state before maximizing for restoration
-        this.originalWindowStates.set(windowId, {
-          width: windowElement.style.width,
-          height: windowElement.style.height,
-          left: windowElement.style.left,
-          top: windowElement.style.top
-        });
-        
-        // Apply maximized dimensions (Tailwind handles centering)
-        this.applyMaximizedState(windowElement);
-        
-        // Update window state to maximized
-        windowElement.dataset.maximized = 'true';
-        
-        // Update shared state: ALL content windows should now open maximized
-        this.isContentWindowMaximized = true;
-        
-      }
-    }
-  }
+	private closeWindow(windowId: string): void {
+		const windowElement = this.windows.get(windowId);
+		if (windowElement) {
+			windowElement.classList.add("window-exit");
+			setTimeout(() => {
+				windowElement.remove();
+				this.windows.delete(windowId);
 
-  private applyMaximizedState(windowElement: HTMLElement, config?: WindowConfig): void {
-    const isMobile = window.innerWidth <= 768;
-    
-    if (isMobile) {
-      // On mobile, maximization is handled by CSS
-      return;
-    }
-    
-    // Desktop maximization: Just make window larger, Tailwind handles centering
-    const standardWidth = config?.width || 650;
-    const standardHeight = config?.height || 500;
-    
-    const newWidth = Math.floor(standardWidth * 1.3);
-    const newHeight = Math.floor(standardHeight * 1.3);
-    
-    // Ensure the enlarged window fits within the viewport with some padding
-    const maxWidth = window.innerWidth - 80;
-    const maxHeight = window.innerHeight - 80;
-    
-    const finalWidth = Math.min(newWidth, maxWidth);
-    const finalHeight = Math.min(newHeight, maxHeight);
-    
-    // Just set dimensions - Tailwind classes handle positioning
-    windowElement.style.width = `${finalWidth}px`;
-    windowElement.style.height = `${finalHeight}px`;
-    
-    // Add z-index boost for maximized windows
-    windowElement.classList.add('z-20');
-  }
+				// Update ASCII window when a content window is closed
+				if (windowId === this.currentContentWindow) {
+					this.currentContentWindow = null;
+					this.updateAsciiWindow();
+				}
+			}, 300);
+		}
+	}
 
-  // ============================
-  // CONTENT METHODS
-  // ============================
+	private minimizeWindow(windowId: string): void {
+		// For this demo, minimize will just close the window
+		this.closeWindow(windowId);
+	}
 
-  private getResearchContent(): string {
-    return `
+	private maximizeWindow(windowId: string): void {
+		const windowElement = this.windows.get(windowId);
+		const isMobile = window.innerWidth <= 768;
+
+		// Don't maximize on mobile (About Me is separate and not in this system)
+		if (windowElement && !isMobile) {
+			const isCurrentlyMaximized = windowElement.dataset.maximized === "true";
+
+			if (isCurrentlyMaximized) {
+				// RESTORE: Window is currently maximized, restore to normal size
+				const originalState = this.originalWindowStates.get(windowId);
+				if (originalState) {
+					windowElement.style.width = originalState.width;
+					windowElement.style.height = originalState.height;
+					// Remove maximized z-index boost
+					windowElement.classList.remove("z-20");
+				}
+
+				// Update window state to non-maximized
+				windowElement.dataset.maximized = "false";
+
+				// Update shared state: ALL content windows should now open in normal size
+				this.isContentWindowMaximized = false;
+			} else {
+				// MAXIMIZE: Window is currently normal, maximize it
+
+				// Store current state before maximizing for restoration
+				this.originalWindowStates.set(windowId, {
+					width: windowElement.style.width,
+					height: windowElement.style.height,
+					left: windowElement.style.left,
+					top: windowElement.style.top,
+				});
+
+				// Apply maximized dimensions (Tailwind handles centering)
+				this.applyMaximizedState(windowElement);
+
+				// Update window state to maximized
+				windowElement.dataset.maximized = "true";
+
+				// Update shared state: ALL content windows should now open maximized
+				this.isContentWindowMaximized = true;
+			}
+		}
+	}
+
+	private applyMaximizedState(
+		windowElement: HTMLElement,
+		config?: WindowConfig
+	): void {
+		const isMobile = window.innerWidth <= 768;
+
+		if (isMobile) {
+			// On mobile, maximization is handled by CSS
+			return;
+		}
+
+		// Desktop maximization: Just make window larger, Tailwind handles centering
+		const standardWidth = config?.width || 650;
+		const standardHeight = config?.height || 500;
+
+		const newWidth = Math.floor(standardWidth * 1.3);
+		const newHeight = Math.floor(standardHeight * 1.3);
+
+		// Ensure the enlarged window fits within the viewport with some padding
+		const maxWidth = window.innerWidth - 80;
+		const maxHeight = window.innerHeight - 80;
+
+		const finalWidth = Math.min(newWidth, maxWidth);
+		const finalHeight = Math.min(newHeight, maxHeight);
+
+		// Just set dimensions - Tailwind classes handle positioning
+		windowElement.style.width = `${finalWidth}px`;
+		windowElement.style.height = `${finalHeight}px`;
+
+		// Add z-index boost for maximized windows
+		windowElement.classList.add("z-20");
+	}
+
+	// ============================
+	// CONTENT METHODS
+	// ============================
+
+	private getResearchContent(): string {
+		return `
       <div class="terminal-text">
         <h1>$ ls research/</h1>
         
@@ -722,10 +745,10 @@ class WindowManager {
         </ul>
       </div>
     `;
-  }
+	}
 
-  private getProjectsContent(): string {
-    return `
+	private getProjectsContent(): string {
+		return `
       <div class="terminal-text">
         <h1>$ ls projects/</h1>
         
@@ -756,10 +779,10 @@ class WindowManager {
         <p><a href="https://github.com/darrollsaddi" target="_blank">View all projects on GitHub →</a></p>
       </div>
     `;
-  }
+	}
 
-  private getExperienceContent(): string {
-    return `
+	private getExperienceContent(): string {
+		return `
       <div class="terminal-text">
         <h1>$ cat experience.log</h1>
         
@@ -809,10 +832,10 @@ class WindowManager {
         </ul>
       </div>
     `;
-  }
+	}
 
-  private getContactContent(): string {
-    return `
+	private getContactContent(): string {
+		return `
       <div class="terminal-text">
         <h1>$ contact --info</h1>
         
@@ -832,7 +855,7 @@ class WindowManager {
         <p><strong>Website:</strong> <a href="https://darrollsaddi.github.io/portfolio" target="_blank">darrollsaddi.github.io/portfolio</a></p>
         <p><strong>Resume:</strong> <a href="/resume.pdf" target="_blank">Download PDF</a></p>
         
-        <div style="margin-top: 20px; padding: 10px; border: 1px solid var(--portal-blue); border-radius: 4px; background: rgba(0, 153, 255, 0.1);">
+  <div style="margin-top: 20px; padding: 10px; border: 1px solid var(--terminal-teal); border-radius: 4px; background: rgba(79, 174, 155, 0.1);">
           <h3>Looking for opportunities in:</h3>
           <ul>
             <li>Machine Learning Engineering</li>
@@ -843,308 +866,342 @@ class WindowManager {
         </div>
       </div>
     `;
-  }
+	}
 
-  // ============================
-  // ASCII WINDOW SYSTEM
-  // ============================
+	// ============================
+	// ASCII WINDOW SYSTEM
+	// ============================
 
-  private createAsciiWindow(): void {
-    const asciiWindow = document.createElement('div');
-    asciiWindow.className = 'ascii-window';
-    asciiWindow.id = 'ascii-window';
-    
-    asciiWindow.innerHTML = `
+	private createAsciiWindow(): void {
+		const asciiWindow = document.createElement("div");
+		asciiWindow.className = "ascii-window";
+		asciiWindow.id = "ascii-window";
+
+		asciiWindow.innerHTML = `
       <div class="ascii-content ascii-content-enter">
         <pre class="ascii-art"></pre>
       </div>
     `;
 
-    // Anchor inside window-container so padding is relative to inner border
-    const container = document.getElementById('window-container');
-    if (container) {
-      container.appendChild(asciiWindow);
-    } else {
-      document.body.appendChild(asciiWindow);
-    }
-    this.asciiWindow = asciiWindow;
-    this.updateAsciiWindow();
-  }
+		// Anchor inside window-container so padding is relative to inner border
+		const container = document.getElementById("window-container");
+		if (container) {
+			container.appendChild(asciiWindow);
+		} else {
+			document.body.appendChild(asciiWindow);
+		}
+		this.asciiWindow = asciiWindow;
+		this.updateAsciiWindow();
+	}
 
-  private getAsciiArt(windowId: string | null): string {
-    return asciiArts[windowId || 'research'] || defaultAscii;
-  }
+	private getAsciiArt(windowId: string | null): string {
+		return asciiArts[windowId || "research"] || defaultAscii;
+	}
 
-  private updateAsciiWindow(): void {
-    if (!this.asciiWindow) return;
+	private updateAsciiWindow(): void {
+		if (!this.asciiWindow) return;
 
-    // ASCII art should show when:
-    // 1. Content windows are open (priority), OR
-    // 2. About Me is visible and no content windows are open
-    const hasContentWindow = this.currentContentWindow !== null;
-    const aboutMeVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== 'none');
-    const shouldShow = (hasContentWindow || aboutMeVisible) && window.innerWidth > 768;
-    
-    if (!shouldShow) {
-      this.asciiWindow.style.display = 'none';
-      return;
-    }
+		// ASCII art should show when:
+		// 1. Content windows are open (priority), OR
+		// 2. About Me is visible and no content windows are open
+		const hasContentWindow = this.currentContentWindow !== null;
+		const aboutMeVisible = !!(
+			this.aboutMeWindow && this.aboutMeWindow.style.display !== "none"
+		);
+		const shouldShow =
+			(hasContentWindow || aboutMeVisible) && window.innerWidth > 768;
 
-    this.asciiWindow.style.display = 'block';
-    
-    // Content windows take priority over About Me for ASCII art
-    const activeWindowId = this.currentContentWindow || 'about-me';
-    const asciiArt = this.getAsciiArt(activeWindowId);
+		if (!shouldShow) {
+			this.asciiWindow.style.display = "none";
+			return;
+		}
 
-    // Adjust line-height specifically when About Me drives the ASCII preview
-    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement | null;
-    if (asciiElement) {
-      asciiElement.style.lineHeight = activeWindowId === 'about-me' ? '1.0' : '';
-    }
+		this.asciiWindow.style.display = "block";
 
-    // On resize, currentDisplayedText may already equal target; typeAsciiArt handles no-op
-    this.typeAsciiArt(asciiArt);
-  }
-  
-  private calculateOptimalFontSize(asciiContent: string): number {
-    if (!this.asciiWindow) return 10;
-    const rect = this.asciiWindow.getBoundingClientRect();
-    const containerWidth = Math.max(0, rect.width - 32);
-    const containerHeight = Math.max(0, rect.height - 32);
-    
-    // Parse ASCII content to get dimensions
-    const lines = asciiContent.trim().split('\n');
-    const maxLineLength = Math.max(...lines.map(line => line.length));
-    const lineCount = lines.length;
-    
-    // Calculate font size based on container constraints
-    // Character width ratio is approximately 0.6 for monospace fonts
-    // Line height ratio is approximately 1.2 for readable spacing
-    const fontSizeByWidth = Math.floor(containerWidth / (maxLineLength * 0.6));
-    const fontSizeByHeight = Math.floor(containerHeight / (lineCount * 1.2));
-    
-    // Use the smaller constraint to ensure everything fits
-    const calculatedSize = Math.min(fontSizeByWidth, fontSizeByHeight);
-    
-    // Clamp between reasonable bounds (4px minimum, 14px maximum)
-    return Math.max(4, Math.min(14, calculatedSize));
-  }
+		// Content windows take priority over About Me for ASCII art
+		const activeWindowId = this.currentContentWindow || "about-me";
+		const asciiArt = this.getAsciiArt(activeWindowId);
 
-  private typeAsciiArt(text: string): void {
-    if (!this.asciiWindow) return;
-    
-    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
-    if (!asciiElement) return;
+		// Adjust line-height specifically when About Me drives the ASCII preview
+		const asciiElement = this.asciiWindow.querySelector(
+			".ascii-art"
+		) as HTMLElement | null;
+		if (asciiElement) {
+			asciiElement.style.lineHeight =
+				activeWindowId === "about-me" ? "1.0" : "";
+		}
 
-    // IMMEDIATE INTERRUPTION: Stop any running animations
-    if (this.animationFrameId) {
-      cancelAnimationFrame(this.animationFrameId);
-      this.animationFrameId = null;
-    }
+		// On resize, currentDisplayedText may already equal target; typeAsciiArt handles no-op
+		this.typeAsciiArt(asciiArt);
+	}
 
-    this.targetText = text;
-    this.currentDisplayedText = asciiElement.textContent || '';
-    
-    // If target is same as current, do nothing
-    if (this.currentDisplayedText.trim() === this.targetText.trim()) {
-      return;
-    }
+	private calculateOptimalFontSize(asciiContent: string): number {
+		if (!this.asciiWindow) return 10;
+		const rect = this.asciiWindow.getBoundingClientRect();
+		const containerWidth = Math.max(0, rect.width - 32);
+		const containerHeight = Math.max(0, rect.height - 32);
 
-    // OPTIMIZED: Find common prefix to avoid unnecessary deletion/retyping
-    const commonPrefixLength = this.findCommonPrefix(this.currentDisplayedText, this.targetText);
-    
-    if (commonPrefixLength > 0) {
-      // Keep the common part, only delete/retype the different part
-      const currentSuffix = this.currentDisplayedText.substring(commonPrefixLength);
-      
-      if (currentSuffix.length > 0) {
-        // Need to delete the different suffix first
-        this.startOptimizedDeletionFrom(commonPrefixLength);
-      } else {
-        // No deletion needed, just add the new suffix
-        this.currentDisplayedText = this.currentDisplayedText.substring(0, commonPrefixLength);
-        this.startOptimizedTypingFrom(commonPrefixLength);
-      }
-    } else {
-      // No common prefix, use original logic
-      if (this.currentDisplayedText.length > 0) {
-        this.startOptimizedDeletion();
-      } else {
-        this.startOptimizedTyping();
-      }
-    }
-  }
+		// Parse ASCII content to get dimensions
+		const lines = asciiContent.trim().split("\n");
+		const maxLineLength = Math.max(...lines.map((line) => line.length));
+		const lineCount = lines.length;
 
-  private findCommonPrefix(str1: string, str2: string): number {
-    let i = 0;
-    const minLength = Math.min(str1.length, str2.length);
-    
-    while (i < minLength && str1[i] === str2[i]) {
-      i++;
-    }
-    
-    return i;
-  }
+		// Calculate font size based on container constraints
+		// Character width ratio is approximately 0.6 for monospace fonts
+		// Line height ratio is approximately 1.2 for readable spacing
+		const fontSizeByWidth = Math.floor(containerWidth / (maxLineLength * 0.6));
+		const fontSizeByHeight = Math.floor(containerHeight / (lineCount * 1.2));
 
-  private startOptimizedDeletionFrom(keepLength: number): void {
-    if (!this.asciiWindow) return;
-    
-    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
-    if (!asciiElement) return;
+		// Use the smaller constraint to ensure everything fits
+		const calculatedSize = Math.min(fontSizeByWidth, fontSizeByHeight);
 
-    this.lastAnimationTime = performance.now();
-    
-    const totalLength = this.currentDisplayedText.length;
-    const deleteLength = totalLength - keepLength;
-    
-    if (deleteLength <= 0) {
-      // Nothing to delete, start typing
-      this.startOptimizedTypingFrom(keepLength);
-      return;
-    }
-    
-    const totalDuration = Math.min(300, deleteLength * 5); // Faster for smaller deletions
-    let currentLength = totalLength;
+		// Clamp between reasonable bounds (4px minimum, 14px maximum)
+		return Math.max(4, Math.min(14, calculatedSize));
+	}
 
-    const deleteFrame = (currentTime: number) => {
-      const elapsed = currentTime - this.lastAnimationTime;
-      const progress = Math.min(elapsed / totalDuration, 1);
-      
-      if (progress >= 1) {
-        // Deletion complete
-        this.currentDisplayedText = this.currentDisplayedText.substring(0, keepLength);
-        asciiElement.textContent = this.currentDisplayedText;
-        this.startOptimizedTypingFrom(keepLength);
-        return;
-      }
+	private typeAsciiArt(text: string): void {
+		if (!this.asciiWindow) return;
 
-      // Delete characters progressively
-      const targetLength = totalLength - Math.floor(progress * deleteLength);
-      if (targetLength !== currentLength) {
-        currentLength = targetLength;
-        this.currentDisplayedText = this.currentDisplayedText.substring(0, currentLength);
-        asciiElement.textContent = this.currentDisplayedText;
-      }
+		const asciiElement = this.asciiWindow.querySelector(
+			".ascii-art"
+		) as HTMLElement;
+		if (!asciiElement) return;
 
-      this.animationFrameId = requestAnimationFrame(deleteFrame);
-    };
+		// IMMEDIATE INTERRUPTION: Stop any running animations
+		if (this.animationFrameId) {
+			cancelAnimationFrame(this.animationFrameId);
+			this.animationFrameId = null;
+		}
 
-    this.animationFrameId = requestAnimationFrame(deleteFrame);
-  }
+		this.targetText = text;
+		this.currentDisplayedText = asciiElement.textContent || "";
 
-  private startOptimizedTypingFrom(startIndex: number): void {
-    if (!this.asciiWindow) return;
-    
-    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
-    if (!asciiElement) return;
+		// If target is same as current, do nothing
+		if (this.currentDisplayedText.trim() === this.targetText.trim()) {
+			return;
+		}
 
-    // Apply optimal font size right as typing begins to avoid flash
-    const optimalFontSize = this.calculateOptimalFontSize(this.targetText);
-    asciiElement.style.fontSize = `${optimalFontSize}px`;
+		// OPTIMIZED: Find common prefix to avoid unnecessary deletion/retyping
+		const commonPrefixLength = this.findCommonPrefix(
+			this.currentDisplayedText,
+			this.targetText
+		);
 
-    this.lastAnimationTime = performance.now();
-    
-    const remainingText = this.targetText.substring(startIndex);
-    const totalDuration = Math.min(1000, remainingText.length * 15); // Adaptive speed
-    let currentIndex = startIndex;
+		if (commonPrefixLength > 0) {
+			// Keep the common part, only delete/retype the different part
+			const currentSuffix =
+				this.currentDisplayedText.substring(commonPrefixLength);
 
-    const typeFrame = (currentTime: number) => {
-      const elapsed = currentTime - this.lastAnimationTime;
-      const progress = Math.min(elapsed / totalDuration, 1);
-      
-      if (progress >= 1) {
-        // Typing complete
-        this.currentDisplayedText = this.targetText;
-        asciiElement.textContent = this.targetText;
-        return;
-      }
+			if (currentSuffix.length > 0) {
+				// Need to delete the different suffix first
+				this.startOptimizedDeletionFrom(commonPrefixLength);
+			} else {
+				// No deletion needed, just add the new suffix
+				this.currentDisplayedText = this.currentDisplayedText.substring(
+					0,
+					commonPrefixLength
+				);
+				this.startOptimizedTypingFrom(commonPrefixLength);
+			}
+		} else {
+			// No common prefix, use original logic
+			if (this.currentDisplayedText.length > 0) {
+				this.startOptimizedDeletion();
+			} else {
+				this.startOptimizedTyping();
+			}
+		}
+	}
 
-      // Add characters progressively
-      const targetIndex = startIndex + Math.floor(progress * remainingText.length);
-      if (targetIndex !== currentIndex) {
-        currentIndex = targetIndex;
-        this.currentDisplayedText = this.targetText.substring(0, currentIndex);
-        asciiElement.textContent = this.currentDisplayedText;
-      }
+	private findCommonPrefix(str1: string, str2: string): number {
+		let i = 0;
+		const minLength = Math.min(str1.length, str2.length);
 
-      this.animationFrameId = requestAnimationFrame(typeFrame);
-    };
+		while (i < minLength && str1[i] === str2[i]) {
+			i++;
+		}
 
-    this.animationFrameId = requestAnimationFrame(typeFrame);
-  }
+		return i;
+	}
 
-  private startOptimizedDeletion(): void {
-    if (!this.asciiWindow) return;
-    
-    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
-    if (!asciiElement) return;
+	private startOptimizedDeletionFrom(keepLength: number): void {
+		if (!this.asciiWindow) return;
 
-    this.lastAnimationTime = performance.now();
-    
-    // Optimized deletion: fewer, larger chunks for better performance
-    const totalDuration = 300; // Slightly faster
-    const textLength = this.currentDisplayedText.length;
-    let currentLength = textLength;
+		const asciiElement = this.asciiWindow.querySelector(
+			".ascii-art"
+		) as HTMLElement;
+		if (!asciiElement) return;
 
-    const deleteFrame = (currentTime: number) => {
-      const elapsed = currentTime - this.lastAnimationTime;
-      const progress = Math.min(elapsed / totalDuration, 1);
-      
-      if (progress >= 1) {
-        // Deletion complete
-        this.currentDisplayedText = '';
-        asciiElement.textContent = '';
-        this.startOptimizedTyping();
-        return;
-      }
+		this.lastAnimationTime = performance.now();
 
-      // Calculate how much text to show based on progress (reverse progress for deletion)
-      const targetLength = Math.floor(textLength * (1 - progress));
-      if (targetLength !== currentLength) {
-        currentLength = targetLength;
-        this.currentDisplayedText = this.currentDisplayedText.substring(0, currentLength);
-        asciiElement.textContent = this.currentDisplayedText;
-      }
-      
-      this.animationFrameId = requestAnimationFrame(deleteFrame);
-    };
+		const totalLength = this.currentDisplayedText.length;
+		const deleteLength = totalLength - keepLength;
 
-    this.animationFrameId = requestAnimationFrame(deleteFrame);
-  }
+		if (deleteLength <= 0) {
+			// Nothing to delete, start typing
+			this.startOptimizedTypingFrom(keepLength);
+			return;
+		}
 
-  private startOptimizedTyping(): void {
-    // Delegate to the new optimized method starting from beginning
-    this.startOptimizedTypingFrom(0);
-  }
+		const totalDuration = Math.min(300, deleteLength * 5); // Faster for smaller deletions
+		let currentLength = totalLength;
+
+		const deleteFrame = (currentTime: number) => {
+			const elapsed = currentTime - this.lastAnimationTime;
+			const progress = Math.min(elapsed / totalDuration, 1);
+
+			if (progress >= 1) {
+				// Deletion complete
+				this.currentDisplayedText = this.currentDisplayedText.substring(
+					0,
+					keepLength
+				);
+				asciiElement.textContent = this.currentDisplayedText;
+				this.startOptimizedTypingFrom(keepLength);
+				return;
+			}
+
+			// Delete characters progressively
+			const targetLength = totalLength - Math.floor(progress * deleteLength);
+			if (targetLength !== currentLength) {
+				currentLength = targetLength;
+				this.currentDisplayedText = this.currentDisplayedText.substring(
+					0,
+					currentLength
+				);
+				asciiElement.textContent = this.currentDisplayedText;
+			}
+
+			this.animationFrameId = requestAnimationFrame(deleteFrame);
+		};
+
+		this.animationFrameId = requestAnimationFrame(deleteFrame);
+	}
+
+	private startOptimizedTypingFrom(startIndex: number): void {
+		if (!this.asciiWindow) return;
+
+		const asciiElement = this.asciiWindow.querySelector(
+			".ascii-art"
+		) as HTMLElement;
+		if (!asciiElement) return;
+
+		// Apply optimal font size right as typing begins to avoid flash
+		const optimalFontSize = this.calculateOptimalFontSize(this.targetText);
+		asciiElement.style.fontSize = `${optimalFontSize}px`;
+
+		this.lastAnimationTime = performance.now();
+
+		const remainingText = this.targetText.substring(startIndex);
+		const totalDuration = Math.min(1000, remainingText.length * 15); // Adaptive speed
+		let currentIndex = startIndex;
+
+		const typeFrame = (currentTime: number) => {
+			const elapsed = currentTime - this.lastAnimationTime;
+			const progress = Math.min(elapsed / totalDuration, 1);
+
+			if (progress >= 1) {
+				// Typing complete
+				this.currentDisplayedText = this.targetText;
+				asciiElement.textContent = this.targetText;
+				return;
+			}
+
+			// Add characters progressively
+			const targetIndex =
+				startIndex + Math.floor(progress * remainingText.length);
+			if (targetIndex !== currentIndex) {
+				currentIndex = targetIndex;
+				this.currentDisplayedText = this.targetText.substring(0, currentIndex);
+				asciiElement.textContent = this.currentDisplayedText;
+			}
+
+			this.animationFrameId = requestAnimationFrame(typeFrame);
+		};
+
+		this.animationFrameId = requestAnimationFrame(typeFrame);
+	}
+
+	private startOptimizedDeletion(): void {
+		if (!this.asciiWindow) return;
+
+		const asciiElement = this.asciiWindow.querySelector(
+			".ascii-art"
+		) as HTMLElement;
+		if (!asciiElement) return;
+
+		this.lastAnimationTime = performance.now();
+
+		// Optimized deletion: fewer, larger chunks for better performance
+		const totalDuration = 300; // Slightly faster
+		const textLength = this.currentDisplayedText.length;
+		let currentLength = textLength;
+
+		const deleteFrame = (currentTime: number) => {
+			const elapsed = currentTime - this.lastAnimationTime;
+			const progress = Math.min(elapsed / totalDuration, 1);
+
+			if (progress >= 1) {
+				// Deletion complete
+				this.currentDisplayedText = "";
+				asciiElement.textContent = "";
+				this.startOptimizedTyping();
+				return;
+			}
+
+			// Calculate how much text to show based on progress (reverse progress for deletion)
+			const targetLength = Math.floor(textLength * (1 - progress));
+			if (targetLength !== currentLength) {
+				currentLength = targetLength;
+				this.currentDisplayedText = this.currentDisplayedText.substring(
+					0,
+					currentLength
+				);
+				asciiElement.textContent = this.currentDisplayedText;
+			}
+
+			this.animationFrameId = requestAnimationFrame(deleteFrame);
+		};
+
+		this.animationFrameId = requestAnimationFrame(deleteFrame);
+	}
+
+	private startOptimizedTyping(): void {
+		// Delegate to the new optimized method starting from beginning
+		this.startOptimizedTypingFrom(0);
+	}
 }
 
 // ============================
 // APPLICATION INITIALIZATION
 // ============================
 
-document.addEventListener('DOMContentLoaded', () => {
-  const manager = new WindowManager();
-  (window as any).windowManager = manager;
-  
-  // Add some terminal-style loading text
-  if (import.meta && (import.meta as any).env && (import.meta as any).env.DEV) {
-    console.log('%c[TERMINAL] Portfolio Initialized', 'color: #FFA500; font-family: monospace;');
-  }
+document.addEventListener("DOMContentLoaded", () => {
+	const manager = new WindowManager();
+	(window as any).windowManager = manager;
+
+	// Add some terminal-style loading text
+	if (import.meta && (import.meta as any).env && (import.meta as any).env.DEV) {
+		console.log(
+			"%c[TERMINAL] Portfolio Initialized",
+			"color: #FFA500; font-family: monospace;"
+		);
+	}
 });
 
 // Add keyboard shortcuts
-document.addEventListener('keydown', (e) => {
-  // Alt + number keys to open windows quickly
-  if (e.altKey && !e.ctrlKey && !e.shiftKey) {
-    switch (e.key) {
-      case '1':
-        e.preventDefault();
-        const windowManager = (window as any).windowManager;
-        if (windowManager) windowManager.openWindow('research');
-        break;
-      // Reserved keys can be added later
-    }
-  }
+document.addEventListener("keydown", (e) => {
+	// Alt + number keys to open windows quickly
+	if (e.altKey && !e.ctrlKey && !e.shiftKey) {
+		switch (e.key) {
+			case "1":
+				e.preventDefault();
+				const windowManager = (window as any).windowManager;
+				if (windowManager) windowManager.openWindow("research");
+				break;
+			// Reserved keys can be added later
+		}
+	}
 });
 
 // Expose instance via window.windowManager (set on DOMContentLoaded)
