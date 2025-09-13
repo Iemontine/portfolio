@@ -1,41 +1,5 @@
 @import "tailwindcss";
 
-@theme {
-  --color-terminal-teal: #4fae9b;
-  --color-terminal-bg: #001a0f;
-  --color-terminal-border: #003d2b;
-  
-  --font-family-terminal: "MS UI Gothic", monospace;
-  
-  --spacing-7_5: 1.875rem;
-  --spacing-15: 3.75rem;
-  --spacing-25: 6.25rem;
-  --spacing-30: 7.5rem;
-  --spacing-70: 17.5rem;
-  --spacing-95: 23.75rem;
-  
-  --border-width-3: 3px;
-  
-
-  --animate-noise: noise 0.01s infinite linear;
-  --animate-scanlines: scanlines 0.1s linear infinite;
-  --animate-flicker: flicker 3s infinite alternate;
-  --animate-rotate: rotate 8s linear infinite;
-  --animate-counter-rotate: counter-rotate 4s linear infinite;
-}
-
-@keyframes noise {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  10% { transform: translate3d(-5%, -10%, 0); }
-  20% { transform: translate3d(-10%, 5%, 0); }
-  30% { transform: translate3d(5%, -25%, 0); }
-  40% { transform: translate3d(-5%, 25%, 0); }
-  50% { transform: translate3d(-10%, 10%, 0); }
-  60% { transform: translate3d(15%, 0%, 0); }
-  70% { transform: translate3d(0%, 15%, 0); }
-  80% { transform: translate3d(-15%, 10%, 0); }
-  90% { transform: translate3d(10%, 5%, 0); }
-}
 
 @keyframes flicker {
   0%, 100% { opacity: 1; }
@@ -75,6 +39,8 @@
   --terminal-teal-dark: #357a6e;
   --terminal-gray: #888888;
   --terminal-white: #F0F0F0;
+  --portal-blue: #0099FF;
+  --portal-orange: #FF6600;
   --glow-teal: 0 0 2px var(--terminal-teal); /* Reduced blur for performance */
   --glow-teal-bright: 0 0 2px var(--terminal-teal-bright); /* Reduced blur for performance */
   --window-glow: 0 0 2px var(--terminal-teal); /* Reduced blur for performance */
@@ -242,20 +208,29 @@ html::before {
   height: 300%;
   background-image: url('/noise-image.png');
   background-repeat: repeat;
-  background-size: 150px 150px;
-  opacity: 0.05;
+  background-size: 400px 400px;
+  opacity: 0.08;
   pointer-events: none;
   z-index: 990;
-  animation: noiseFloat 2s infinite linear;
+  animation: noiseFloat 1s infinite linear;
   will-change: transform;
   transform: translateZ(0); /* Force GPU acceleration */
 }
 
 @keyframes noiseFloat {
   0% { transform: translate3d(0, 0, 0); }
-  25% { transform: translate3d(-3%, -2%, 0); }
-  50% { transform: translate3d(-2%, 3%, 0); }
-  75% { transform: translate3d(2%, -3%, 0); }
+  8% { transform: translate3d(-1.5%, 2.3%, 0); }
+  17% { transform: translate3d(3.1%, -1.8%, 0); }
+  23% { transform: translate3d(-2.7%, -0.9%, 0); }
+  31% { transform: translate3d(1.2%, 3.4%, 0); }
+  39% { transform: translate3d(-3.8%, 0.7%, 0); }
+  47% { transform: translate3d(2.9%, -2.6%, 0); }
+  56% { transform: translate3d(-0.6%, 1.9%, 0); }
+  64% { transform: translate3d(3.5%, 0.3%, 0); }
+  73% { transform: translate3d(-1.9%, -3.1%, 0); }
+  81% { transform: translate3d(0.8%, 2.7%, 0); }
+  89% { transform: translate3d(-2.4%, -1.2%, 0); }
+  96% { transform: translate3d(1.6%, 0.5%, 0); }
   100% { transform: translate3d(0, 0, 0); }
 }
 
@@ -339,7 +314,6 @@ html::before {
    ============================ */
 
 .terminal-window {
-  position: absolute;
   background: rgba(0, 0, 0, 0.95); /* Increased opacity to compensate for removed blur */
   border: var(--standard-border-width) solid var(--terminal-teal);
   border-radius: 0;
@@ -358,12 +332,7 @@ html::before {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.terminal-window.portal-blue,
-.terminal-window.portal-orange,
-.terminal-window.default {
-  border-color: var(--terminal-teal);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* SIMPLIFIED FOR PERFORMANCE */
-}
+.terminal-window { border-color: var(--terminal-teal); box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
 
 .window-titlebar {
   height: 30px;
@@ -654,39 +623,11 @@ html::before {
   animation: counter-rotate 4s linear infinite;
 }
 
-/* ============================
-   ABOUT ME WINDOW (REPOSITIONED)
-   ============================ */
-
-.about-window {
-  position: fixed;
-  bottom: 40px;
-  right: 40px;
-  width: calc(60vw - 60px);
-  height: calc(60vh - 60px);
-  min-width: 700px;
-  min-height: 600px;
-  z-index: 300; /* High priority for info content */
-}
-
-.about-window .window-content {
-  font-size: 13px;
-  line-height: 1.4;
-}
-
-.about-window .terminal-text h1 {
-  font-size: 16px;
-  margin-bottom: 10px;
-}
-
-.about-window .terminal-text h2 {
-  font-size: 14px;
-  margin: 12px 0 6px 0;
-}
-
-.about-window .terminal-text p {
-  margin-bottom: 8px;
-}
+/* About window sizing/position handled in TS; keep content tweaks below */
+.about-window .window-content { font-size: 13px; line-height: 1.4; }
+.about-window .terminal-text h1 { font-size: 16px; margin-bottom: 10px; }
+.about-window .terminal-text h2 { font-size: 14px; margin: 12px 0 6px 0; }
+.about-window .terminal-text p { margin-bottom: 8px; }
 
 /* ============================
    ABOUT ME WINDOW CONTENT STYLING
@@ -931,17 +872,7 @@ html::before {
   }
   
   /* Increase touch targets for mobile accessibility */
-  .desktop-icon {
-    width: 90px;
-    height: 110px;
-    padding: 10px;
-    /* Enhanced touch targets */
-    min-width: 88px;
-    min-height: 88px;
-    /* Better touch feedback */
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: rgba(79, 174, 155, 0.2);
-  }
+  .desktop-icon { width: 90px; height: 110px; padding: 10px; min-width: 88px; min-height: 88px; touch-action: manipulation; -webkit-tap-highlight-color: rgba(79, 174, 155, 0.2); }
   
   .desktop-icon .icon {
     width: 50px;
@@ -953,10 +884,7 @@ html::before {
     line-height: 1.3;
   }
   
-  .desktop-icon:active {
-    transform: scale(0.95);
-    background: rgba(79, 174, 155, 0.1);
-  }
+  .desktop-icon:active { transform: scale(0.95); background: rgba(79, 174, 155, 0.1); }
   
   /* About Me window mobile optimization - BOTTOM HALF */
   .about-window {

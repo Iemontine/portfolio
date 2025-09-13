@@ -32,7 +32,6 @@ class WindowManager {
   private zIndexCounter: number = 400; // Start higher than static elements
   private currentContentWindow: string | null = null;
   private asciiWindow: HTMLElement | null = null;
-  private typingAnimation: number | null = null;
   
   // Advanced ASCII animation state management
   private currentDisplayedText: string = '';
@@ -524,12 +523,10 @@ class WindowManager {
       // Check shared maximization state for all content windows
       if (this.isContentWindowMaximized && !isMobile) {
         // Start maximized
-        console.log(`[WINDOW] ${config.id} opening in maximized state`);
         this.applyMaximizedState(windowElement, config);
         windowElement.dataset.maximized = 'true';
       } else {
         // Start normal
-        console.log(`[WINDOW] ${config.id} opening in normal state`);
         windowElement.dataset.maximized = 'false';
       }
     }
@@ -642,7 +639,6 @@ class WindowManager {
         // Update shared state: ALL content windows should now open in normal size
         this.isContentWindowMaximized = false;
         
-        console.log(`[WINDOW] ${windowId} restored to normal size`);
       } else {
         // MAXIMIZE: Window is currently normal, maximize it
         
@@ -663,7 +659,6 @@ class WindowManager {
         // Update shared state: ALL content windows should now open maximized
         this.isContentWindowMaximized = true;
         
-        console.log(`[WINDOW] ${windowId} maximized`);
       }
     }
   }
@@ -942,10 +937,6 @@ class WindowManager {
     if (!asciiElement) return;
 
     // IMMEDIATE INTERRUPTION: Stop any running animations
-    if (this.typingAnimation) {
-      clearTimeout(this.typingAnimation);
-      this.typingAnimation = null;
-    }
     if (this.animationFrameId) {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
@@ -1132,12 +1123,13 @@ class WindowManager {
 // ============================
 
 document.addEventListener('DOMContentLoaded', () => {
-  new WindowManager();
+  const manager = new WindowManager();
+  (window as any).windowManager = manager;
   
   // Add some terminal-style loading text
-  console.log('%c[TERMINAL] Portal 2 Portfolio System Initialized', 'color: #FFA500; font-family: monospace;');
-  console.log('%c[SYSTEM] Welcome to the Aperture Science Portfolio Interface', 'color: #00FF41; font-family: monospace;');
-  console.log('%c[GLaDOS] The cake is a lie, but this portfolio is real.', 'color: #FF6600; font-family: monospace;');
+  if (import.meta && (import.meta as any).env && (import.meta as any).env.DEV) {
+    console.log('%c[TERMINAL] Portfolio Initialized', 'color: #FFA500; font-family: monospace;');
+  }
 });
 
 // Add keyboard shortcuts
@@ -1150,18 +1142,9 @@ document.addEventListener('keydown', (e) => {
         const windowManager = (window as any).windowManager;
         if (windowManager) windowManager.openWindow('research');
         break;
-      case '2':
-        e.preventDefault();
-        break;
-      case '3':
-        e.preventDefault();
-        break;
-      case '4':
-        e.preventDefault();
-        break;
+      // Reserved keys can be added later
     }
   }
 });
 
-// Export for potential external use
-(window as any).WindowManager = WindowManager;
+// Expose instance via window.windowManager (set on DOMContentLoaded)
