@@ -45,12 +45,9 @@
    ============================ */
 
 :root {
-	/* Legacy variables for complex effects */
-	--terminal-teal: #4fae9b;
-	--terminal-teal-bright: #409584;
+	--terminal-teal: #25A68D;
 	--terminal-white: #f0f0f0;
-	--glow-teal: 0 0 2px var(--terminal-teal); /* Reduced blur for performance */
-	--glow-teal-bright: 0 0 2px var(--terminal-teal-bright); /* Reduced blur for performance */
+	--glow-teal: 0 0 3px var(--terminal-teal);
 
 	/* Standardized border width */
 	--standard-border-width: 2px;
@@ -210,7 +207,40 @@ html::before {
 	border-radius: 4px;
 	box-shadow: var(--glow-teal);
 	pointer-events: none;
-	z-index: 998;
+	z-index: 900; /* Below scanlines (1000) and UI (9998) */
+}
+
+/* ============================
+	 SITE HEADER
+	 ============================ */
+
+.site-header {
+	position: fixed;
+	top: 11px; /* Align inside the site border */
+	left: 11px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	z-index: 9998;
+	padding: 4px 8px;
+	background: rgba(0, 0, 0, 0.85);
+	border: var(--standard-border-width) solid var(--terminal-teal);
+	border-radius: 4px;
+	box-shadow: var(--glow-teal);
+}
+
+.site-header .logo {
+	width: 16px;
+	height: 16px;
+	image-rendering: pixelated;
+}
+
+.site-header .brand-text {
+	font-family: "MS UI Gothic", monospace;
+	font-size: 12px;
+	color: var(--terminal-teal);
+	letter-spacing: 1px;
+	text-shadow: var(--glow-teal);
 }
 
 /* Noise texture overlay */
@@ -224,7 +254,7 @@ html::before {
 	background-image: url("/noise-image.png");
 	background-repeat: repeat;
 	background-size: 400px 400px;
-	opacity: 0.08;
+	opacity: 0.06;
 	pointer-events: none;
 	z-index: 990;
 	animation: noiseFloat 1s infinite linear;
@@ -323,7 +353,6 @@ html::before {
 	text-align: center;
 	font-family: "MS UI Gothic", monospace;
 	color: var(--terminal-teal);
-	/* text-shadow: var(--glow-teal); REMOVED FOR PERFORMANCE */
 	line-height: 1.2;
 	font-weight: 500;
 }
@@ -365,7 +394,7 @@ html::before {
 	); /* Increased opacity to compensate for removed blur */
 	border: var(--standard-border-width) solid var(--terminal-teal);
 	border-radius: 0;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* SIMPLIFIED FOR PERFORMANCE */
+	box-shadow: var(--glow-teal), 0 2px 8px rgba(0, 0, 0, 0.5);
 	pointer-events: all;
 	overflow: hidden;
 	min-width: 400px;
@@ -382,7 +411,7 @@ html::before {
 
 .terminal-window {
 	border-color: var(--terminal-teal);
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+	box-shadow: var(--glow-teal), 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .window-titlebar {
@@ -406,47 +435,69 @@ html::before {
 }
 
 .window-control {
+	position: relative;
 	width: 16px;
 	height: 16px;
-	border: var(--standard-border-width) outset #1a1a1a;
-	background: #1a1a1a;
+	border: 2px solid var(--terminal-teal);
 	cursor: pointer;
-	transition: all 0.1s ease;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 10px;
-	font-weight: bold;
-	color: var(--terminal-teal);
-	font-family: "MS UI Gothic", monospace;
+  border-radius: 2px;
+  box-shadow: var(--glow-teal);
+  display: inline-block;
 }
 
 .window-control:hover {
-	border: var(--standard-border-width) outset var(--terminal-teal);
-	background: rgba(79, 174, 155, 0.08);
-	color: var(--terminal-teal);
-	/* text-shadow: var(--glow-teal); REMOVED FOR PERFORMANCE */
+	background: rgba(79, 174, 155, 0.10);
+	box-shadow: var(--glow-teal);
+	border-color: var(--terminal-teal);
 }
 
 .window-control:active {
-	border: var(--standard-border-width) inset var(--terminal-teal);
-	background: rgba(79, 174, 155, 0.04);
+	transform: scale(0.96);
+	background: rgba(79, 174, 155, 0.06);
 }
 
+/* Custom glyphs drawn with 1px strokes for crisp, retro look */
+.window-control::before,
+.window-control::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+}
+
+/* Close: X (two 1px bars rotated) */
+.window-control.close::before,
 .window-control.close::after {
-	content: "✕";
-	font-size: 8px;
+	width: 10px;
+	height: 2px; /* 2px for pixel-crisp center alignment */
+	background: var(--terminal-teal);
+	transform-origin: center center;
+}
+.window-control.close::before { transform: translate(-50%, -50%) rotate(45deg); }
+.window-control.close::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+/* Minimize: horizontal bar */
+.window-control.minimize::before {
+	width: 10px;
+	height: 2px; /* 2px to avoid subpixel fuzz */
+	background: var(--terminal-teal);
 }
 
-.window-control.minimize::after {
-	content: "_";
-	font-size: 12px;
-	line-height: 8px;
+/* Maximize: small inset rectangle */
+.window-control.maximize::before {
+	width: 10px;
+	height: 8px;
+	border: 1px solid var(--terminal-teal);
+	background: transparent;
+	border-radius: 1px;
 }
 
-.window-control.maximize::after {
-	content: "□";
-	font-size: 8px;
+/* Keyboard focus ring */
+.window-control:focus-visible {
+	outline: 1px dashed var(--terminal-teal);
+	outline-offset: 2px;
 }
 
 .window-title {
@@ -538,6 +589,63 @@ html::before {
 }
 
 /* ============================
+   ABOUT WINDOW ANIMATIONS
+   ============================ */
+
+.about-enter {
+	animation: aboutEnter 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+	transform-origin: bottom right;
+}
+
+.about-exit {
+	animation: aboutExit 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+	transform-origin: bottom right;
+}
+
+@keyframes aboutEnter {
+	from {
+		opacity: 0;
+		transform: scale(0.92) translate3d(10px, 10px, 0);
+	}
+	to {
+		opacity: 1;
+		transform: scale(1) translate3d(0, 0, 0);
+	}
+}
+
+@keyframes aboutExit {
+	from {
+		opacity: 1;
+		transform: scale(1) translate3d(0, 0, 0);
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.92) translate3d(10px, 10px, 0);
+	}
+}
+
+/* Maximize/restore polish for About (bottom-right origin) */
+.about-maximize {
+	animation: aboutMaximize 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+	transform-origin: bottom right;
+}
+
+.about-restore {
+	animation: aboutRestore 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+	transform-origin: bottom right;
+}
+
+@keyframes aboutMaximize {
+	from { transform: scale(0.98); }
+	to { transform: scale(1); }
+}
+
+@keyframes aboutRestore {
+	from { transform: scale(1.02); }
+	to { transform: scale(1); }
+}
+
+/* ============================
    TERMINAL TEXT STYLING
    ============================ */
 
@@ -618,11 +726,11 @@ html::before {
 
 .top-right-container {
 	position: fixed;
-	top: 22px;
-	right: 22px;
+	top: 11px;
+	right: 11px;
 	display: flex;
 	gap: 10px;
-	z-index: 10; /* Lower priority than info elements */
+	z-index: 9998; /* Above border/scanlines, below vignette (9999) */
 }
 
 .info-box {
@@ -1187,9 +1295,8 @@ html::before {
 		(100% - 60px) / 2
 	); /* Two panes ~50% each with 20px center gap and 20px side paddings */
 	min-width: 280px; /* Reasonable minimum */
-	max-width: 600px; /* Allow breathing on large screens */
-	/* Responsive height: 18% of inner height, clamped */
-	height: clamp(180px, 50vh, 320px);
+  max-width: 600px;
+	height: calc(100% / 2);
 	background: rgba(
 		0,
 		0,
@@ -1198,7 +1305,7 @@ html::before {
 	); /* Increased opacity to compensate for removed blur */
 	border: var(--standard-border-width) solid var(--terminal-teal);
 	border-radius: 4px;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* SIMPLIFIED FOR PERFORMANCE */
+	box-shadow: var(--glow-teal), 0 2px 8px rgba(0, 0, 0, 0.5);
 	/* backdrop-filter: blur(5px); COMMENTED OUT FOR PERFORMANCE - Heavy GPU sampling */
 	z-index: 250; /* High priority for info content */
 	font-family: "MS UI Gothic", monospace;
@@ -1225,7 +1332,8 @@ html::before {
 	font-size: 11px;
 	line-height: 1.1;
 	color: var(--terminal-teal);
-	text-shadow: var(--glow-teal);
+	/* Enhanced glow for better legibility */
+	text-shadow: var(--glow-teal), 0 0 6px rgba(37, 166, 141, 0.55);
 	white-space: pre;
 	margin: 0;
 	text-align: center;

@@ -66,8 +66,11 @@ class WindowManager {
 					".ascii-art"
 				) as HTMLElement;
 				if (asciiElement) {
+					const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
+					const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
 					const size = this.calculateOptimalFontSize(
-						asciiElement.textContent || ""
+						asciiElement.textContent || "",
+						activeId === "about-me" ? 64 : 14
 					);
 					if (size > 0) asciiElement.style.fontSize = `${size}px`;
 				}
@@ -103,6 +106,11 @@ class WindowManager {
 		// Ensure About Me window is always visible on mobile
 		if (isMobile && !this.aboutMeWindow) {
 			this.showAboutMe();
+		}
+
+		// If About Me is maximized on desktop, recompute its layout
+		if (!isMobile && this.aboutMeWindow && this.aboutMeWindow.dataset.maximized === "true") {
+			this.layoutAboutMeMaximized();
 		}
 	}
 
@@ -321,13 +329,14 @@ class WindowManager {
 		if (this.aboutMeWindow) {
 			// About Me exists, toggle its visibility
 			if (this.aboutMeWindow.style.display === "none") {
-				this.aboutMeWindow.style.display = "block";
+				this.animateAboutShow(this.aboutMeWindow);
 				this.bringAboutMeToFront();
+				// Update ASCII immediately when showing
+				this.updateAsciiWindow();
 			} else {
-				this.aboutMeWindow.style.display = "none";
+				// Hide with exit animation; ASCII updates after animation end
+				this.animateAboutHide(this.aboutMeWindow);
 			}
-			// Update ASCII art when About Me visibility changes
-			this.updateAsciiWindow();
 		} else {
 			// About Me doesn't exist, create it
 			this.showAboutMe();
@@ -371,14 +380,11 @@ class WindowManager {
 		// Add window controls event listeners for About Me
 		this.setupAboutMeControls(aboutElement);
 
-		// Add enter animation
-		aboutElement.classList.add("window-enter");
-		setTimeout(() => aboutElement.classList.remove("window-enter"), 400);
-
 		windowContainer.appendChild(aboutElement);
 		this.aboutMeWindow = aboutElement; // Store separately from main windows
 
-		// Update ASCII art now that About Me is visible
+		// Play enter animation and update ASCII
+		this.animateAboutShow(aboutElement);
 		this.updateAsciiWindow();
 	}
 
@@ -392,13 +398,11 @@ class WindowManager {
 
 				switch (action) {
 					case "close":
-						this.aboutMeWindow!.style.display = "none";
-						this.updateAsciiWindow();
+						this.animateAboutHide(this.aboutMeWindow!);
 						break;
 					case "minimize":
-						// For About Me, minimize just hides it
-						this.aboutMeWindow!.style.display = "none";
-						this.updateAsciiWindow();
+						// For About Me, minimize hides with animation
+						this.animateAboutHide(this.aboutMeWindow!);
 						break;
 					case "maximize":
 						this.maximizeAboutMe();
@@ -408,47 +412,118 @@ class WindowManager {
 		});
 	}
 
+	private animateAboutShow(el: HTMLElement): void {
+		el.style.display = "block";
+		el.classList.remove("about-exit");
+		el.classList.add("about-enter");
+		const onEnd = () => {
+			el.classList.remove("about-enter");
+			el.removeEventListener("animationend", onEnd);
+		};
+		el.addEventListener("animationend", onEnd);
+	}
+
+	private animateAboutHide(el: HTMLElement, after?: () => void): void {
+		if (el.style.display === "none") {
+			if (after) after();
+			this.updateAsciiWindow();
+			return;
+		}
+		el.classList.remove("about-enter");
+		el.classList.add("about-exit");
+		const onEnd = () => {
+			el.classList.remove("about-exit");
+			el.style.display = "none";
+			el.removeEventListener("animationend", onEnd);
+			if (after) after();
+			this.updateAsciiWindow();
+		};
+		el.addEventListener("animationend", onEnd);
+	}
+
 	private maximizeAboutMe(): void {
 		if (!this.aboutMeWindow) return;
 
 		const isCurrentlyMaximized =
 			this.aboutMeWindow.dataset.maximized === "true";
 
+		const el = this.aboutMeWindow;
+		const first = el.getBoundingClientRect();
+		const prevTransition = el.style.transition;
+		const prevTransform = el.style.transform;
+		const prevOrigin = el.style.transformOrigin;
+
+		// Disable transitions while we set the target geometry
+		el.style.transition = "none";
+		el.style.transform = "none";
+		el.style.transformOrigin = "bottom right";
+
 		if (isCurrentlyMaximized) {
-			// RESTORE: Return to normal size
-			this.aboutMeWindow.style.width = "calc((100% - 60px) / 2)";
-			this.aboutMeWindow.style.minWidth = "280px";
-			this.aboutMeWindow.style.maxWidth = "600px";
-			this.aboutMeWindow.style.height = "200px";
-			this.aboutMeWindow.style.bottom = "20px";
-			this.aboutMeWindow.style.right = "20px";
-			this.aboutMeWindow.dataset.maximized = "false";
+			// Apply restored layout instantly
+			el.style.width = "calc((100% - 60px) / 2)";
+			el.style.minWidth = "280px";
+			el.style.maxWidth = "600px";
+			el.style.height = "200px";
+			el.style.bottom = "20px";
+			el.style.right = "20px";
+			el.dataset.maximized = "false";
 		} else {
-			// MAXIMIZE: Make larger while keeping same positioning approach as content windows
-			const container = document.getElementById("window-container");
-			const rect = container
-				? container.getBoundingClientRect()
-				: ({ width: window.innerWidth, height: window.innerHeight } as DOMRect);
-			const baseWidth = 600; // previous max width
-			const baseHeight = 200;
-			const newWidth = Math.floor(baseWidth * 1.3);
-			const newHeight = Math.floor(baseHeight * 1.3);
-
-			// Keep 60px total inner margin (20px on each side plus 20px between boxes)
-			const maxWidth = Math.max(0, rect.width - 60);
-			const maxHeight = Math.max(0, rect.height - 60);
-
-			const finalWidth = Math.min(newWidth, maxWidth);
-			const finalHeight = Math.min(newHeight, maxHeight);
-
-			this.aboutMeWindow.style.width = `${finalWidth}px`;
-			this.aboutMeWindow.style.minWidth = "";
-			this.aboutMeWindow.style.maxWidth = "";
-			this.aboutMeWindow.style.height = `${finalHeight}px`;
-			this.aboutMeWindow.style.bottom = "20px";
-			this.aboutMeWindow.style.right = "20px";
-			this.aboutMeWindow.dataset.maximized = "true";
+			// Apply maximized layout instantly (within right pane)
+			this.layoutAboutMeMaximized();
+			el.dataset.maximized = "true";
+			this.bringAboutMeToFront();
 		}
+
+		// Measure the final geometry
+		const last = el.getBoundingClientRect();
+
+		// Compute FLIP deltas relative to bottom-right origin
+		const scaleX = first.width ? first.width / last.width : 1;
+		const scaleY = first.height ? first.height / last.height : 1;
+		const translateX = (first.right - last.right) / 1; // px
+		const translateY = (first.bottom - last.bottom) / 1; // px
+
+		// Invert: start from old layout visually
+		el.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scaleX}, ${scaleY})`;
+
+		// Force reflow to apply the initial transform before animating
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		el.offsetWidth;
+
+		// Animate to identity
+		el.style.transition = "transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+		el.style.transform = prevTransform || "none";
+
+		const onTransitionEnd = () => {
+			el.style.transition = prevTransition;
+			el.style.transformOrigin = prevOrigin;
+			el.removeEventListener("transitionend", onTransitionEnd);
+		};
+		el.addEventListener("transitionend", onTransitionEnd);
+	}
+
+	// Compute a maximized layout constrained to the right half of the inner container
+	private layoutAboutMeMaximized(): void {
+		if (!this.aboutMeWindow) return;
+		const container = document.getElementById("window-container");
+		const rect = container
+			? container.getBoundingClientRect()
+			: ({ width: window.innerWidth, height: window.innerHeight } as DOMRect);
+
+		// Two-pane layout: width is half of inner area minus the 20px center gap and 20px side paddings (total 60px)
+		const paneWidth = Math.floor(Math.max(0, rect.width - 60) / 2);
+		// Height target: up to 60% of inner height, clamped to remain within margins and a sensible minimum
+		const maxInnerHeight = Math.max(0, rect.height - 60);
+		let targetHeight = Math.floor(rect.height * 0.6);
+		targetHeight = Math.min(targetHeight, maxInnerHeight);
+		targetHeight = Math.max(targetHeight, 260); // at least a bit larger than default 200px
+
+		this.aboutMeWindow.style.width = `${paneWidth}px`;
+		this.aboutMeWindow.style.minWidth = "";
+		this.aboutMeWindow.style.maxWidth = "";
+		this.aboutMeWindow.style.height = `${targetHeight}px`;
+		this.aboutMeWindow.style.bottom = "20px";
+		this.aboutMeWindow.style.right = "20px";
 	}
 
 	private bringAboutMeToFront(): void {
@@ -922,24 +997,15 @@ class WindowManager {
 		const activeWindowId = this.currentContentWindow || "about-me";
 		const asciiArt = this.getAsciiArt(activeWindowId);
 
-		// Adjust line-height specifically when About Me drives the ASCII preview
-		const asciiElement = this.asciiWindow.querySelector(
-			".ascii-art"
-		) as HTMLElement | null;
-		if (asciiElement) {
-			asciiElement.style.lineHeight =
-				activeWindowId === "about-me" ? "1.0" : "";
-		}
-
 		// On resize, currentDisplayedText may already equal target; typeAsciiArt handles no-op
 		this.typeAsciiArt(asciiArt);
 	}
 
-	private calculateOptimalFontSize(asciiContent: string): number {
-		if (!this.asciiWindow) return 10;
-		const rect = this.asciiWindow.getBoundingClientRect();
-		const containerWidth = Math.max(0, rect.width - 32);
-		const containerHeight = Math.max(0, rect.height - 32);
+	private calculateOptimalFontSize(asciiContent: string, maxPx: number = 14): number {
+    if (!this.asciiWindow) return 10;
+    const rect = this.asciiWindow.getBoundingClientRect();
+    const containerWidth = Math.max(0, rect.width - 32);
+    const containerHeight = Math.max(0, rect.height - 32);
 
 		// Parse ASCII content to get dimensions
 		const lines = asciiContent.trim().split("\n");
@@ -955,8 +1021,8 @@ class WindowManager {
 		// Use the smaller constraint to ensure everything fits
 		const calculatedSize = Math.min(fontSizeByWidth, fontSizeByHeight);
 
-		// Clamp between reasonable bounds (4px minimum, 14px maximum)
-		return Math.max(4, Math.min(14, calculatedSize));
+		// Clamp between reasonable bounds (4px minimum, configurable maximum)
+		return Math.max(4, Math.min(maxPx, calculatedSize));
 	}
 
 	private typeAsciiArt(text: string): void {
@@ -1087,7 +1153,9 @@ class WindowManager {
 		if (!asciiElement) return;
 
 		// Apply optimal font size right as typing begins to avoid flash
-		const optimalFontSize = this.calculateOptimalFontSize(this.targetText);
+		const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
+		const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
+		const optimalFontSize = this.calculateOptimalFontSize(this.targetText, activeId === "about-me" ? 64 : 14);
 		asciiElement.style.fontSize = `${optimalFontSize}px`;
 
 		this.lastAnimationTime = performance.now();
