@@ -33,11 +33,16 @@ class WindowManager {
 	private currentContentWindow: string | null = null;
 	private asciiWindow: HTMLElement | null = null;
 
-	// Advanced ASCII animation state management
-	private currentDisplayedText: string = "";
+	// ASCII typing state using fixed-step animations
 	private targetText: string = "";
-	private animationFrameId: number | null = null; // For RAF-based animations
-	private lastAnimationTime: number = 0; // For frame rate limiting
+	private animationFrameId: number | null = null;
+	private typingMode: "idle" | "deleting" | "typing" = "idle";
+	private stepIndex: number = 0;
+	private totalSteps: number = 0;
+	private startText: string = "";
+	private readonly deleteSteps: number = 100; // fewer steps -> quicker
+	private readonly typeSteps: number = 128; // complete in ~24 frames
+	private pendingFontSize: number | null = null;
 
 	// Window state management for maximize/restore
 	private originalWindowStates: Map<
@@ -51,6 +56,9 @@ class WindowManager {
 	// Separate About Me window storage - completely independent from content windows
 	private aboutMeWindow: HTMLElement | null = null;
 
+	// Cached character width per 1px of font size (1ch per px)
+	private charWidthPerPx: number | null = null;
+
 	constructor() {
 		this.initializeDesktop();
 		this.createTopRightBoxes();
@@ -62,20 +70,62 @@ class WindowManager {
 			this.handleResize();
 			// Recompute ASCII font-size on resize when visible
 			if (this.asciiWindow && this.asciiWindow.style.display !== "none") {
+				// Skip if we're still hidden for first-show sizing
+				if ((this.asciiWindow as HTMLElement).style.visibility === "hidden") return;
 				const asciiElement = this.asciiWindow.querySelector(
 					".ascii-art"
 				) as HTMLElement;
 				if (asciiElement) {
+					// Skip sizing if there is no content yet
+					if (!(asciiElement.textContent || "").trim()) return;
 					const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
 					const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
 					const size = this.calculateOptimalFontSize(
-						asciiElement.textContent || "",
+						this.targetText || asciiElement.textContent || "",
 						activeId === "about-me" ? 64 : 14
 					);
-					if (size > 0) asciiElement.style.fontSize = `${size}px`;
+					if (size > 0) {
+						if (this.typingMode === "idle") {
+							asciiElement.style.fontSize = `${size}px`;
+							this.pendingFontSize = null;
+						} else {
+							this.pendingFontSize = size;
+						}
+					}
 				}
 			}
 		});
+
+		// Keep ASCII responsive to container mutations and zoom using ResizeObserver
+		const setupAsciiObserver = () => {
+			if (!this.asciiWindow) return;
+			const asciiElement = this.asciiWindow.querySelector(".ascii-art") as HTMLElement | null;
+			if (!asciiElement) return;
+			const ro = new ResizeObserver(() => {
+				// Skip if we're still hidden for first-show sizing
+				if ((this.asciiWindow as HTMLElement).style.visibility === "hidden") return;
+				// Skip if no text yet to avoid initial oversized sizing
+				if (!(asciiElement.textContent || "").trim()) return;
+				const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
+				const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
+				const size = this.calculateOptimalFontSize(
+					this.targetText || asciiElement.textContent || "",
+					activeId === "about-me" ? 64 : 14
+				);
+				if (size > 0) {
+					if (this.typingMode === "idle") {
+						asciiElement.style.fontSize = `${size}px`;
+						this.pendingFontSize = null;
+					} else {
+						this.pendingFontSize = size;
+					}
+				}
+			});
+			ro.observe(this.asciiWindow);
+		};
+
+		// Defer to ensure asciiWindow exists in DOM
+		setTimeout(setupAsciiObserver, 0);
 	}
 
 	private handleResize(): void {
@@ -108,9 +158,13 @@ class WindowManager {
 			this.showAboutMe();
 		}
 
-		// If About Me is maximized on desktop, recompute its layout
-		if (!isMobile && this.aboutMeWindow && this.aboutMeWindow.dataset.maximized === "true") {
-			this.layoutAboutMeMaximized();
+		// If About Me exists on desktop, recompute its layout based on state
+		if (!isMobile && this.aboutMeWindow) {
+			if (this.aboutMeWindow.dataset.maximized === "true") {
+				this.layoutAboutMeMaximized();
+			} else {
+				this.layoutAboutMeDefault();
+			}
 		}
 	}
 
@@ -357,10 +411,7 @@ class WindowManager {
 		aboutElement.style.position = "absolute";
 		aboutElement.style.bottom = "20px";
 		aboutElement.style.right = "20px";
-		aboutElement.style.width = "calc((100% - 60px) / 2)";
-		aboutElement.style.minWidth = "280px";
-		aboutElement.style.maxWidth = "600px";
-		aboutElement.style.height = "200px";
+		// Size will be computed responsively below
 		aboutElement.style.zIndex = "100"; // High z-index but separate from content windows
 
 		aboutElement.innerHTML = `
@@ -382,6 +433,9 @@ class WindowManager {
 
 		windowContainer.appendChild(aboutElement);
 		this.aboutMeWindow = aboutElement; // Store separately from main windows
+
+		// Apply a larger, responsive default layout on creation
+		this.layoutAboutMeDefault();
 
 		// Play enter animation and update ASCII
 		this.animateAboutShow(aboutElement);
@@ -459,13 +513,8 @@ class WindowManager {
 		el.style.transformOrigin = "bottom right";
 
 		if (isCurrentlyMaximized) {
-			// Apply restored layout instantly
-			el.style.width = "calc((100% - 60px) / 2)";
-			el.style.minWidth = "280px";
-			el.style.maxWidth = "600px";
-			el.style.height = "200px";
-			el.style.bottom = "20px";
-			el.style.right = "20px";
+			// Apply restored responsive layout instantly
+			this.layoutAboutMeDefault();
 			el.dataset.maximized = "false";
 		} else {
 			// Apply maximized layout instantly (within right pane)
@@ -521,6 +570,29 @@ class WindowManager {
 		this.aboutMeWindow.style.width = `${paneWidth}px`;
 		this.aboutMeWindow.style.minWidth = "";
 		this.aboutMeWindow.style.maxWidth = "";
+		this.aboutMeWindow.style.height = `${targetHeight}px`;
+		this.aboutMeWindow.style.bottom = "20px";
+		this.aboutMeWindow.style.right = "20px";
+	}
+
+	// Compute a larger default layout for About Me within the right pane
+	private layoutAboutMeDefault(): void {
+		if (!this.aboutMeWindow) return;
+		const container = document.getElementById("window-container");
+		const rect = container
+			? container.getBoundingClientRect()
+			: ({ width: window.innerWidth, height: window.innerHeight } as DOMRect);
+
+		// Match right pane width; height ~45% of inner height, with sensible clamps
+		const paneWidth = Math.floor(Math.max(0, rect.width - 60) / 2);
+		const maxInnerHeight = Math.max(0, rect.height - 60);
+		let targetHeight = Math.floor(rect.height * 0.45);
+		targetHeight = Math.min(targetHeight, maxInnerHeight);
+		targetHeight = Math.max(targetHeight, 320); // Larger than old 200px default
+
+		this.aboutMeWindow.style.width = `${paneWidth}px`;
+		this.aboutMeWindow.style.minWidth = "280px";
+		this.aboutMeWindow.style.maxWidth = ""; // remove cap
 		this.aboutMeWindow.style.height = `${targetHeight}px`;
 		this.aboutMeWindow.style.bottom = "20px";
 		this.aboutMeWindow.style.right = "20px";
@@ -988,35 +1060,190 @@ class WindowManager {
 
 		if (!shouldShow) {
 			this.asciiWindow.style.display = "none";
+			// Stop typing when hidden
+			if (this.animationFrameId) {
+				cancelAnimationFrame(this.animationFrameId);
+				this.animationFrameId = null;
+			}
+			this.typingMode = "idle";
 			return;
 		}
 
-		this.asciiWindow.style.display = "block";
+	// Ensure visible and shown
+	this.asciiWindow.style.display = "block";
+	(this.asciiWindow as HTMLElement).style.visibility = "visible";
 
 		// Content windows take priority over About Me for ASCII art
 		const activeWindowId = this.currentContentWindow || "about-me";
 		const asciiArt = this.getAsciiArt(activeWindowId);
 
-		// On resize, currentDisplayedText may already equal target; typeAsciiArt handles no-op
-		this.typeAsciiArt(asciiArt);
+		// Apply tighter line-height ONLY for About-driven ASCII via CSS var first
+		const asciiRoot = this.asciiWindow as HTMLElement;
+		if (activeWindowId === "about-me") {
+			asciiRoot.style.setProperty("--ascii-line-height", "1.05");
+		} else {
+			asciiRoot.style.removeProperty("--ascii-line-height");
+		}
+
+		// Size from full art, then run a fixed-steps transition
+		const asciiElement = this.asciiWindow.querySelector(".ascii-art") as HTMLElement | null;
+		if (asciiElement) {
+			const cap = activeWindowId === "about-me" ? 64 : 14;
+			const size = this.calculateOptimalFontSize(asciiArt, cap);
+			if (size > 0) {
+				const current = asciiElement.textContent || "";
+				// On first show (no content yet), apply immediately to avoid giant initial text
+				if (!current.length) {
+					asciiElement.style.fontSize = `${size}px`;
+					this.pendingFontSize = null;
+				} else if (this.typingMode === "idle" && current === asciiArt) {
+					// If already showing the same art, apply immediately
+					asciiElement.style.fontSize = `${size}px`;
+					this.pendingFontSize = null;
+				} else {
+					// Defer until transition completes
+					this.pendingFontSize = size;
+				}
+			}
+
+			this.startTransition(asciiArt, asciiElement);
+		}
+	}
+
+	private startTransition(nextText: string, asciiElement: HTMLElement): void {
+		const current = asciiElement.textContent || "";
+		// If nothing changed, keep whatever is on screen
+		if (current === nextText) {
+			if (this.animationFrameId) {
+				cancelAnimationFrame(this.animationFrameId);
+				this.animationFrameId = null;
+			}
+			this.typingMode = "idle";
+			this.targetText = nextText;
+			// Apply any deferred font-size change immediately
+			if (this.pendingFontSize !== null) {
+				asciiElement.style.fontSize = `${this.pendingFontSize}px`;
+				this.pendingFontSize = null;
+			}
+			return;
+		}
+
+		// Prepare phases with common-prefix optimization
+		this.targetText = nextText;
+		const prefixLen = this.findCommonPrefix(current, nextText);
+		const deleteLen = Math.max(0, current.length - prefixLen);
+		const typeLen = Math.max(0, nextText.length - prefixLen);
+
+		const runTyping = () => {
+			this.typingMode = "typing";
+			this.stepIndex = 0;
+			this.totalSteps = this.typeSteps;
+			// Type speed relative to the full next art length
+			const typeChunk = Math.max(1, Math.ceil(nextText.length / Math.max(1, this.totalSteps)));
+			const typeStep = () => {
+				// If target changed mid-flight, restart
+				if (this.typingMode !== "typing") return;
+				const typed = Math.min(typeLen, this.stepIndex * typeChunk);
+				const nextShown = this.targetText.substring(0, prefixLen + typed);
+				if ((asciiElement.textContent || "") !== nextShown) {
+					asciiElement.textContent = nextShown;
+				}
+				this.stepIndex++;
+				if (this.stepIndex > this.totalSteps || typed >= typeLen) {
+					asciiElement.textContent = this.targetText;
+					this.typingMode = "idle";
+					this.animationFrameId = null;
+					// Apply any pending font-size after transition completes
+					if (this.pendingFontSize !== null) {
+						asciiElement.style.fontSize = `${this.pendingFontSize}px`;
+						this.pendingFontSize = null;
+					}
+					return;
+				}
+				this.animationFrameId = requestAnimationFrame(typeStep);
+			};
+			this.animationFrameId = requestAnimationFrame(typeStep);
+		};
+
+		if (deleteLen > 0) {
+			// Delete only the differing suffix, then type the remaining suffix
+			this.typingMode = "deleting";
+			this.startText = current;
+			this.stepIndex = 0;
+			this.totalSteps = this.deleteSteps;
+			// Delete speed relative to the full current art length
+			const deleteChunk = Math.max(1, Math.ceil(current.length / Math.max(1, this.totalSteps)));
+			const deleteStep = () => {
+				if (this.typingMode !== "deleting") return;
+				const toKeepCount = Math.max(prefixLen, current.length - this.stepIndex * deleteChunk);
+				const toKeep = toKeepCount;
+				const shown = this.startText.substring(0, toKeep);
+				if ((asciiElement.textContent || "") !== shown) {
+					asciiElement.textContent = shown;
+				}
+				this.stepIndex++;
+				if (this.stepIndex > this.totalSteps || toKeepCount <= prefixLen) {
+					// Deletion finished. Apply any pending font-size right before typing new art
+					if (this.pendingFontSize !== null) {
+						asciiElement.style.fontSize = `${this.pendingFontSize}px`;
+						this.pendingFontSize = null;
+					}
+					asciiElement.textContent = this.startText.substring(0, prefixLen);
+					// proceed to typing
+					runTyping();
+					return;
+				}
+				this.animationFrameId = requestAnimationFrame(deleteStep);
+			};
+			this.animationFrameId = requestAnimationFrame(deleteStep);
+		} else {
+			// No deletion needed: apply font-size immediately if pending, then type
+			if (this.pendingFontSize !== null) {
+				asciiElement.style.fontSize = `${this.pendingFontSize}px`;
+				this.pendingFontSize = null;
+			}
+			// Continue typing the remainder
+			runTyping();
+		}
+	}
+
+	private findCommonPrefix(a: string, b: string): number {
+		const n = Math.min(a.length, b.length);
+		let i = 0;
+		while (i < n && a[i] === b[i]) i++;
+		return i;
 	}
 
 	private calculateOptimalFontSize(asciiContent: string, maxPx: number = 14): number {
-    if (!this.asciiWindow) return 10;
-    const rect = this.asciiWindow.getBoundingClientRect();
-    const containerWidth = Math.max(0, rect.width - 32);
-    const containerHeight = Math.max(0, rect.height - 32);
+	if (!this.asciiWindow) return 10;
+	// Prefer the content container to account for padding
+	const contentEl = this.asciiWindow.querySelector('.ascii-content') as HTMLElement | null;
+	const measureEl = contentEl || this.asciiWindow;
+	const cs = getComputedStyle(measureEl);
+	const padL = parseFloat(cs.paddingLeft || '0');
+	const padR = parseFloat(cs.paddingRight || '0');
+	const padT = parseFloat(cs.paddingTop || '0');
+	const padB = parseFloat(cs.paddingBottom || '0');
+	const innerW = Math.max(0, measureEl.clientWidth - padL - padR);
+	const innerH = Math.max(0, measureEl.clientHeight - padT - padB);
 
 		// Parse ASCII content to get dimensions
-		const lines = asciiContent.trim().split("\n");
-		const maxLineLength = Math.max(...lines.map((line) => line.length));
+		const lines = asciiContent.trimEnd().split("\n");
+		const maxLineLength = lines.reduce((m, l) => Math.max(m, l.length), 0);
 		const lineCount = lines.length;
 
 		// Calculate font size based on container constraints
-		// Character width ratio is approximately 0.6 for monospace fonts
-		// Line height ratio is approximately 1.2 for readable spacing
-		const fontSizeByWidth = Math.floor(containerWidth / (maxLineLength * 0.6));
-		const fontSizeByHeight = Math.floor(containerHeight / (lineCount * 1.2));
+		// Character width ratio measured via probe for current font (fallback 0.6)
+		const chPerPx = this.measureCharWidthPerPx(measureEl);
+		// Line height ratio derives from CSS var; default ~1.1 but About uses 1.05
+		const lhVar = getComputedStyle(this.asciiWindow).getPropertyValue("--ascii-line-height").trim();
+		// Default matches CSS fallback in .ascii-art (0.7)
+		const lineHeightRatio = lhVar ? parseFloat(lhVar) : 0.7;
+		// Subtract a small epsilon to ensure we never overflow width
+		const epsilonW = 0.5;
+		const epsilonH = 0.5;
+		const fontSizeByWidth = Math.floor((innerW - epsilonW) / Math.max(1, maxLineLength * chPerPx));
+		const fontSizeByHeight = Math.floor((innerH - epsilonH) / Math.max(1, lineCount * lineHeightRatio));
 
 		// Use the smaller constraint to ensure everything fits
 		const calculatedSize = Math.min(fontSizeByWidth, fontSizeByHeight);
@@ -1025,219 +1252,28 @@ class WindowManager {
 		return Math.max(4, Math.min(maxPx, calculatedSize));
 	}
 
-	private typeAsciiArt(text: string): void {
-		if (!this.asciiWindow) return;
-
-		const asciiElement = this.asciiWindow.querySelector(
-			".ascii-art"
-		) as HTMLElement;
-		if (!asciiElement) return;
-
-		// IMMEDIATE INTERRUPTION: Stop any running animations
-		if (this.animationFrameId) {
-			cancelAnimationFrame(this.animationFrameId);
-			this.animationFrameId = null;
-		}
-
-		this.targetText = text;
-		this.currentDisplayedText = asciiElement.textContent || "";
-
-		// If target is same as current, do nothing
-		if (this.currentDisplayedText.trim() === this.targetText.trim()) {
-			return;
-		}
-
-		// OPTIMIZED: Find common prefix to avoid unnecessary deletion/retyping
-		const commonPrefixLength = this.findCommonPrefix(
-			this.currentDisplayedText,
-			this.targetText
-		);
-
-		if (commonPrefixLength > 0) {
-			// Keep the common part, only delete/retype the different part
-			const currentSuffix =
-				this.currentDisplayedText.substring(commonPrefixLength);
-
-			if (currentSuffix.length > 0) {
-				// Need to delete the different suffix first
-				this.startOptimizedDeletionFrom(commonPrefixLength);
-			} else {
-				// No deletion needed, just add the new suffix
-				this.currentDisplayedText = this.currentDisplayedText.substring(
-					0,
-					commonPrefixLength
-				);
-				this.startOptimizedTypingFrom(commonPrefixLength);
-			}
-		} else {
-			// No common prefix, use original logic
-			if (this.currentDisplayedText.length > 0) {
-				this.startOptimizedDeletion();
-			} else {
-				this.startOptimizedTyping();
-			}
-		}
+	private measureCharWidthPerPx(container: HTMLElement): number {
+		if (this.charWidthPerPx && this.charWidthPerPx > 0) return this.charWidthPerPx;
+		const probe = document.createElement('div');
+		probe.style.position = 'absolute';
+		probe.style.visibility = 'hidden';
+		probe.style.whiteSpace = 'nowrap';
+		probe.style.left = '-9999px';
+		probe.style.top = '0';
+		probe.style.fontFamily = 'MS UI Gothic, monospace';
+		probe.style.fontSize = '100px';
+		probe.style.lineHeight = '100px';
+		probe.style.width = '1ch';
+		probe.textContent = '0';
+		container.appendChild(probe);
+		const widthPx = probe.getBoundingClientRect().width || 60;
+		probe.remove();
+		const ratio = widthPx / 100; // px per 1px of font-size
+		this.charWidthPerPx = ratio > 0 ? ratio : 0.6;
+		return this.charWidthPerPx;
 	}
 
-	private findCommonPrefix(str1: string, str2: string): number {
-		let i = 0;
-		const minLength = Math.min(str1.length, str2.length);
-
-		while (i < minLength && str1[i] === str2[i]) {
-			i++;
-		}
-
-		return i;
-	}
-
-	private startOptimizedDeletionFrom(keepLength: number): void {
-		if (!this.asciiWindow) return;
-
-		const asciiElement = this.asciiWindow.querySelector(
-			".ascii-art"
-		) as HTMLElement;
-		if (!asciiElement) return;
-
-		this.lastAnimationTime = performance.now();
-
-		const totalLength = this.currentDisplayedText.length;
-		const deleteLength = totalLength - keepLength;
-
-		if (deleteLength <= 0) {
-			// Nothing to delete, start typing
-			this.startOptimizedTypingFrom(keepLength);
-			return;
-		}
-
-		const totalDuration = Math.min(300, deleteLength * 5); // Faster for smaller deletions
-		let currentLength = totalLength;
-
-		const deleteFrame = (currentTime: number) => {
-			const elapsed = currentTime - this.lastAnimationTime;
-			const progress = Math.min(elapsed / totalDuration, 1);
-
-			if (progress >= 1) {
-				// Deletion complete
-				this.currentDisplayedText = this.currentDisplayedText.substring(
-					0,
-					keepLength
-				);
-				asciiElement.textContent = this.currentDisplayedText;
-				this.startOptimizedTypingFrom(keepLength);
-				return;
-			}
-
-			// Delete characters progressively
-			const targetLength = totalLength - Math.floor(progress * deleteLength);
-			if (targetLength !== currentLength) {
-				currentLength = targetLength;
-				this.currentDisplayedText = this.currentDisplayedText.substring(
-					0,
-					currentLength
-				);
-				asciiElement.textContent = this.currentDisplayedText;
-			}
-
-			this.animationFrameId = requestAnimationFrame(deleteFrame);
-		};
-
-		this.animationFrameId = requestAnimationFrame(deleteFrame);
-	}
-
-	private startOptimizedTypingFrom(startIndex: number): void {
-		if (!this.asciiWindow) return;
-
-		const asciiElement = this.asciiWindow.querySelector(
-			".ascii-art"
-		) as HTMLElement;
-		if (!asciiElement) return;
-
-		// Apply optimal font size right as typing begins to avoid flash
-		const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
-		const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
-		const optimalFontSize = this.calculateOptimalFontSize(this.targetText, activeId === "about-me" ? 64 : 14);
-		asciiElement.style.fontSize = `${optimalFontSize}px`;
-
-		this.lastAnimationTime = performance.now();
-
-		const remainingText = this.targetText.substring(startIndex);
-		const totalDuration = Math.min(1000, remainingText.length * 15); // Adaptive speed
-		let currentIndex = startIndex;
-
-		const typeFrame = (currentTime: number) => {
-			const elapsed = currentTime - this.lastAnimationTime;
-			const progress = Math.min(elapsed / totalDuration, 1);
-
-			if (progress >= 1) {
-				// Typing complete
-				this.currentDisplayedText = this.targetText;
-				asciiElement.textContent = this.targetText;
-				return;
-			}
-
-			// Add characters progressively
-			const targetIndex =
-				startIndex + Math.floor(progress * remainingText.length);
-			if (targetIndex !== currentIndex) {
-				currentIndex = targetIndex;
-				this.currentDisplayedText = this.targetText.substring(0, currentIndex);
-				asciiElement.textContent = this.currentDisplayedText;
-			}
-
-			this.animationFrameId = requestAnimationFrame(typeFrame);
-		};
-
-		this.animationFrameId = requestAnimationFrame(typeFrame);
-	}
-
-	private startOptimizedDeletion(): void {
-		if (!this.asciiWindow) return;
-
-		const asciiElement = this.asciiWindow.querySelector(
-			".ascii-art"
-		) as HTMLElement;
-		if (!asciiElement) return;
-
-		this.lastAnimationTime = performance.now();
-
-		// Optimized deletion: fewer, larger chunks for better performance
-		const totalDuration = 300; // Slightly faster
-		const textLength = this.currentDisplayedText.length;
-		let currentLength = textLength;
-
-		const deleteFrame = (currentTime: number) => {
-			const elapsed = currentTime - this.lastAnimationTime;
-			const progress = Math.min(elapsed / totalDuration, 1);
-
-			if (progress >= 1) {
-				// Deletion complete
-				this.currentDisplayedText = "";
-				asciiElement.textContent = "";
-				this.startOptimizedTyping();
-				return;
-			}
-
-			// Calculate how much text to show based on progress (reverse progress for deletion)
-			const targetLength = Math.floor(textLength * (1 - progress));
-			if (targetLength !== currentLength) {
-				currentLength = targetLength;
-				this.currentDisplayedText = this.currentDisplayedText.substring(
-					0,
-					currentLength
-				);
-				asciiElement.textContent = this.currentDisplayedText;
-			}
-
-			this.animationFrameId = requestAnimationFrame(deleteFrame);
-		};
-
-		this.animationFrameId = requestAnimationFrame(deleteFrame);
-	}
-
-	private startOptimizedTyping(): void {
-		// Delegate to the new optimized method starting from beginning
-		this.startOptimizedTypingFrom(0);
-	}
+	// All typing/animation logic removed for simplicity. ASCII renders instantly.
 }
 
 // ============================

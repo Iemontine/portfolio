@@ -50,7 +50,7 @@
 	--glow-teal: 0 0 3px var(--terminal-teal);
 
 	/* Standardized border width */
-	--standard-border-width: 2px;
+	--standard-border-width: 1px;
 }
 
 /* ============================
@@ -129,8 +129,8 @@ body::before {
 		0deg,
 		transparent,
 		transparent 6px,
-		rgba(79, 174, 155, 0.025) 6px,
-		rgba(79, 174, 155, 0.025) 12px
+		rgba(0, 0, 0, 0.113) 6px,
+		rgba(0, 0, 0, 0.034) 14px
 	);
 	opacity: 0.8;
 	pointer-events: none;
@@ -201,13 +201,13 @@ html::before {
 	position: fixed;
 	top: 20px;
 	left: 20px;
-	width: calc(100vw - 42px);
-	height: calc(100vh - 42px);
+	width: calc(100vw - 40px - (var(--standard-border-width) * 2));
+	height: calc(100vh - 40px - (var(--standard-border-width) * 2));
 	border: var(--standard-border-width) solid var(--terminal-teal);
 	border-radius: 4px;
 	box-shadow: var(--glow-teal);
 	pointer-events: none;
-	z-index: 900; /* Below scanlines (1000) and UI (9998) */
+	z-index: 900;
 }
 
 /* ============================
@@ -435,63 +435,28 @@ html::before {
 }
 
 .window-control {
-	position: relative;
-	width: 16px;
-	height: 16px;
-	border: 2px solid var(--terminal-teal);
-	cursor: pointer;
-  border-radius: 2px;
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--terminal-teal);
+  cursor: pointer;
   box-shadow: var(--glow-teal);
   display: inline-block;
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
-.window-control:hover {
-	background: rgba(79, 174, 155, 0.10);
-	box-shadow: var(--glow-teal);
-	border-color: var(--terminal-teal);
+.window-control.close {
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2325A68D' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' shape-rendering='crispEdges'><path d='M6 6 L18 18 M18 6 L6 18'/></svg>");
 }
 
-.window-control:active {
-	transform: scale(0.96);
-	background: rgba(79, 174, 155, 0.06);
+.window-control.minimize {
+	/* Underscore-styled minimize: sits lower in the icon box */
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2325A68D' stroke-width='2' stroke-linecap='round' shape-rendering='crispEdges'><path d='M7 16.5 L17 16.5'/></svg>");
 }
 
-/* Custom glyphs drawn with 1px strokes for crisp, retro look */
-.window-control::before,
-.window-control::after {
-	content: "";
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	transform: translate(-50%, -50%);
-	pointer-events: none;
-}
-
-/* Close: X (two 1px bars rotated) */
-.window-control.close::before,
-.window-control.close::after {
-	width: 10px;
-	height: 2px; /* 2px for pixel-crisp center alignment */
-	background: var(--terminal-teal);
-	transform-origin: center center;
-}
-.window-control.close::before { transform: translate(-50%, -50%) rotate(45deg); }
-.window-control.close::after { transform: translate(-50%, -50%) rotate(-45deg); }
-
-/* Minimize: horizontal bar */
-.window-control.minimize::before {
-	width: 10px;
-	height: 2px; /* 2px to avoid subpixel fuzz */
-	background: var(--terminal-teal);
-}
-
-/* Maximize: small inset rectangle */
-.window-control.maximize::before {
-	width: 10px;
-	height: 8px;
-	border: 1px solid var(--terminal-teal);
-	background: transparent;
-	border-radius: 1px;
+.window-control.maximize {
+	background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2325A68D' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' shape-rendering='crispEdges'><rect x='6.5' y='6.5' width='11' height='11' rx='1.5' ry='1.5'/></svg>");
 }
 
 /* Keyboard focus ring */
@@ -518,6 +483,40 @@ html::before {
 	user-select: text;
 	-webkit-user-select: text;
 	-moz-user-select: text;
+}
+
+/* Themed scrollbars for content and ASCII window */
+.window-content,
+.ascii-window {
+	scrollbar-width: thin; /* Firefox */
+	scrollbar-color: rgba(37, 166, 141, 0.7) rgba(0,0,0,0.3);
+}
+
+.window-content::-webkit-scrollbar,
+.ascii-window::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+
+.window-content::-webkit-scrollbar-track,
+.ascii-window::-webkit-scrollbar-track {
+	background: rgba(0, 0, 0, 0.35);
+	border: var(--standard-border-width) solid rgba(37, 166, 141, 0.35);
+	border-radius: 6px;
+	box-shadow: inset 0 0 4px rgba(37, 166, 141, 0.25);
+}
+
+.window-content::-webkit-scrollbar-thumb,
+.ascii-window::-webkit-scrollbar-thumb {
+	background: rgba(37, 166, 141, 0.75);
+	border: var(--standard-border-width) solid rgba(37, 166, 141, 0.95);
+	border-radius: 6px;
+	box-shadow: var(--glow-teal);
+}
+
+.window-content::-webkit-scrollbar-thumb:hover,
+.ascii-window::-webkit-scrollbar-thumb:hover {
+	background: rgba(37, 166, 141, 0.9);
 }
 
 /* ============================
@@ -1330,12 +1329,10 @@ html::before {
 .ascii-art {
 	font-family: "MS UI Gothic", monospace;
 	font-size: 11px;
-	line-height: 1.1;
+  line-height: 1.1;
 	color: var(--terminal-teal);
-	/* Enhanced glow for better legibility */
-	text-shadow: var(--glow-teal), 0 0 6px rgba(37, 166, 141, 0.55);
-	white-space: pre;
-	margin: 0;
+	/* ASCII Glow: tweak intensity here. Increase radii/opacities below to strengthen the glow,
+	   or reduce to soften. This is the single place to adjust the ASCII text glow. */
 	text-align: center;
 	width: 100%;
 }
