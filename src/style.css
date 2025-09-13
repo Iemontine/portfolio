@@ -16,7 +16,8 @@
   
   --border-width-3: 3px;
   
-  --animate-noise: noise 0.05s infinite linear;
+
+  --animate-noise: noise 0.01s infinite linear;
   --animate-scanlines: scanlines 0.1s linear infinite;
   --animate-flicker: flicker 3s infinite alternate;
   --animate-rotate: rotate 8s linear infinite;
@@ -24,16 +25,16 @@
 }
 
 @keyframes noise {
-  0%, 100% { transform: translate(0, 0); }
-  10% { transform: translate(-5%, -10%); }
-  20% { transform: translate(-10%, 5%); }
-  30% { transform: translate(5%, -25%); }
-  40% { transform: translate(-5%, 25%); }
-  50% { transform: translate(-10%, 10%); }
-  60% { transform: translate(15%, 0%); }
-  70% { transform: translate(0%, 15%); }
-  80% { transform: translate(-15%, 10%); }
-  90% { transform: translate(10%, 5%); }
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  10% { transform: translate3d(-5%, -10%, 0); }
+  20% { transform: translate3d(-10%, 5%, 0); }
+  30% { transform: translate3d(5%, -25%, 0); }
+  40% { transform: translate3d(-5%, 25%, 0); }
+  50% { transform: translate3d(-10%, 10%, 0); }
+  60% { transform: translate3d(15%, 0%, 0); }
+  70% { transform: translate3d(0%, 15%, 0); }
+  80% { transform: translate3d(-15%, 10%, 0); }
+  90% { transform: translate3d(10%, 5%, 0); }
 }
 
 @keyframes flicker {
@@ -42,13 +43,13 @@
 }
 
 @keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from { transform: rotate(0deg) translateZ(0); }
+  to { transform: rotate(360deg) translateZ(0); }
 }
 
 @keyframes counter-rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(-180deg); }
+  from { transform: rotate(0deg) translateZ(0); }
+  to { transform: rotate(-180deg) translateZ(0); }
 }
 
 /* ============================
@@ -74,9 +75,12 @@
   --terminal-teal-dark: #357a6e;
   --terminal-gray: #888888;
   --terminal-white: #F0F0F0;
-  --glow-teal: 0 0 2px var(--terminal-teal);
-  --glow-teal-bright: 0 0 3px var(--terminal-teal-bright);
-  --window-glow: 0 0 3px var(--terminal-teal);
+  --glow-teal: 0 0 2px var(--terminal-teal); /* Reduced blur for performance */
+  --glow-teal-bright: 0 0 2px var(--terminal-teal-bright); /* Reduced blur for performance */
+  --window-glow: 0 0 2px var(--terminal-teal); /* Reduced blur for performance */
+  
+  /* Standardized border width */
+  --standard-border-width: 2px;
 }
 
 /* ============================
@@ -105,8 +109,11 @@ html, body {
   height: 100vh;
   position: relative;
   background: radial-gradient(circle at center, #0a1a17 0%, #051411 100%);
-  animation: flicker 6s infinite alternate;
+  animation: flicker 12s infinite alternate;
   box-sizing: border-box;
+  contain: layout style paint;
+  will-change: opacity;
+  transform: translateZ(0); /* Force GPU layer */
 }
 
 #desktop {
@@ -158,11 +165,13 @@ body::before {
   pointer-events: none;
   z-index: 1000;
   animation: scanlineMove 20s infinite linear;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 @keyframes scanlineMove {
-  0% { transform: translateY(0); }
-  100% { transform: translateY(24px); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, 24px, 0); }
 }
 
 /* Screen curvature and additional CRT effects */
@@ -181,10 +190,12 @@ body::after {
   pointer-events: none;
   z-index: 991;
   border-radius: 15px;
-  box-shadow: inset 0 0 150px rgba(79, 174, 155, 0.1);
+  box-shadow: inset 0 0 50px rgba(79, 174, 155, 0.1);
+  contain: strict;
+  will-change: contents;
 }
 
-/* Top-level vignette */
+/* Top-level vignette - STRENGTHENED */
 html::after {
   content: '';
   position: fixed;
@@ -193,15 +204,15 @@ html::after {
   width: 100%;
   height: 100%;
   background:
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.3) 0%, transparent 15%),
-    linear-gradient(to top, rgba(0, 0, 0, 0.3) 0%, transparent 15%),
-    linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, transparent 12%),
-    linear-gradient(to left, rgba(0, 0, 0, 0.25) 0%, transparent 12%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, transparent 15%),
+    linear-gradient(to top, rgba(0, 0, 0, 0.4) 0%, transparent 15%),
+    linear-gradient(to right, rgba(0, 0, 0, 0.3) 0%, transparent 12%),
+    linear-gradient(to left, rgba(0, 0, 0, 0.3) 0%, transparent 12%),
     radial-gradient(ellipse at center,
       transparent 0%,
-      transparent 50%,
-      rgba(0, 0, 0, 0.1) 70%,
-      rgba(0, 0, 0, 0.2) 100%);
+      transparent 40%,
+      rgba(0, 0, 0, 0.15) 65%,
+      rgba(0, 0, 0, 0.3) 100%);
   pointer-events: none;
   z-index: 9999;
 }
@@ -214,7 +225,7 @@ html::before {
   left: 20px;
   width: calc(100vw - 42px);
   height: calc(100vh - 42px);
-  border: 2px solid var(--terminal-teal);
+  border: var(--standard-border-width) solid var(--terminal-teal);
   border-radius: 4px;
   box-shadow: var(--glow-teal);
   pointer-events: none;
@@ -235,15 +246,17 @@ html::before {
   opacity: 0.05;
   pointer-events: none;
   z-index: 990;
-  animation: noiseFloat 1s infinite linear;
+  animation: noiseFloat 2s infinite linear;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 @keyframes noiseFloat {
-  0% { transform: translate(0, 0); }
-  25% { transform: translate(-3%, -2%); }
-  50% { transform: translate(-2%, 3%); }
-  75% { transform: translate(2%, -3%); }
-  100% { transform: translate(0, 0); }
+  0% { transform: translate3d(0, 0, 0); }
+  25% { transform: translate3d(-3%, -2%, 0); }
+  50% { transform: translate3d(-2%, 3%, 0); }
+  75% { transform: translate3d(2%, -3%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
 }
 
 /* ============================
@@ -292,7 +305,7 @@ html::before {
   text-align: center;
   font-family: 'MS UI Gothic', monospace;
   color: var(--terminal-teal);
-  text-shadow: var(--glow-teal);
+  /* text-shadow: var(--glow-teal); REMOVED FOR PERFORMANCE */
   line-height: 1.2;
   font-weight: 500;
 }
@@ -327,28 +340,35 @@ html::before {
 
 .terminal-window {
   position: absolute;
-  background: rgba(0, 0, 0, 0.92);
-  border: 2px solid var(--terminal-teal);
+  background: rgba(0, 0, 0, 0.95); /* Increased opacity to compensate for removed blur */
+  border: var(--standard-border-width) solid var(--terminal-teal);
   border-radius: 0;
-  box-shadow: var(--window-glow), 0 4px 16px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(3px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* SIMPLIFIED FOR PERFORMANCE */
   pointer-events: all;
   overflow: hidden;
   min-width: 400px;
   min-height: 300px;
+  contain: layout style paint;
+  will-change: transform;
+  transform: translateZ(0); /* Force GPU layer */
+}
+
+/* Simple window transitions for smooth animations */
+.terminal-window {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .terminal-window.portal-blue,
 .terminal-window.portal-orange,
 .terminal-window.default {
   border-color: var(--terminal-teal);
-  box-shadow: var(--window-glow), 0 4px 16px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* SIMPLIFIED FOR PERFORMANCE */
 }
 
 .window-titlebar {
   height: 30px;
-  background: linear-gradient(180deg, rgba(79, 174, 155, 0.08) 0%, rgba(79, 174, 155, 0.04) 100%);
-  border-bottom: 1px solid var(--terminal-teal);
+  background: rgba(79, 174, 155, 0.06); /* Simplified from gradient for performance */
+  border-bottom: var(--standard-border-width) solid var(--terminal-teal);
   display: flex;
   align-items: center;
   padding: 0 12px;
@@ -363,7 +383,7 @@ html::before {
 .window-control {
   width: 16px;
   height: 16px;
-  border: 2px outset #1a1a1a;
+  border: var(--standard-border-width) outset #1a1a1a;
   background: #1a1a1a;
   cursor: pointer;
   transition: all 0.1s ease;
@@ -377,14 +397,14 @@ html::before {
 }
 
 .window-control:hover {
-  border: 2px outset var(--terminal-teal);
+  border: var(--standard-border-width) outset var(--terminal-teal);
   background: rgba(79, 174, 155, 0.08);
   color: var(--terminal-teal);
-  text-shadow: var(--glow-teal);
+  /* text-shadow: var(--glow-teal); REMOVED FOR PERFORMANCE */
 }
 
 .window-control:active {
-  border: 2px inset var(--terminal-teal);
+  border: var(--standard-border-width) inset var(--terminal-teal);
   background: rgba(79, 174, 155, 0.04);
 }
 
@@ -430,31 +450,65 @@ html::before {
 
 .window-enter {
   animation: windowSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform, opacity;
 }
 
 .window-exit {
   animation: windowSlideOut 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+  will-change: transform, opacity;
 }
 
 @keyframes windowSlideIn {
   from {
     opacity: 0;
-    transform: scale(0.8) translateY(20px);
+    transform: scale(0.8) translate3d(0, 20px, 0);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1) translate3d(0, 0, 0);
   }
 }
 
 @keyframes windowSlideOut {
   from {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: scale(1) translate3d(0, 0, 0);
   }
   to {
     opacity: 0;
-    transform: scale(0.8) translateY(-20px);
+    transform: scale(0.8) translate3d(0, -20px, 0);
+  }
+}
+
+/* Content box animations */
+.content-fade-in {
+  animation: contentFadeIn 0.6s ease-out;
+}
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ASCII content animation */
+.ascii-content-enter {
+  animation: asciiContentEnter 0.5s ease-out;
+}
+
+@keyframes asciiContentEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -543,14 +597,14 @@ html::before {
   right: 22px;
   display: flex;
   gap: 10px;
-  z-index: 999;
+  z-index: 10; /* Lower priority than info elements */
 }
 
 .info-box {
   width: 120px;
   height: 100px;
   background: rgba(0, 0, 0, 0.92);
-  border: 1px solid var(--terminal-teal);
+  border: var(--standard-border-width) solid var(--terminal-teal);
   box-shadow: var(--glow-teal);
   padding: 10px;
   font-family: 'MS UI Gothic', monospace;
@@ -582,7 +636,7 @@ html::before {
 .rotating-logo {
   width: 60px;
   height: 60px;
-  border: 3px solid var(--terminal-teal);
+  border: var(--standard-border-width) solid var(--terminal-teal);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -612,7 +666,7 @@ html::before {
   height: calc(60vh - 60px);
   min-width: 700px;
   min-height: 600px;
-  z-index: 50;
+  z-index: 300; /* High priority for info content */
 }
 
 .about-window .window-content {
@@ -783,55 +837,289 @@ html::before {
    RESPONSIVE DESIGN
    ============================ */
 
-@media (max-width: 768px) {
-  #desktop {
-    padding: 10px;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
+/* Tablet and smaller desktop adjustments */
+@media (max-width: 1024px) {
+  .about-window {
+    width: calc(50vw - 40px);
+    height: calc(50vh - 40px);
+    min-width: 400px;
+    min-height: 400px;
   }
   
-  .desktop-icon {
-    width: 60px;
+  .top-right-container {
+    gap: 8px;
+  }
+  
+  .info-box {
+    width: 100px;
     height: 80px;
+    padding: 8px;
+    font-size: 9px;
+  }
+  
+  .rotating-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .rotating-logo::before {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Mobile-first responsive design */
+@media (max-width: 768px) {
+  /* Hide CRT effects and border elements on mobile */
+  body::before,
+  body::after,
+  html::before,
+  html::after,
+  #app::after {
+    display: none !important;
+  }
+  
+  /* Remove border styling from containers */
+  #app {
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  #window-container {
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+  }
+  
+  /* Hide decorative elements on mobile to prioritize content */
+  .top-right-container {
+    display: none;
+  }
+  
+  .ascii-window {
+    display: none;
+  }
+  
+  /* Optimize desktop layout for mobile - TOP HALF */
+  #desktop {
+    position: fixed;
+    top: 10px; /* Add top padding */
+    left: 10px; /* Add left padding */
+    width: calc(100vw - 20px); /* Account for padding */
+    height: calc(50vh - 20px); /* Top half minus padding */
+    padding: 15px; /* Internal padding */
+    margin: 0;
+    grid-template-columns: repeat(3, 1fr); /* 3 columns to accommodate all 5 icons */
+    gap: 15px;
+    justify-items: center;
+    align-content: start;
+    background: var(--terminal-bg);
+    z-index: 10;
+    overflow-y: auto;
+    border: var(--standard-border-width) solid var(--terminal-teal); /* Add border to match other windows */
+    border-radius: 4px;
+    box-shadow: var(--glow-teal);
+  }
+  
+  /* Reset About Me icon positioning on mobile */
+  .about-me-icon {
+    position: static !important;
+    bottom: auto !important;
+    right: auto !important;
+  }
+  
+  /* Increase touch targets for mobile accessibility */
+  .desktop-icon {
+    width: 90px;
+    height: 110px;
+    padding: 10px;
+    /* Enhanced touch targets */
+    min-width: 88px;
+    min-height: 88px;
+    /* Better touch feedback */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(79, 174, 155, 0.2);
   }
   
   .desktop-icon .icon {
-    width: 36px;
-    height: 36px;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .desktop-icon .label {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+  
+  .desktop-icon:active {
+    transform: scale(0.95);
+    background: rgba(79, 174, 155, 0.1);
+  }
+  
+  /* About Me window mobile optimization - BOTTOM HALF */
+  .about-window {
+    position: fixed !important;
+    top: 50vh !important; /* Start at middle of screen */
+    left: 10px !important; /* Add left padding */
+    right: 10px !important; /* Add right padding */
+    bottom: 10px !important; /* Add bottom padding */
+    width: calc(100vw - 20px) !important; /* Account for padding */
+    height: calc(50vh - 20px) !important; /* Bottom half minus padding */
+    min-width: unset !important;
+    min-height: unset !important;
+    max-width: none !important;
+    max-height: none !important;
+    z-index: 300;
+    border-radius: 4px; /* Restore border radius with padding */
+    margin: 0;
+  }
+  
+  .about-window .window-content {
+    font-size: 11px;
+    line-height: 1.3;
+    height: calc(50vh - 50px); /* Account for title bar and padding */
+    overflow-y: auto;
+    padding: 10px;
+  }
+  
+  /* Content windows mobile optimization - TOP HALF */
+  .terminal-window:not(.about-window) {
+    position: fixed !important;
+    top: 10px !important; /* Add top padding */
+    left: 10px !important; /* Add left padding */
+    right: 10px !important; /* Add right padding */
+    bottom: calc(50vh + 10px) !important; /* Stop above about window with gap */
+    width: calc(100vw - 20px) !important; /* Account for padding */
+    height: calc(50vh - 20px) !important; /* Top half minus padding */
+    min-width: unset !important;
+    min-height: unset !important;
+    max-width: none !important;
+    max-height: none !important;
+    z-index: 200; /* Above desktop icons but below About Me */
+    border-radius: 4px; /* Restore border radius with padding */
+    margin: 0;
+  }
+  
+  .terminal-window:not(.about-window) .window-content {
+    height: calc(50vh - 50px); /* Account for title bar and padding */
+    overflow-y: auto;
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 10px;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+  #desktop {
+    top: 5px;
+    left: 5px;
+    width: calc(100vw - 10px);
+    height: calc(50vh - 10px);
+    padding: 10px;
+    gap: 8px;
+    grid-template-columns: repeat(3, 1fr); /* Keep 3 columns on small screens */
+  }
+  
+  .desktop-icon {
+    width: 65px;
+    height: 85px;
+    min-width: 65px;
+    min-height: 65px;
+  }
+  
+  .desktop-icon .icon {
+    width: 35px;
+    height: 35px;
   }
   
   .desktop-icon .label {
     font-size: 9px;
   }
   
-  .terminal-window {
-    min-width: 280px;
-    min-height: 200px;
+  .about-window {
+    top: calc(50vh + 5px) !important;
+    left: 5px !important;
+    right: 5px !important;
+    bottom: 5px !important;
+    width: calc(100vw - 10px) !important;
+    height: calc(50vh - 10px) !important;
   }
   
-  .about-window {
-    width: 250px;
-    height: 150px;
-    top: 10px;
-    right: 10px;
+  .about-window .window-content {
+    font-size: 10px;
+    height: calc(50vh - 40px);
+  }
+  
+  .terminal-window:not(.about-window) {
+    top: 5px !important;
+    left: 5px !important;
+    right: 5px !important;
+    bottom: calc(50vh + 5px) !important;
+    width: calc(100vw - 10px) !important;
+    height: calc(50vh - 10px) !important;
+  }
+  
+  .terminal-window:not(.about-window) .window-content {
+    font-size: 11px;
+    height: calc(50vh - 40px);
   }
 }
 
-@media (max-width: 480px) {
-  .terminal-window {
-    width: calc(100vw - 20px);
-    height: calc(100vh - 40px);
-    top: 10px !important;
-    left: 10px !important;
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+  #desktop {
+    top: 5px;
+    left: 5px;
+    width: calc(100vw - 10px);
+    height: calc(50vh - 10px);
+    padding: 10px;
+    gap: 8px;
+    grid-template-columns: repeat(5, 1fr); /* Single row in landscape */
   }
   
   .about-window {
-    position: relative;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: auto;
-    margin-bottom: 10px;
+    top: calc(50vh + 5px) !important;
+    left: 5px !important;
+    right: 5px !important;
+    bottom: 5px !important;
+    width: calc(100vw - 10px) !important;
+    height: calc(50vh - 10px) !important;
+  }
+  
+  .about-window .window-content {
+    height: calc(50vh - 40px);
+  }
+  
+  .terminal-window:not(.about-window) {
+    top: 5px !important;
+    left: 5px !important;
+    right: 5px !important;
+    bottom: calc(50vh + 5px) !important;
+    width: calc(100vw - 10px) !important;
+    height: calc(50vh - 10px) !important;
+  }
+  
+  .terminal-window:not(.about-window) .window-content {
+    height: calc(50vh - 40px);
+  }
+  
+  .desktop-icon {
+    width: 55px;
+    height: 75px;
+    min-width: 55px;
+    min-height: 55px;
+  }
+  
+  .desktop-icon .icon {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .desktop-icon .label {
+    font-size: 8px;
   }
 }
 
@@ -863,27 +1151,33 @@ html::before {
    ============================ */
 
 .ascii-window {
-  position: fixed;
-  bottom: 40px;
-  left: 40px;
-  width: 300px;
-  height: 200px;
-  background: rgba(0, 0, 0, 0.7);
-  border: 1px solid var(--terminal-teal);
+  position: absolute; /* Anchor inside #window-container */
+  bottom: 20px; /* 20px from container border = 40px from viewport */
+  left: 20px;
+  width: calc((100% - 60px) / 2); /* Two panes ~50% each with 20px center gap and 20px side paddings */
+  min-width: 280px; /* Reasonable minimum */
+  max-width: 600px; /* Allow breathing on large screens */
+  /* Responsive height: 18% of inner height, clamped */
+  height: clamp(180px, 50vh, 320px);
+  background: rgba(0, 0, 0, 0.9); /* Increased opacity to compensate for removed blur */
+  border: var(--standard-border-width) solid var(--terminal-teal);
   border-radius: 4px;
-  box-shadow: var(--glow-teal), 0 4px 16px rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(5px);
-  z-index: 15;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); /* SIMPLIFIED FOR PERFORMANCE */
+  /* backdrop-filter: blur(5px); COMMENTED OUT FOR PERFORMANCE - Heavy GPU sampling */
+  z-index: 250; /* High priority for info content */
   font-family: 'MS UI Gothic', monospace;
   overflow: hidden;
   user-select: none;
   display: none; /* Hidden by default */
+  contain: layout style paint;
+  will-change: contents;
+  transform: translateZ(0); /* Force GPU layer */
 }
 
 .ascii-content {
   width: 100%;
   height: 100%;
-  padding: 16px;
+  padding: 20px; /* Match .window-content padding for identical inner spacing */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -902,29 +1196,122 @@ html::before {
   width: 100%;
 }
 
-/* Responsive adjustments for ASCII window */
+/* Note: ASCII window keeps container-relative sizing to match About Me */
+
+/* Hide ASCII window on mobile for better UX */
 @media (max-width: 768px) {
   .ascii-window {
-    width: 250px;
-    height: 150px;
-    bottom: 20px;
-    left: 20px;
-  }
-  
-  .ascii-art {
-    font-size: 9px;
+    display: none !important;
   }
 }
 
-@media (max-width: 480px) {
-  .ascii-window {
-    width: 200px;
-    height: 120px;
-    bottom: 10px;
-    left: 10px;
+/* ============================
+   MOBILE TOUCH IMPROVEMENTS
+   ============================ */
+
+/* Improve tap targets and touch feedback */
+@media (max-width: 768px) {
+  .desktop-icon {
+    /* Enhanced touch targets */
+    min-width: 88px;
+    min-height: 88px;
+    /* Better touch feedback */
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(79, 174, 155, 0.2);
   }
   
-  .ascii-art {
-    font-size: 8px;
+  .desktop-icon:active {
+    transform: scale(0.95);
+    background: rgba(79, 174, 155, 0.1);
+  }
+  
+  .window-control {
+    /* Larger touch targets for window controls */
+    min-width: 28px;
+    min-height: 28px;
+    touch-action: manipulation;
+  }
+  
+  .window-titlebar {
+    /* Prevent text selection on touch */
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  
+  /* Improve scrolling on mobile */
+  .window-content {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  
+  /* Hide non-essential elements in portrait mode */
+  @media (orientation: portrait) {
+    .info-box.data-matrix,
+    .info-box.logo {
+      display: none;
+    }
+    
+    .info-box.stats {
+      width: 80px;
+      height: 60px;
+      padding: 5px;
+      font-size: 8px;
+    }
+    
+    .top-right-container {
+      display: flex; /* Re-enable for stats only */
+      top: 10px;
+      right: 10px;
+    }
+  }
+}
+
+/* Enhanced accessibility for touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .desktop-icon:hover {
+    /* Remove hover effects on touch devices */
+    border-color: transparent;
+    background: transparent;
+    box-shadow: none;
+    transform: none;
+  }
+  
+  .window-control:hover {
+    border: 2px outset #1a1a1a;
+    background: #1a1a1a;
+    color: var(--terminal-teal);
+  }
+}
+
+/* ============================
+   PERFORMANCE OPTIMIZATIONS
+   ============================ */
+
+/* Reduce animations and expensive effects on slower devices */
+@media (prefers-reduced-motion: reduce) {
+  .window-enter,
+  .window-exit,
+  .content-fade-in,
+  .ascii-content-enter,
+  .rotating-logo,
+  .desktop-icon {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  /* Disable expensive visual effects for performance */
+  body::before,
+  #app::after {
+    display: none !important;
+  }
+  
+  .terminal-window,
+  .ascii-window {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5) !important; /* Simplified shadow */
+  }
+  
+  body::after {
+    box-shadow: none !important; /* Remove expensive inset shadow */
   }
 }

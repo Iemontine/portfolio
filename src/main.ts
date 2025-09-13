@@ -29,7 +29,7 @@ interface DesktopIcon {
 
 class WindowManager {
   private windows: Map<string, HTMLElement> = new Map();
-  private zIndexCounter: number = 100;
+  private zIndexCounter: number = 400; // Start higher than static elements
   private currentContentWindow: string | null = null;
   private asciiWindow: HTMLElement | null = null;
   private typingAnimation: number | null = null;
@@ -37,10 +37,6 @@ class WindowManager {
   // Advanced ASCII animation state management
   private currentDisplayedText: string = '';
   private targetText: string = '';
-  private targetWindowId: string | null = null;
-  private animationState: 'idle' | 'typing' | 'deleting' = 'idle';
-  private currentProgress: number = 0; // 0-1, percentage of current animation complete
-  private pendingTarget: string | null = null; // For handling rapid clicks
   private animationFrameId: number | null = null; // For RAF-based animations
   private lastAnimationTime: number = 0; // For frame rate limiting
   
@@ -50,11 +46,58 @@ class WindowManager {
   // Persistent maximization state - shared state for all content windows (not About Me)
   private isContentWindowMaximized: boolean = false;
 
+  // Separate About Me window storage - completely independent from content windows
+  private aboutMeWindow: HTMLElement | null = null;
+
   constructor() {
     this.initializeDesktop();
     this.createTopRightBoxes();
-    this.createAboutMeWindow();
+    this.showAboutMe(); // About Me appears automatically on load
     this.createAsciiWindow();
+    
+    // Handle window resize for responsive updates
+    window.addEventListener('resize', () => {
+      this.handleResize();
+      // Recompute ASCII font-size on resize when visible
+      if (this.asciiWindow && this.asciiWindow.style.display !== 'none') {
+        const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
+        if (asciiElement) {
+          const size = this.calculateOptimalFontSize(asciiElement.textContent || '');
+          if (size > 0) asciiElement.style.fontSize = `${size}px`;
+        }
+      }
+    });
+  }
+  
+  private handleResize(): void {
+    const isMobile = window.innerWidth <= 768;
+    
+    // Defer ASCII visibility to unified logic
+    this.updateAsciiWindow();
+    
+    // Reset maximization state on mobile
+    if (isMobile) {
+      this.isContentWindowMaximized = false;
+    }
+    
+    // Handle About Me icon positioning
+    const aboutIcon = document.querySelector('.about-me-icon') as HTMLElement;
+    if (aboutIcon) {
+      if (isMobile) {
+        aboutIcon.style.position = 'static';
+        aboutIcon.style.bottom = 'auto';
+        aboutIcon.style.right = 'auto';
+      } else {
+        aboutIcon.style.position = 'absolute';
+        aboutIcon.style.bottom = '0px';
+        aboutIcon.style.right = '0px';
+      }
+    }
+    
+    // Ensure About Me window is always visible on mobile
+    if (isMobile && !this.aboutMeWindow) {
+      this.showAboutMe();
+    }
   }
 
   private initializeDesktop(): void {
@@ -165,31 +208,21 @@ class WindowManager {
     `;
 
     aboutIcon.addEventListener('click', () => {
-      this.openWindow('about-me');
+      // About Me should just toggle visibility, not interfere with content windows
+      this.toggleAboutMe();
     });
 
-    // Position it behind the About Me window
-    aboutIcon.style.position = 'absolute';
-    aboutIcon.style.bottom = '0px';
-    aboutIcon.style.right = '0px';
-    aboutIcon.style.zIndex = '1'; // Low z-index within desktop context
+    // Position it behind the About Me window on desktop, in grid on mobile
+    const isMobile = window.innerWidth <= 768;
+    if (!isMobile) {
+      aboutIcon.style.position = 'absolute';
+      aboutIcon.style.bottom = '0px';
+      aboutIcon.style.right = '0px';
+      aboutIcon.style.zIndex = '1'; // Low z-index within desktop context
+    }
 
     const desktop = document.getElementById('desktop')!;
     desktop.appendChild(aboutIcon);
-  }
-
-  private createAboutMeWindow(): void {
-    const aboutConfig: WindowConfig = {
-      id: 'about-me',
-      title: 'Darroll Saddi - About Me',
-      content: this.getAboutMeContent(),
-      width: 380,
-      height: 280,
-      theme: 'portal-blue',
-      isFixed: true
-    };
-
-    this.createWindow(aboutConfig);
   }
 
   private getAboutMeContent(): string {
@@ -237,8 +270,19 @@ class WindowManager {
   }
 
   public openWindow(windowId: string): void {
-    // Close all non-fixed windows first
-    this.closeNonFixedWindows();
+    const isMobile = window.innerWidth <= 768;
+    
+    // Close other content windows first (About Me is separate)
+    if (!isMobile) {
+      this.closeNonFixedWindows();
+    } else {
+      // On mobile, close other content windows
+      this.windows.forEach((_, wId) => {
+        if (wId !== windowId) {
+          this.closeWindow(wId);
+        }
+      });
+    }
 
     // If the same window is already open, just bring it to front
     if (this.windows.has(windowId)) {
@@ -251,19 +295,15 @@ class WindowManager {
       this.createWindow(config);
       
       // Update current content window for ASCII display
-      if (!config.isFixed) {
-        this.currentContentWindow = windowId;
-        this.updateAsciiWindow();
-      }
+      this.currentContentWindow = windowId;
+      this.updateAsciiWindow();
     }
   }
 
   private closeNonFixedWindows(): void {
-    // Close all windows except fixed ones (like About Me)
-    this.windows.forEach((windowElement, windowId) => {
-      if (!windowElement.classList.contains('about-window')) {
-        this.closeWindow(windowId);
-      }
+    // Close all content windows (About Me is separate and not affected)
+    this.windows.forEach((_, windowId) => {
+      this.closeWindow(windowId);
     });
     
     // Update ASCII window when content windows are closed
@@ -271,10 +311,149 @@ class WindowManager {
     this.updateAsciiWindow();
   }
 
+  public toggleAboutMe(): void {
+    if (this.aboutMeWindow) {
+      // About Me exists, toggle its visibility
+      if (this.aboutMeWindow.style.display === 'none') {
+        this.aboutMeWindow.style.display = 'block';
+        this.bringAboutMeToFront();
+      } else {
+        this.aboutMeWindow.style.display = 'none';
+      }
+      // Update ASCII art when About Me visibility changes
+      this.updateAsciiWindow();
+    } else {
+      // About Me doesn't exist, create it
+      this.showAboutMe();
+    }
+  }
+
+  private showAboutMe(): void {
+    // Create About Me window completely independently of the normal window system
+    const windowContainer = document.getElementById('window-container')!;
+    
+  const aboutElement = document.createElement('div');
+  // Absolute so it anchors to the inner bordered container
+  aboutElement.className = 'terminal-window portal-blue about-window transition-all duration-300 ease-in-out';
+    aboutElement.id = 'about-me-window';
+    
+  // Apply consistent positioning and sizing to match ASCII art (relative to container)
+  aboutElement.style.position = 'absolute';
+  aboutElement.style.bottom = '20px';
+  aboutElement.style.right = '20px';
+  aboutElement.style.width = 'calc((100% - 60px) / 2)';
+  aboutElement.style.minWidth = '280px';
+  aboutElement.style.maxWidth = '600px';
+    aboutElement.style.height = '200px';
+    aboutElement.style.zIndex = '100'; // High z-index but separate from content windows
+
+    aboutElement.innerHTML = `
+      <div class="window-titlebar">
+        <div class="window-controls">
+          <div class="window-control close" data-action="close"></div>
+          <div class="window-control minimize" data-action="minimize"></div>
+          <div class="window-control maximize" data-action="maximize"></div>
+        </div>
+        <div class="window-title">Darroll Saddi - About Me</div>
+      </div>
+      <div class="window-content content-fade-in">
+        ${this.getAboutMeContent()}
+      </div>
+    `;
+
+    // Add window controls event listeners for About Me
+    this.setupAboutMeControls(aboutElement);
+
+    // Add enter animation
+    aboutElement.classList.add('window-enter');
+    setTimeout(() => aboutElement.classList.remove('window-enter'), 400);
+
+    windowContainer.appendChild(aboutElement);
+    this.aboutMeWindow = aboutElement; // Store separately from main windows
+    
+    // Update ASCII art now that About Me is visible
+    this.updateAsciiWindow();
+  }
+
+  private setupAboutMeControls(aboutElement: HTMLElement): void {
+    const controls = aboutElement.querySelectorAll('.window-control');
+    
+    controls.forEach(control => {
+      control.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const action = (control as HTMLElement).dataset.action;
+        
+        switch (action) {
+          case 'close':
+            this.aboutMeWindow!.style.display = 'none';
+            this.updateAsciiWindow();
+            break;
+          case 'minimize':
+            // For About Me, minimize just hides it
+            this.aboutMeWindow!.style.display = 'none';
+            this.updateAsciiWindow();
+            break;
+          case 'maximize':
+            this.maximizeAboutMe();
+            break;
+        }
+      });
+    });
+  }
+
+  private maximizeAboutMe(): void {
+    if (!this.aboutMeWindow) return;
+    
+    const isCurrentlyMaximized = this.aboutMeWindow.dataset.maximized === 'true';
+    
+    if (isCurrentlyMaximized) {
+      // RESTORE: Return to normal size
+      this.aboutMeWindow.style.width = 'calc((100% - 60px) / 2)';
+      this.aboutMeWindow.style.minWidth = '280px';
+      this.aboutMeWindow.style.maxWidth = '600px';
+      this.aboutMeWindow.style.height = '200px';
+      this.aboutMeWindow.style.bottom = '20px';
+      this.aboutMeWindow.style.right = '20px';
+      this.aboutMeWindow.dataset.maximized = 'false';
+    } else {
+      // MAXIMIZE: Make larger while keeping same positioning approach as content windows
+      const container = document.getElementById('window-container');
+      const rect = container ? container.getBoundingClientRect() : { width: window.innerWidth, height: window.innerHeight } as DOMRect;
+      const baseWidth = 600; // previous max width
+      const baseHeight = 200;
+      const newWidth = Math.floor(baseWidth * 1.3);
+      const newHeight = Math.floor(baseHeight * 1.3);
+
+      // Keep 60px total inner margin (20px on each side plus 20px between boxes)
+      const maxWidth = Math.max(0, rect.width - 60);
+      const maxHeight = Math.max(0, rect.height - 60);
+
+      const finalWidth = Math.min(newWidth, maxWidth);
+      const finalHeight = Math.min(newHeight, maxHeight);
+
+      this.aboutMeWindow.style.width = `${finalWidth}px`;
+      this.aboutMeWindow.style.minWidth = '';
+      this.aboutMeWindow.style.maxWidth = '';
+      this.aboutMeWindow.style.height = `${finalHeight}px`;
+      this.aboutMeWindow.style.bottom = '20px';
+      this.aboutMeWindow.style.right = '20px';
+      this.aboutMeWindow.dataset.maximized = 'true';
+    }
+  }
+
+  private bringAboutMeToFront(): void {
+    if (this.aboutMeWindow) {
+      this.aboutMeWindow.style.zIndex = '100';
+    }
+  }
+
   private getWindowConfig(windowId: string): WindowConfig | null {
-    // Standardized dimensions for all content windows
-    const standardWidth = 650;
-    const standardHeight = 500;
+    // Check if we're on mobile
+    const isMobile = window.innerWidth <= 768;
+    
+    // Responsive dimensions
+    const standardWidth = isMobile ? Math.min(window.innerWidth - 20, 500) : 650;
+    const standardHeight = isMobile ? Math.min(window.innerHeight - 20, 600) : 500;
     
     const configs: Record<string, WindowConfig> = {
       research: {
@@ -308,15 +487,6 @@ class WindowManager {
         width: standardWidth,
         height: standardHeight,
         theme: 'portal-orange'
-      },
-      'about-me': {
-        id: 'about-me',
-        title: 'Darroll Saddi - About Me',
-        content: this.getAboutMeContent(),
-        width: 380,
-        height: 280,
-        theme: 'portal-blue',
-        isFixed: true
       }
     };
 
@@ -325,36 +495,41 @@ class WindowManager {
 
   private createWindow(config: WindowConfig): void {
     const windowContainer = document.getElementById('window-container')!;
+    const isMobile = window.innerWidth <= 768;
     
     const windowElement = document.createElement('div');
-    windowElement.className = `terminal-window ${config.theme || 'default'}`;
-    windowElement.id = `window-${config.id}`;
     
-    if (config.isFixed) {
-      windowElement.classList.add('about-window');
+    // Base classes with Tailwind positioning - responsive design for content windows only
+    let baseClasses = `terminal-window transition-all duration-300 ease-in-out ${config.theme || 'default'}`;
+    
+    if (isMobile) {
+      // Mobile content windows - top positioning
+      baseClasses += ' fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[calc(100%-20px)] max-w-[500px] h-[50vh] max-h-[400px]';
+    } else {
+      // Desktop content windows - center positioning
+      baseClasses += ' fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2';
     }
-
-    // Set dimensions and position
-    if (config.width) windowElement.style.width = `${config.width}px`;
-    if (config.height) windowElement.style.height = `${config.height}px`;
     
-    if (!config.isFixed) {
+    windowElement.className = baseClasses;
+    windowElement.id = `window-${config.id}`;
+
+    // Set responsive dimensions
+    if (isMobile) {
+      // Mobile dimensions are handled by Tailwind classes above
+    } else {
+      // Desktop dimensions
+      if (config.width) windowElement.style.width = `${config.width}px`;
+      if (config.height) windowElement.style.height = `${config.height}px`;
+      
       // Check shared maximization state for all content windows
-      if (this.isContentWindowMaximized) {
-        // Content windows should start maximized
-        console.log(`[WINDOW] ${config.id} opening in maximized state (shared state = true)`);
+      if (this.isContentWindowMaximized && !isMobile) {
+        // Start maximized
+        console.log(`[WINDOW] ${config.id} opening in maximized state`);
         this.applyMaximizedState(windowElement, config);
         windowElement.dataset.maximized = 'true';
       } else {
-        // Content windows should start in normal size
-        console.log(`[WINDOW] ${config.id} opening in normal state (shared state = false)`);
-        const windowWidth = config.width || 400;
-        const windowHeight = config.height || 300;
-        const x = (window.innerWidth - windowWidth) / 2;
-        const y = (window.innerHeight - windowHeight) / 2;
-        
-        windowElement.style.left = `${Math.max(20, x)}px`;
-        windowElement.style.top = `${Math.max(20, y)}px`;
+        // Start normal
+        console.log(`[WINDOW] ${config.id} opening in normal state`);
         windowElement.dataset.maximized = 'false';
       }
     }
@@ -370,7 +545,7 @@ class WindowManager {
         </div>
         <div class="window-title">${config.title}</div>
       </div>
-      <div class="window-content">
+      <div class="window-content content-fade-in">
         ${config.content}
       </div>
     `;
@@ -445,7 +620,10 @@ class WindowManager {
 
   private maximizeWindow(windowId: string): void {
     const windowElement = this.windows.get(windowId);
-    if (windowElement && !windowElement.classList.contains('about-window')) {
+    const isMobile = window.innerWidth <= 768;
+    
+    // Don't maximize on mobile (About Me is separate and not in this system)
+    if (windowElement && !isMobile) {
       const isCurrentlyMaximized = windowElement.dataset.maximized === 'true';
       
       if (isCurrentlyMaximized) {
@@ -454,8 +632,8 @@ class WindowManager {
         if (originalState) {
           windowElement.style.width = originalState.width;
           windowElement.style.height = originalState.height;
-          windowElement.style.left = originalState.left;
-          windowElement.style.top = originalState.top;
+          // Remove maximized z-index boost
+          windowElement.classList.remove('z-20');
         }
         
         // Update window state to non-maximized
@@ -464,7 +642,7 @@ class WindowManager {
         // Update shared state: ALL content windows should now open in normal size
         this.isContentWindowMaximized = false;
         
-        console.log(`[WINDOW] ${windowId} restored to normal size. Shared state: maximized = false`);
+        console.log(`[WINDOW] ${windowId} restored to normal size`);
       } else {
         // MAXIMIZE: Window is currently normal, maximize it
         
@@ -476,7 +654,7 @@ class WindowManager {
           top: windowElement.style.top
         });
         
-        // Apply maximized dimensions and positioning
+        // Apply maximized dimensions (Tailwind handles centering)
         this.applyMaximizedState(windowElement);
         
         // Update window state to maximized
@@ -485,35 +663,39 @@ class WindowManager {
         // Update shared state: ALL content windows should now open maximized
         this.isContentWindowMaximized = true;
         
-        console.log(`[WINDOW] ${windowId} maximized. Shared state: maximized = true`);
+        console.log(`[WINDOW] ${windowId} maximized`);
       }
     }
   }
 
   private applyMaximizedState(windowElement: HTMLElement, config?: WindowConfig): void {
-    // Make window slightly larger (30% increase) and center within border area
+    const isMobile = window.innerWidth <= 768;
+    
+    if (isMobile) {
+      // On mobile, maximization is handled by CSS
+      return;
+    }
+    
+    // Desktop maximization: Just make window larger, Tailwind handles centering
     const standardWidth = config?.width || 650;
     const standardHeight = config?.height || 500;
     
     const newWidth = Math.floor(standardWidth * 1.3);
     const newHeight = Math.floor(standardHeight * 1.3);
     
-    // Calculate position to center within the border area (40px padding on all sides)
-    const borderPadding = 40;
-    const availableWidth = window.innerWidth - (borderPadding * 2);
-    const availableHeight = window.innerHeight - (borderPadding * 2);
+    // Ensure the enlarged window fits within the viewport with some padding
+    const maxWidth = window.innerWidth - 80;
+    const maxHeight = window.innerHeight - 80;
     
-    // Ensure the enlarged window fits within the border area
-    const finalWidth = Math.min(newWidth, availableWidth - 40); // Extra 20px margin
-    const finalHeight = Math.min(newHeight, availableHeight - 40);
+    const finalWidth = Math.min(newWidth, maxWidth);
+    const finalHeight = Math.min(newHeight, maxHeight);
     
-    const centerX = borderPadding + (availableWidth - finalWidth) / 2;
-    const centerY = borderPadding + (availableHeight - finalHeight) / 2;
-    
+    // Just set dimensions - Tailwind classes handle positioning
     windowElement.style.width = `${finalWidth}px`;
     windowElement.style.height = `${finalHeight}px`;
-    windowElement.style.left = `${centerX}px`;
-    windowElement.style.top = `${centerY}px`;
+    
+    // Add z-index boost for maximized windows
+    windowElement.classList.add('z-20');
   }
 
   // ============================
@@ -678,24 +860,35 @@ class WindowManager {
     asciiWindow.id = 'ascii-window';
     
     asciiWindow.innerHTML = `
-      <div class="ascii-content">
+      <div class="ascii-content ascii-content-enter">
         <pre class="ascii-art"></pre>
       </div>
     `;
 
-    document.body.appendChild(asciiWindow);
+    // Anchor inside window-container so padding is relative to inner border
+    const container = document.getElementById('window-container');
+    if (container) {
+      container.appendChild(asciiWindow);
+    } else {
+      document.body.appendChild(asciiWindow);
+    }
     this.asciiWindow = asciiWindow;
     this.updateAsciiWindow();
   }
 
   private getAsciiArt(windowId: string | null): string {
-    return asciiArts[windowId || 'about-me'] || defaultAscii;
+    return asciiArts[windowId || 'research'] || defaultAscii;
   }
 
   private updateAsciiWindow(): void {
     if (!this.asciiWindow) return;
 
-    const shouldShow = this.currentContentWindow !== null || this.windows.has('about-me');
+    // ASCII art should show when:
+    // 1. Content windows are open (priority), OR
+    // 2. About Me is visible and no content windows are open
+    const hasContentWindow = this.currentContentWindow !== null;
+    const aboutMeVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== 'none');
+    const shouldShow = (hasContentWindow || aboutMeVisible) && window.innerWidth > 768;
     
     if (!shouldShow) {
       this.asciiWindow.style.display = 'none';
@@ -703,10 +896,43 @@ class WindowManager {
     }
 
     this.asciiWindow.style.display = 'block';
-    const activeWindow = this.currentContentWindow || 'about-me';
-    const asciiArt = this.getAsciiArt(activeWindow);
     
+    // Content windows take priority over About Me for ASCII art
+    const activeWindowId = this.currentContentWindow || 'about-me';
+    const asciiArt = this.getAsciiArt(activeWindowId);
+
+    // Adjust line-height specifically when About Me drives the ASCII preview
+    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement | null;
+    if (asciiElement) {
+      asciiElement.style.lineHeight = activeWindowId === 'about-me' ? '1.0' : '';
+    }
+
+    // On resize, currentDisplayedText may already equal target; typeAsciiArt handles no-op
     this.typeAsciiArt(asciiArt);
+  }
+  
+  private calculateOptimalFontSize(asciiContent: string): number {
+    if (!this.asciiWindow) return 10;
+    const rect = this.asciiWindow.getBoundingClientRect();
+    const containerWidth = Math.max(0, rect.width - 32);
+    const containerHeight = Math.max(0, rect.height - 32);
+    
+    // Parse ASCII content to get dimensions
+    const lines = asciiContent.trim().split('\n');
+    const maxLineLength = Math.max(...lines.map(line => line.length));
+    const lineCount = lines.length;
+    
+    // Calculate font size based on container constraints
+    // Character width ratio is approximately 0.6 for monospace fonts
+    // Line height ratio is approximately 1.2 for readable spacing
+    const fontSizeByWidth = Math.floor(containerWidth / (maxLineLength * 0.6));
+    const fontSizeByHeight = Math.floor(containerHeight / (lineCount * 1.2));
+    
+    // Use the smaller constraint to ensure everything fits
+    const calculatedSize = Math.min(fontSizeByWidth, fontSizeByHeight);
+    
+    // Clamp between reasonable bounds (4px minimum, 14px maximum)
+    return Math.max(4, Math.min(14, calculatedSize));
   }
 
   private typeAsciiArt(text: string): void {
@@ -730,17 +956,130 @@ class WindowManager {
     
     // If target is same as current, do nothing
     if (this.currentDisplayedText.trim() === this.targetText.trim()) {
-      this.animationState = 'idle';
       return;
     }
 
-    // If there's existing content and it's different, always delete first
-    if (this.currentDisplayedText.length > 0) {
-      this.startOptimizedDeletion();
+    // OPTIMIZED: Find common prefix to avoid unnecessary deletion/retyping
+    const commonPrefixLength = this.findCommonPrefix(this.currentDisplayedText, this.targetText);
+    
+    if (commonPrefixLength > 0) {
+      // Keep the common part, only delete/retype the different part
+      const currentSuffix = this.currentDisplayedText.substring(commonPrefixLength);
+      
+      if (currentSuffix.length > 0) {
+        // Need to delete the different suffix first
+        this.startOptimizedDeletionFrom(commonPrefixLength);
+      } else {
+        // No deletion needed, just add the new suffix
+        this.currentDisplayedText = this.currentDisplayedText.substring(0, commonPrefixLength);
+        this.startOptimizedTypingFrom(commonPrefixLength);
+      }
     } else {
-      // No existing content, start typing immediately
-      this.startOptimizedTyping();
+      // No common prefix, use original logic
+      if (this.currentDisplayedText.length > 0) {
+        this.startOptimizedDeletion();
+      } else {
+        this.startOptimizedTyping();
+      }
     }
+  }
+
+  private findCommonPrefix(str1: string, str2: string): number {
+    let i = 0;
+    const minLength = Math.min(str1.length, str2.length);
+    
+    while (i < minLength && str1[i] === str2[i]) {
+      i++;
+    }
+    
+    return i;
+  }
+
+  private startOptimizedDeletionFrom(keepLength: number): void {
+    if (!this.asciiWindow) return;
+    
+    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
+    if (!asciiElement) return;
+
+    this.lastAnimationTime = performance.now();
+    
+    const totalLength = this.currentDisplayedText.length;
+    const deleteLength = totalLength - keepLength;
+    
+    if (deleteLength <= 0) {
+      // Nothing to delete, start typing
+      this.startOptimizedTypingFrom(keepLength);
+      return;
+    }
+    
+    const totalDuration = Math.min(300, deleteLength * 5); // Faster for smaller deletions
+    let currentLength = totalLength;
+
+    const deleteFrame = (currentTime: number) => {
+      const elapsed = currentTime - this.lastAnimationTime;
+      const progress = Math.min(elapsed / totalDuration, 1);
+      
+      if (progress >= 1) {
+        // Deletion complete
+        this.currentDisplayedText = this.currentDisplayedText.substring(0, keepLength);
+        asciiElement.textContent = this.currentDisplayedText;
+        this.startOptimizedTypingFrom(keepLength);
+        return;
+      }
+
+      // Delete characters progressively
+      const targetLength = totalLength - Math.floor(progress * deleteLength);
+      if (targetLength !== currentLength) {
+        currentLength = targetLength;
+        this.currentDisplayedText = this.currentDisplayedText.substring(0, currentLength);
+        asciiElement.textContent = this.currentDisplayedText;
+      }
+
+      this.animationFrameId = requestAnimationFrame(deleteFrame);
+    };
+
+    this.animationFrameId = requestAnimationFrame(deleteFrame);
+  }
+
+  private startOptimizedTypingFrom(startIndex: number): void {
+    if (!this.asciiWindow) return;
+    
+    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
+    if (!asciiElement) return;
+
+    // Apply optimal font size right as typing begins to avoid flash
+    const optimalFontSize = this.calculateOptimalFontSize(this.targetText);
+    asciiElement.style.fontSize = `${optimalFontSize}px`;
+
+    this.lastAnimationTime = performance.now();
+    
+    const remainingText = this.targetText.substring(startIndex);
+    const totalDuration = Math.min(1000, remainingText.length * 15); // Adaptive speed
+    let currentIndex = startIndex;
+
+    const typeFrame = (currentTime: number) => {
+      const elapsed = currentTime - this.lastAnimationTime;
+      const progress = Math.min(elapsed / totalDuration, 1);
+      
+      if (progress >= 1) {
+        // Typing complete
+        this.currentDisplayedText = this.targetText;
+        asciiElement.textContent = this.targetText;
+        return;
+      }
+
+      // Add characters progressively
+      const targetIndex = startIndex + Math.floor(progress * remainingText.length);
+      if (targetIndex !== currentIndex) {
+        currentIndex = targetIndex;
+        this.currentDisplayedText = this.targetText.substring(0, currentIndex);
+        asciiElement.textContent = this.currentDisplayedText;
+      }
+
+      this.animationFrameId = requestAnimationFrame(typeFrame);
+    };
+
+    this.animationFrameId = requestAnimationFrame(typeFrame);
   }
 
   private startOptimizedDeletion(): void {
@@ -749,7 +1088,6 @@ class WindowManager {
     const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
     if (!asciiElement) return;
 
-    this.animationState = 'deleting';
     this.lastAnimationTime = performance.now();
     
     // Optimized deletion: fewer, larger chunks for better performance
@@ -765,7 +1103,6 @@ class WindowManager {
         // Deletion complete
         this.currentDisplayedText = '';
         asciiElement.textContent = '';
-        this.animationState = 'idle';
         this.startOptimizedTyping();
         return;
       }
@@ -785,43 +1122,8 @@ class WindowManager {
   }
 
   private startOptimizedTyping(): void {
-    if (!this.asciiWindow) return;
-    
-    const asciiElement = this.asciiWindow.querySelector('.ascii-art') as HTMLElement;
-    if (!asciiElement) return;
-
-    this.animationState = 'typing';
-    this.lastAnimationTime = performance.now();
-    
-    // Optimized typing with requestAnimationFrame and larger chunks
-    const totalDuration = 800; // Slightly faster for better UX
-    const textLength = this.targetText.length;
-    let lastIndex = 0;
-
-    const typeFrame = (currentTime: number) => {
-      const elapsed = currentTime - this.lastAnimationTime;
-      const progress = Math.min(elapsed / totalDuration, 1);
-      
-      if (progress >= 1) {
-        // Typing complete
-        this.currentDisplayedText = this.targetText;
-        asciiElement.textContent = this.currentDisplayedText;
-        this.animationState = 'idle';
-        return;
-      }
-
-      // Calculate how much text to show based on progress
-      const currentIndex = Math.floor(textLength * progress);
-      if (currentIndex !== lastIndex) {
-        lastIndex = currentIndex;
-        this.currentDisplayedText = this.targetText.substring(0, currentIndex);
-        asciiElement.textContent = this.currentDisplayedText;
-      }
-      
-      this.animationFrameId = requestAnimationFrame(typeFrame);
-    };
-
-    this.animationFrameId = requestAnimationFrame(typeFrame);
+    // Delegate to the new optimized method starting from beginning
+    this.startOptimizedTypingFrom(0);
   }
 }
 
