@@ -221,48 +221,113 @@ class WindowManager {
 		const container = document.getElementById("top-right-container")!;
 		container.className = "top-right-container";
 
-		// Box 1: Data Matrix
-		const dataBox = document.createElement("div");
-		dataBox.className = "info-box data-matrix";
-		dataBox.innerHTML = this.generateMatrixData();
-		container.appendChild(dataBox);
+		// Cache-bust the logo mask so updated /logo.svg is reflected immediately
+		document.documentElement.style.setProperty(
+			"--logo-mask",
+			`url('/logo.svg?v=${Date.now()}')`
+		);
 
-		// Box 2: Stats
+		// Box 1: Data Matrix (wider)
+			const dataBox = document.createElement("div");
+			dataBox.className = "info-box data-matrix";
+			// Append first so measurements are correct
+			container.appendChild(dataBox);
+			// Generate after layout to ensure correct sizing
+			requestAnimationFrame(() => {
+				dataBox.innerHTML = this.generateColumnsForBox(dataBox);
+			});
+			// Update columns when the box resizes
+			const ro = new ResizeObserver(() => {
+				dataBox.innerHTML = this.generateColumnsForBox(dataBox);
+			});
+			ro.observe(dataBox);
+
+		// Box 2: Stats (narrow)
 		const statsBox = document.createElement("div");
 		statsBox.className = "info-box stats";
 		statsBox.innerHTML = `
-      <div>2.67</div>
-      <div>1002</div>
-      <div>45.6</div>
-    `;
+	      <div class="stat"><span class="label">S:</span><span class="value" id="stat-speed">2.67</span></div>
+	      <div class="stat"><span class="label">N:</span><span class="value" id="stat-count">1002</span></div>
+	      <div class="stat"><span class="label">T:</span><span class="value" id="stat-temp">45.6</span></div>
+	    `;
 		container.appendChild(statsBox);
 
-		// Box 3: Rotating Logo
+		// Box 3: Logo (square)
 		const logoBox = document.createElement("div");
 		logoBox.className = "info-box logo";
-		logoBox.innerHTML = '<div class="rotating-logo"></div>';
+		const img = document.createElement('img');
+		img.className = 'logo-img logo-spin';
+		img.setAttribute('aria-hidden','true');
+		img.setAttribute('role','presentation');
+		img.decoding = 'async';
+		(img as any).loading = 'eager';
+		img.src = 'clem.png';
+		logoBox.appendChild(img);
 		container.appendChild(logoBox);
 
-		// Animate matrix data
+		// Animate matrix + stats
 		setInterval(() => {
-			dataBox.innerHTML = this.generateMatrixData();
+			// Only update stats; avoid re-rendering columns to prevent resets
+			this.updateStats(statsBox);
 		}, 2000);
 	}
 
-	private generateMatrixData(): string {
-		const chars = "01";
-		const rows = 8;
-		const cols = 12;
-		let result = "";
-
-		for (let i = 0; i < rows; i++) {
-			for (let j = 0; j < cols; j++) {
-				result += chars[Math.floor(Math.random() * chars.length)];
+		private generateColumns(colCount: number, heightRows: number): string {
+		const alphabets = [
+			"░▒▓█",
+			"·•◦",
+			"01",
+			"⟡✦✧",
+			"⎯⎯⎯",
+			"abcdef",
+			"+=-",
+			"∴∵∶"
+		];
+		const dir = (i: number) => (i % 2 === 0 ? 1 : -1);
+		let html = '<div class="data-columns">';
+		for (let i = 0; i < colCount; i++) {
+			const ab = alphabets[i % alphabets.length];
+			let stream = "";
+			for (let r = 0; r < heightRows; r++) {
+				stream += ab[Math.floor(Math.random() * ab.length)] + "\n";
 			}
-			if (i < rows - 1) result += "<br>";
+			const dur = (6 + Math.random() * 5).toFixed(1);
+			// Randomize animation phase so columns are desynced without re-rendering
+			const delay = (Math.random() * parseFloat(dur)).toFixed(2);
+			const direction = dir(i);
+			html += `<div class=\"data-col\"><span class=\"data-stream\" style=\"animation-duration:${dur}s; animation-direction:${direction>0?'normal':'reverse'}; animation-delay:-${delay}s;\">${stream}</span></div>`;
+		}
+		html += "</div>";
+			return html;
+	}
+
+		private generateColumnsForBox(box: HTMLElement): string {
+			const cs = getComputedStyle(box);
+			const padL = parseFloat(cs.paddingLeft || '0');
+			const padR = parseFloat(cs.paddingRight || '0');
+			const padT = parseFloat(cs.paddingTop || '0');
+			const padB = parseFloat(cs.paddingBottom || '0');
+			const innerW = Math.max(0, box.clientWidth - padL - padR);
+			const innerH = Math.max(0, box.clientHeight - padT - padB);
+			const colW = 10; // must match CSS grid-auto-columns
+			const gap = 4;   // must match CSS gap
+			const colCount = Math.max(10, Math.ceil((innerW + gap) / (colW + gap)));
+			const linePx = 9; // must match .data-stream font-size * line-height
+			const rows = Math.max(24, Math.ceil(innerH / linePx) * 2);
+			return this.generateColumns(colCount, rows);
 		}
 
-		return result;
+
+	private updateStats(container: HTMLElement): void {
+		const speed = (1.8 + Math.random() * 1.6).toFixed(2);
+		const count = (900 + Math.floor(Math.random() * 400)).toString();
+		const temp = (35 + Math.random() * 20).toFixed(1);
+		const s = container.querySelector('#stat-speed') as HTMLElement;
+		const c = container.querySelector('#stat-count') as HTMLElement;
+		const t = container.querySelector('#stat-temp') as HTMLElement;
+		if (s) s.textContent = speed;
+		if (c) c.textContent = count;
+		if (t) t.textContent = temp;
 	}
 
 	private createAboutMeIcon(): void {
@@ -1077,12 +1142,17 @@ class WindowManager {
 		const activeWindowId = this.currentContentWindow || "about-me";
 		const asciiArt = this.getAsciiArt(activeWindowId);
 
-		// Apply tighter line-height ONLY for About-driven ASCII via CSS var first
+		// Compute a dynamic line-height unless explicitly overridden elsewhere
 		const asciiRoot = this.asciiWindow as HTMLElement;
-		if (activeWindowId === "about-me") {
-			asciiRoot.style.setProperty("--ascii-line-height", "1.05");
-		} else {
-			asciiRoot.style.removeProperty("--ascii-line-height");
+		const overrideLh = asciiRoot.style.getPropertyValue("--ascii-line-height");
+		if (!overrideLh) {
+			const lines = (asciiArt.trimEnd().split("\n").length) || 1;
+			let dyn = 1.0;
+			if (lines > 70) dyn = 0.85;
+			else if (lines > 60) dyn = 0.9;
+			else if (lines > 50) dyn = 0.95;
+			else dyn = 1.0;
+			asciiRoot.style.setProperty("--ascii-line-height", String(dyn));
 		}
 
 		// Size from full art, then run a fixed-steps transition
@@ -1134,31 +1204,49 @@ class WindowManager {
 		const deleteLen = Math.max(0, current.length - prefixLen);
 		const typeLen = Math.max(0, nextText.length - prefixLen);
 
+		// Cancel any in-flight animation to start a fresh, deterministic sequence
+		if (this.animationFrameId) {
+			cancelAnimationFrame(this.animationFrameId);
+			this.animationFrameId = null;
+		}
+
 		const runTyping = () => {
+			if (typeLen === 0) {
+				// Nothing to type; finalize immediately
+				asciiElement.textContent = this.targetText;
+				this.typingMode = "idle";
+				// Apply any pending font-size after transition completes
+				if (this.pendingFontSize !== null) {
+					asciiElement.style.fontSize = `${this.pendingFontSize}px`;
+					this.pendingFontSize = null;
+				}
+				return;
+			}
+
 			this.typingMode = "typing";
 			this.stepIndex = 0;
 			this.totalSteps = this.typeSteps;
-			// Type speed relative to the full next art length
-			const typeChunk = Math.max(1, Math.ceil(nextText.length / Math.max(1, this.totalSteps)));
+			let tProg = 0;
+			const tInc = typeLen / this.totalSteps;
 			const typeStep = () => {
-				// If target changed mid-flight, restart
 				if (this.typingMode !== "typing") return;
-				const typed = Math.min(typeLen, this.stepIndex * typeChunk);
-				const nextShown = this.targetText.substring(0, prefixLen + typed);
-				if ((asciiElement.textContent || "") !== nextShown) {
-					asciiElement.textContent = nextShown;
-				}
 				this.stepIndex++;
-				if (this.stepIndex > this.totalSteps || typed >= typeLen) {
+				tProg = Math.min(typeLen, tProg + tInc);
+				if (this.stepIndex >= this.totalSteps) {
+					// Ensure we land exactly on the target on the final step
 					asciiElement.textContent = this.targetText;
 					this.typingMode = "idle";
 					this.animationFrameId = null;
-					// Apply any pending font-size after transition completes
 					if (this.pendingFontSize !== null) {
 						asciiElement.style.fontSize = `${this.pendingFontSize}px`;
 						this.pendingFontSize = null;
 					}
 					return;
+				}
+				const typedCount = Math.floor(tProg);
+				const nextShown = this.targetText.substring(0, prefixLen + typedCount);
+				if ((asciiElement.textContent || "") !== nextShown) {
+					asciiElement.textContent = nextShown;
 				}
 				this.animationFrameId = requestAnimationFrame(typeStep);
 			};
@@ -1166,23 +1254,24 @@ class WindowManager {
 		};
 
 		if (deleteLen > 0) {
-			// Delete only the differing suffix, then type the remaining suffix
+			// Delete only the differing suffix over exactly deleteSteps iterations
 			this.typingMode = "deleting";
 			this.startText = current;
 			this.stepIndex = 0;
 			this.totalSteps = this.deleteSteps;
-			// Delete speed relative to the full current art length
-			const deleteChunk = Math.max(1, Math.ceil(current.length / Math.max(1, this.totalSteps)));
+			let dProg = 0;
+			const dInc = deleteLen / this.totalSteps;
 			const deleteStep = () => {
 				if (this.typingMode !== "deleting") return;
-				const toKeepCount = Math.max(prefixLen, current.length - this.stepIndex * deleteChunk);
-				const toKeep = toKeepCount;
+				this.stepIndex++;
+				dProg = Math.min(deleteLen, dProg + dInc);
+				const deleted = Math.floor(dProg);
+				const toKeep = Math.max(prefixLen, current.length - deleted);
 				const shown = this.startText.substring(0, toKeep);
 				if ((asciiElement.textContent || "") !== shown) {
 					asciiElement.textContent = shown;
 				}
-				this.stepIndex++;
-				if (this.stepIndex > this.totalSteps || toKeepCount <= prefixLen) {
+				if (this.stepIndex >= this.totalSteps) {
 					// Deletion finished. Apply any pending font-size right before typing new art
 					if (this.pendingFontSize !== null) {
 						asciiElement.style.fontSize = `${this.pendingFontSize}px`;
@@ -1235,13 +1324,20 @@ class WindowManager {
 		// Calculate font size based on container constraints
 		// Character width ratio measured via probe for current font (fallback 0.6)
 		const chPerPx = this.measureCharWidthPerPx(measureEl);
-		// Line height ratio derives from CSS var; default ~1.1 but About uses 1.05
+		// Derive dynamic line-height similar to previous ArtBox logic to fit height better
+		const linesCount = lineCount;
+		let dynLineHeight = 0.7; // base fallback matching CSS
+		if (linesCount > 70) dynLineHeight = 0.55;
+		else if (linesCount > 60) dynLineHeight = 0.60;
+		else if (linesCount > 50) dynLineHeight = 0.65;
+		else if (linesCount > 40) dynLineHeight = 0.70;
+		else dynLineHeight = 0.75;
+		// Respect an explicit CSS override if present
 		const lhVar = getComputedStyle(this.asciiWindow).getPropertyValue("--ascii-line-height").trim();
-		// Default matches CSS fallback in .ascii-art (0.7)
-		const lineHeightRatio = lhVar ? parseFloat(lhVar) : 0.7;
+		const lineHeightRatio = lhVar ? parseFloat(lhVar) : dynLineHeight;
 		// Subtract a small epsilon to ensure we never overflow width
 		const epsilonW = 0.5;
-		const epsilonH = 0.5;
+		const epsilonH = 1.0;
 		const fontSizeByWidth = Math.floor((innerW - epsilonW) / Math.max(1, maxLineLength * chPerPx));
 		const fontSizeByHeight = Math.floor((innerH - epsilonH) / Math.max(1, lineCount * lineHeightRatio));
 

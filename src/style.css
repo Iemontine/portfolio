@@ -45,12 +45,15 @@
    ============================ */
 
 :root {
-	--terminal-teal: #25A68D;
+	--terminal-teal: #1dbe9c;
 	--terminal-white: #f0f0f0;
 	--glow-teal: 0 0 3px var(--terminal-teal);
 
 	/* Standardized border width */
 	--standard-border-width: 1px;
+	--outside-veil-opacity: 0.6;
+	--tr-height: 140px;
+	--logo-mask: url('/clem.png');
 }
 
 /* ============================
@@ -84,7 +87,6 @@ body {
 	box-sizing: border-box;
 	contain: layout style paint;
 	will-change: opacity;
-	transform: translateZ(0); /* Force GPU layer */
 }
 
 #desktop {
@@ -137,7 +139,6 @@ body::before {
 	z-index: 1000;
 	animation: scanlineMove 20s infinite linear;
 	will-change: transform;
-	transform: translateZ(0); /* Force GPU acceleration */
 }
 
 @keyframes scanlineMove {
@@ -205,7 +206,8 @@ html::before {
 	height: calc(100vh - 40px - (var(--standard-border-width) * 2));
 	border: var(--standard-border-width) solid var(--terminal-teal);
 	border-radius: 4px;
-	box-shadow: var(--glow-teal);
+	/* Inset glow inside the border + fill the outside region with translucent black */
+	box-shadow: inset var(--glow-teal), 0 0 0 200vmax rgba(0, 0, 0, var(--outside-veil-opacity));
 	pointer-events: none;
 	z-index: 900;
 }
@@ -259,7 +261,6 @@ html::before {
 	z-index: 990;
 	animation: noiseFloat 1s infinite linear;
 	will-change: transform;
-	transform: translateZ(0); /* Force GPU acceleration */
 }
 
 @keyframes noiseFloat {
@@ -726,19 +727,19 @@ html::before {
 .top-right-container {
 	position: fixed;
 	top: 11px;
-	right: 11px;
+	right: 64px; /* further offset from the extreme corner */
 	display: flex;
-	gap: 10px;
+	gap: 14px;
 	z-index: 9998; /* Above border/scanlines, below vignette (9999) */
 }
 
 .info-box {
-	width: 120px;
-	height: 100px;
+	height: var(--tr-height);
+	width: auto;
 	background: rgba(0, 0, 0, 0.92);
 	border: var(--standard-border-width) solid var(--terminal-teal);
 	box-shadow: var(--glow-teal);
-	padding: 10px;
+	padding: 8px 8px 8px 10px; /* a bit tighter for more room */
 	font-family: "MS UI Gothic", monospace;
 	font-size: 10px;
 	color: var(--terminal-teal);
@@ -747,12 +748,44 @@ html::before {
 }
 
 .info-box.data-matrix {
+	width: calc(var(--tr-height) * 1.75);
 	font-family: "Courier New", monospace;
-	line-height: 1.1;
+	line-height: 1.0;
 	color: var(--terminal-teal);
 }
 
+.data-columns {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: 10px; /* fixed slender columns */
+	gap: 4px;
+	height: 100%;
+	align-items: stretch;
+	overflow: hidden;
+}
+.data-col {
+	position: relative;
+	height: 100%;
+	overflow: hidden;
+	mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+}
+.data-stream {
+	position: absolute;
+	left: 0;
+	width: 100%;
+	display: block;
+	white-space: pre;
+	font-size: 9px;
+	line-height: 1.0;
+	animation: streamMove linear infinite;
+}
+@keyframes streamMove {
+	0% { transform: translateY(-100%); }
+	100% { transform: translateY(100%); }
+}
+
 .info-box.stats {
+	width: calc(var(--tr-height) * 0.5);
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
@@ -760,10 +793,51 @@ html::before {
 }
 
 .info-box.logo {
+	width: var(--tr-height);
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	position: relative;
+
 }
+
+.info-box.logo .logo-mark { display: none; }
+
+.logo-img {
+	position: absolute;
+	top: 12%;
+	left: 12%;
+	width: 76%;
+	height: 76%;
+	object-fit: contain;
+	image-rendering: pixelated;
+	filter: drop-shadow(0 0 2px var(--terminal-teal));
+	opacity: 0.95;
+	transform-origin: 50% 50%;
+}
+
+@keyframes slow-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.logo-spin { animation: slow-spin 40s linear infinite; }
+
+.info-box.logo .logo-inline {
+	position: absolute;
+	inset: 12%;
+	filter: drop-shadow(0 0 2px var(--terminal-teal));
+	opacity: 0.9;
+}
+.info-box.logo .logo-inline svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+	fill: var(--terminal-teal);
+	stroke: var(--terminal-teal);
+	image-rendering: pixelated;
+}
+
+/* Compact stats with tiny bars */
+.info-box.stats .stat { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+.info-box.stats .label { font-size: 10px; opacity: 0.9; min-width: 14px; }
+.info-box.stats .value { font-size: 11px; }
 
 .rotating-logo {
 	width: 60px;
@@ -1329,10 +1403,9 @@ html::before {
 .ascii-art {
 	font-family: "MS UI Gothic", monospace;
 	font-size: 11px;
-  line-height: 1.1;
+	line-height: var(--ascii-line-height, 1.0);
 	color: var(--terminal-teal);
-	/* ASCII Glow: tweak intensity here. Increase radii/opacities below to strengthen the glow,
-	   or reduce to soften. This is the single place to adjust the ASCII text glow. */
+	/* text-shadow: 0 0 10px black, ; */
 	text-align: center;
 	width: 100%;
 }
