@@ -48,8 +48,6 @@
 	--terminal-teal: #1dbe9c;
 	--terminal-white: #f0f0f0;
 	--glow-teal: 0 0 3px var(--terminal-teal);
-
-	/* Standardized border width */
 	--standard-border-width: 1px;
 	--outside-veil-opacity: 0.6;
 	--tr-height: 140px;
@@ -134,7 +132,7 @@ body::before {
 		rgba(0, 0, 0, 0.113) 6px,
 		rgba(0, 0, 0, 0.034) 14px
 	);
-	opacity: 0.8;
+	opacity: 0.6;
 	pointer-events: none;
 	z-index: 1000;
 	animation: scanlineMove 20s infinite linear;
@@ -405,6 +403,8 @@ html::before {
 	transform: translateZ(0); /* Force GPU layer */
 }
 
+
+
 /* Simple window transitions for smooth animations */
 .terminal-window {
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -493,6 +493,24 @@ html::before {
 	scrollbar-color: rgba(37, 166, 141, 0.7) rgba(0,0,0,0.3);
 }
 
+/* ASCII window show/hide animations */
+.ascii-enter {
+	animation: asciiWindowEnter 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+	transform-origin: bottom left;
+}
+.ascii-exit {
+	animation: asciiWindowExit 0.25s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+	transform-origin: bottom left;
+}
+@keyframes asciiWindowEnter {
+	from { opacity: 0; transform: scale(0.96) translate3d(-6px, 6px, 0); }
+	to   { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+}
+@keyframes asciiWindowExit {
+	from { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+	to   { opacity: 0; transform: scale(0.96) translate3d(-6px, 6px, 0); }
+}
+
 .window-content::-webkit-scrollbar,
 .ascii-window::-webkit-scrollbar {
 	width: 10px;
@@ -526,11 +544,13 @@ html::before {
 
 .window-enter {
 	animation: windowSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	animation-fill-mode: both;
 	will-change: transform, opacity;
 }
 
 .window-exit {
 	animation: windowSlideOut 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+	animation-fill-mode: both;
 	will-change: transform, opacity;
 }
 
@@ -1379,8 +1399,7 @@ html::before {
 	border: var(--standard-border-width) solid var(--terminal-teal);
 	border-radius: 4px;
 	box-shadow: var(--glow-teal), 0 2px 8px rgba(0, 0, 0, 0.5);
-	/* backdrop-filter: blur(5px); COMMENTED OUT FOR PERFORMANCE - Heavy GPU sampling */
-	z-index: 250; /* High priority for info content */
+	backdrop-filter: blur(5px);
 	font-family: "MS UI Gothic", monospace;
 	overflow: hidden;
 	user-select: none;
@@ -1405,7 +1424,8 @@ html::before {
 	font-size: 11px;
 	line-height: var(--ascii-line-height, 1.0);
 	color: var(--terminal-teal);
-	/* text-shadow: 0 0 10px black, ; */
+	text-shadow: 0 0 8px rgba(29, 190, 156, 1);
+	filter: brightness(1.15) contrast(1.25);
 	text-align: center;
 	width: 100%;
 }

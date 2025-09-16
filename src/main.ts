@@ -33,6 +33,10 @@ class WindowManager {
 	private currentContentWindow: string | null = null;
 	private asciiWindow: HTMLElement | null = null;
 
+	// Track ASCII enter/exit handlers to cancel in-flight animations on quick toggles
+	private asciiEnterHandler: ((ev: AnimationEvent) => void) | null = null;
+	private asciiExitHandler: ((ev: AnimationEvent) => void) | null = null;
+
 	// ASCII typing state using fixed-step animations
 	private targetText: string = "";
 	private animationFrameId: number | null = null;
@@ -210,11 +214,26 @@ class WindowManager {
       <div class="label">${icon.label}</div>
     `;
 
+
 		iconElement.addEventListener("click", () => {
-			this.openWindow(icon.windowId);
+			this.toggleWindow(icon.windowId);
 		});
 
 		return iconElement;
+	}
+
+	public toggleWindow(windowId: string): void {
+		// If this window is currently visible, clicking its icon should close it
+		if (this.currentContentWindow === windowId && this.windows.has(windowId)) {
+			// Clear active selection first so ASCII hides/animates appropriately
+			this.currentContentWindow = null;
+			this.updateAsciiWindow();
+			// Remove the window immediately without triggering another ASCII update
+			this.closeWindow(windowId, { instant: true, suppressAscii: true });
+			return;
+		}
+		// Otherwise, open/switch to it
+		this.openWindow(windowId);
 	}
 
 	private createTopRightBoxes(): void {
@@ -403,45 +422,40 @@ class WindowManager {
 	}
 
 	public openWindow(windowId: string): void {
-		const isMobile = window.innerWidth <= 768;
+		// Note: mobile vs desktop behavior is handled by Tailwind sizing; switching logic is identical
 
-		// Close other content windows first (About Me is separate)
-		if (!isMobile) {
-			this.closeNonFixedWindows();
-		} else {
-			// On mobile, close other content windows
-			this.windows.forEach((_, wId) => {
-				if (wId !== windowId) {
-					this.closeWindow(wId);
-				}
-			});
-		}
-
-		// If the same window is already open, just bring it to front
+		// If the same window is already open, just bring it to front and ensure ASCII is correct
 		if (this.windows.has(windowId)) {
+			this.currentContentWindow = windowId;
+			this.updateAsciiWindow();
 			this.bringToFront(windowId);
 			return;
 		}
 
+		// Set the target FIRST so ASCII swaps immediately to the right art
+		this.currentContentWindow = windowId;
+		this.updateAsciiWindow();
+
+		// Ensure at-most-one content window is visible: instantly close others
+		this.closeAllContentWindows({ exceptId: windowId, instant: true, suppressAscii: true });
+
 		const config = this.getWindowConfig(windowId);
 		if (config) {
 			this.createWindow(config);
-
-			// Update current content window for ASCII display
-			this.currentContentWindow = windowId;
-			this.updateAsciiWindow();
 		}
 	}
 
-	private closeNonFixedWindows(): void {
-		// Close all content windows (About Me is separate and not affected)
-		this.windows.forEach((_, windowId) => {
-			this.closeWindow(windowId);
-		});
 
-		// Update ASCII window when content windows are closed
-		this.currentContentWindow = null;
-		this.updateAsciiWindow();
+
+	// Close all content windows with options to instantly hide and suppress ASCII updates
+	private closeAllContentWindows(options?: { exceptId?: string; instant?: boolean; suppressAscii?: boolean }): void {
+		const exceptId = options?.exceptId || null;
+		const instant = options?.instant === true;
+		const suppress = options?.suppressAscii === true;
+		this.windows.forEach((_, id) => {
+			if (id === exceptId) return;
+			this.closeWindow(id, { instant, suppressAscii: suppress });
+		});
 	}
 
 	public toggleAboutMe(): void {
@@ -827,21 +841,35 @@ class WindowManager {
 		}
 	}
 
-	private closeWindow(windowId: string): void {
+	private closeWindow(windowId: string, opts?: { suppressAscii?: boolean; instant?: boolean }): void {
 		const windowElement = this.windows.get(windowId);
-		if (windowElement) {
-			windowElement.classList.add("window-exit");
-			setTimeout(() => {
-				windowElement.remove();
-				this.windows.delete(windowId);
+		if (!windowElement) return;
 
-				// Update ASCII window when a content window is closed
-				if (windowId === this.currentContentWindow) {
-					this.currentContentWindow = null;
-					this.updateAsciiWindow();
-				}
-			}, 300);
+		const suppressAscii = !!opts?.suppressAscii;
+		const instant = !!opts?.instant;
+
+		if (instant) {
+			// Remove immediately to guarantee single-window visibility
+			windowElement.remove();
+			this.windows.delete(windowId);
+			if (!suppressAscii && windowId === this.currentContentWindow) {
+				this.currentContentWindow = null;
+				this.updateAsciiWindow();
+			}
+			return;
 		}
+
+		windowElement.classList.add("window-exit");
+		setTimeout(() => {
+			windowElement.remove();
+			this.windows.delete(windowId);
+
+			// Update ASCII window when the active content window is closed
+			if (!suppressAscii && windowId === this.currentContentWindow) {
+				this.currentContentWindow = null;
+				this.updateAsciiWindow();
+			}
+		}, 300);
 	}
 
 	private minimizeWindow(windowId: string): void {
@@ -1112,6 +1140,7 @@ class WindowManager {
 
 	private updateAsciiWindow(): void {
 		if (!this.asciiWindow) return;
+		const aw = this.asciiWindow as HTMLElement;
 
 		// ASCII art should show when:
 		// 1. Content windows are open (priority), OR
@@ -1123,20 +1152,70 @@ class WindowManager {
 		const shouldShow =
 			(hasContentWindow || aboutMeVisible) && window.innerWidth > 768;
 
+		const asciiElement = aw.querySelector(".ascii-art") as HTMLElement | null;
+
 		if (!shouldShow) {
-			this.asciiWindow.style.display = "none";
-			// Stop typing when hidden
-			if (this.animationFrameId) {
-				cancelAnimationFrame(this.animationFrameId);
-				this.animationFrameId = null;
+			// Animate out if currently visible
+			if (aw.style.display !== "none") {
+				// Cancel an in-flight enter to avoid double-listener and ensure we exit cleanly
+				if (aw.classList.contains("ascii-enter")) {
+					if (this.asciiEnterHandler) aw.removeEventListener("animationend", this.asciiEnterHandler);
+					aw.classList.remove("ascii-enter");
+					this.asciiEnterHandler = null;
+				}
+				aw.classList.remove("ascii-enter");
+				aw.classList.add("ascii-exit");
+				const onEnd = () => {
+					aw.classList.remove("ascii-exit");
+					aw.style.display = "none";
+					// Clear content so next show starts from empty (no deletion artifacts)
+					if (asciiElement) asciiElement.textContent = "";
+					// Reset typing state fully
+					if (this.animationFrameId) {
+						cancelAnimationFrame(this.animationFrameId);
+						this.animationFrameId = null;
+					}
+					this.typingMode = "idle";
+					this.targetText = "";
+					this.pendingFontSize = null;
+					// Remove dynamic line-height override so we recompute next time
+					aw.style.removeProperty("--ascii-line-height");
+					aw.removeEventListener("animationend", onEnd);
+					this.asciiExitHandler = null;
+				};
+				this.asciiExitHandler = onEnd;
+				aw.addEventListener("animationend", onEnd);
+			} else {
+				// Already hidden; ensure empty content
+				if (asciiElement) asciiElement.textContent = "";
 			}
-			this.typingMode = "idle";
 			return;
 		}
 
-	// Ensure visible and shown
-	this.asciiWindow.style.display = "block";
-	(this.asciiWindow as HTMLElement).style.visibility = "visible";
+		// Ensure visible and animate in when coming from hidden
+		// Cancel a pending exit if we're showing again quickly
+		if (aw.classList.contains("ascii-exit")) {
+			if (this.asciiExitHandler) aw.removeEventListener("animationend", this.asciiExitHandler);
+			aw.classList.remove("ascii-exit");
+			this.asciiExitHandler = null;
+		}
+
+		if (aw.style.display === "none") {
+			aw.style.display = "block";
+			aw.style.visibility = "visible";
+			aw.classList.add("ascii-enter");
+			const onEndIn = () => {
+				aw.classList.remove("ascii-enter");
+				aw.removeEventListener("animationend", onEndIn);
+				this.asciiEnterHandler = null;
+			};
+			this.asciiEnterHandler = onEndIn;
+			aw.addEventListener("animationend", onEndIn);
+		} else {
+			// Ensure visible
+			aw.style.display = "block";
+			aw.style.visibility = "visible";
+		}
 
 		// Content windows take priority over About Me for ASCII art
 		const activeWindowId = this.currentContentWindow || "about-me";
@@ -1156,7 +1235,6 @@ class WindowManager {
 		}
 
 		// Size from full art, then run a fixed-steps transition
-		const asciiElement = this.asciiWindow.querySelector(".ascii-art") as HTMLElement | null;
 		if (asciiElement) {
 			const cap = activeWindowId === "about-me" ? 64 : 14;
 			const size = this.calculateOptimalFontSize(asciiArt, cap);
