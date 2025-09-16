@@ -24,20 +24,20 @@ interface DesktopIcon {
 }
 
 // ============================
-// WINDOW MANAGER CLASS
+// WINDOW MANAGER
 // ============================
 
 class WindowManager {
 	private windows: Map<string, HTMLElement> = new Map();
-	private zIndexCounter: number = 400; // Start higher than static elements
+	private zIndexCounter: number = 400; // Above static chrome
 	private currentContentWindow: string | null = null;
 	private asciiWindow: HTMLElement | null = null;
 
-	// Track ASCII enter/exit handlers to cancel in-flight animations on quick toggles
+	// ASCII enter/exit handlers (cancel in-flight animations)
 	private asciiEnterHandler: ((ev: AnimationEvent) => void) | null = null;
 	private asciiExitHandler: ((ev: AnimationEvent) => void) | null = null;
 
-	// ASCII typing state using fixed-step animations
+	// ASCII typing state (fixed-step)
 	private targetText: string = "";
 	private animationFrameId: number | null = null;
 	private typingMode: "idle" | "deleting" | "typing" = "idle";
@@ -54,13 +54,13 @@ class WindowManager {
 		{ width: string; height: string; left: string; top: string }
 	> = new Map();
 
-	// Persistent maximization state - shared state for all content windows (not About Me)
-	private isContentWindowMaximized: boolean = false;
+	// Shared maximization state for content windows (not About Me)
+	private isContentWindowMaximized: boolean = true;
 
-	// Separate About Me window storage - completely independent from content windows
+	// About Me window (independent)
 	private aboutMeWindow: HTMLElement | null = null;
 
-	// Cached character width per 1px of font size (1ch per px)
+	// Cached character width per 1px of font size
 	private charWidthPerPx: number | null = null;
 
 	constructor() {
@@ -69,18 +69,18 @@ class WindowManager {
 		this.showAboutMe(); // About Me appears automatically on load
 		this.createAsciiWindow();
 
-		// Handle window resize for responsive updates
+		// Responsive updates on resize
 		window.addEventListener("resize", () => {
 			this.handleResize();
 			// Recompute ASCII font-size on resize when visible
 			if (this.asciiWindow && this.asciiWindow.style.display !== "none") {
-				// Skip if we're still hidden for first-show sizing
+				// Skip if still hidden (first-show sizing)
 				if ((this.asciiWindow as HTMLElement).style.visibility === "hidden") return;
 				const asciiElement = this.asciiWindow.querySelector(
 					".ascii-art"
 				) as HTMLElement;
 				if (asciiElement) {
-					// Skip sizing if there is no content yet
+					// Skip sizing if no content yet
 					if (!(asciiElement.textContent || "").trim()) return;
 					const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
 					const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
@@ -100,15 +100,15 @@ class WindowManager {
 			}
 		});
 
-		// Keep ASCII responsive to container mutations and zoom using ResizeObserver
+		// Keep ASCII responsive to container mutations/zoom
 		const setupAsciiObserver = () => {
 			if (!this.asciiWindow) return;
 			const asciiElement = this.asciiWindow.querySelector(".ascii-art") as HTMLElement | null;
 			if (!asciiElement) return;
 			const ro = new ResizeObserver(() => {
-				// Skip if we're still hidden for first-show sizing
+				// Skip if still hidden (first-show sizing)
 				if ((this.asciiWindow as HTMLElement).style.visibility === "hidden") return;
-				// Skip if no text yet to avoid initial oversized sizing
+				// Skip if no text yet
 				if (!(asciiElement.textContent || "").trim()) return;
 				const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
 				const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
@@ -128,7 +128,7 @@ class WindowManager {
 			ro.observe(this.asciiWindow);
 		};
 
-		// Defer to ensure asciiWindow exists in DOM
+		// Defer to ensure asciiWindow exists
 		setTimeout(setupAsciiObserver, 0);
 	}
 
@@ -141,20 +141,6 @@ class WindowManager {
 		// Reset maximization state on mobile
 		if (isMobile) {
 			this.isContentWindowMaximized = false;
-		}
-
-		// Handle About Me icon positioning
-		const aboutIcon = document.querySelector(".about-me-icon") as HTMLElement;
-		if (aboutIcon) {
-			if (isMobile) {
-				aboutIcon.style.position = "static";
-				aboutIcon.style.bottom = "auto";
-				aboutIcon.style.right = "auto";
-			} else {
-				aboutIcon.style.position = "absolute";
-				aboutIcon.style.bottom = "0px";
-				aboutIcon.style.right = "0px";
-			}
 		}
 
 		// Ensure About Me window is always visible on mobile
@@ -174,19 +160,6 @@ class WindowManager {
 
 	private initializeDesktop(): void {
 		const desktop = document.getElementById("desktop")!;
-		desktop.style.width = "calc(100% - 80px)";
-		desktop.style.height = "calc(100% - 80px)";
-		desktop.style.position = "absolute";
-		desktop.style.top = "40px";
-		desktop.style.left = "40px";
-		desktop.style.zIndex = "2";
-		desktop.style.padding = "20px";
-		desktop.style.display = "grid";
-		desktop.style.gridTemplateColumns = "repeat(auto-fit, 80px)";
-		desktop.style.gridTemplateRows = "repeat(auto-fit, 100px)";
-		desktop.style.gap = "20px";
-		desktop.style.alignContent = "start";
-		desktop.style.justifyContent = "start";
 
 		const icons: DesktopIcon[] = [
 			{ id: "research-icon", label: "Research", windowId: "research" },
@@ -200,7 +173,7 @@ class WindowManager {
 			desktop.appendChild(iconElement);
 		});
 
-		// Create About Me icon positioned behind the About Me window
+		// About Me icon sits behind its window
 		this.createAboutMeIcon();
 	}
 
@@ -223,28 +196,19 @@ class WindowManager {
 	}
 
 	public toggleWindow(windowId: string): void {
-		// If this window is currently visible, clicking its icon should close it
+		// If visible, clicking its icon closes it
 		if (this.currentContentWindow === windowId && this.windows.has(windowId)) {
-			// Clear active selection first so ASCII hides/animates appropriately
-			this.currentContentWindow = null;
-			this.updateAsciiWindow();
-			// Remove the window immediately without triggering another ASCII update
-			this.closeWindow(windowId, { instant: true, suppressAscii: true });
+			// Let closeWindow manage state and ASCII update
+			this.closeWindow(windowId);
 			return;
 		}
-		// Otherwise, open/switch to it
+		// Otherwise, open/switch
 		this.openWindow(windowId);
 	}
 
 	private createTopRightBoxes(): void {
 		const container = document.getElementById("top-right-container")!;
 		container.className = "top-right-container";
-
-		// Cache-bust the logo mask so updated /logo.svg is reflected immediately
-		document.documentElement.style.setProperty(
-			"--logo-mask",
-			`url('/logo.svg?v=${Date.now()}')`
-		);
 
 		// Box 1: Data Matrix (wider)
 			const dataBox = document.createElement("div");
@@ -284,9 +248,8 @@ class WindowManager {
 		logoBox.appendChild(img);
 		container.appendChild(logoBox);
 
-		// Animate matrix + stats
+		// Animate stats only (keep matrix intact)
 		setInterval(() => {
-			// Only update stats; avoid re-rendering columns to prevent resets
 			this.updateStats(statsBox);
 		}, 2000);
 	}
@@ -380,32 +343,31 @@ class WindowManager {
 	private getAboutMeContent(): string {
 		return `
       <div class="terminal-text">
-        <div class="system-header">lemontine [Version 1.12.41.1125]</div>
+        <div class="system-header">lemontine [Version 2.025.915]</div>
         
         <div class="section">
           <div class="section-title">LEMONTINE</div>
           
           <div class="currents-section">
             <div class="currents-title">currents</div>
-            <div class="current-item"><span class="status-watching">~Watching:</span> Speed Racer (2008)</div>
-            <div class="current-item"><span class="status-playing">~Playing:</span> Zenless Zone Zero</div>
-            <div class="current-item"><span class="status-listening">~Listening to:</span> Good Kid, The Vanished People</div>
+            <div class="current-item"><span class="status-watching">~Watching:</span> Apothecary Diaries</div>
+            <div class="current-item"><span class="status-playing">~Playing:</span> Elden Ring: Nightreign, Hollow Knight</div>
+            <div class="current-item"><span class="status-listening">~Listening to:</span> Cafune </div>
           </div>
           
           <div class="intro-text">I'm <span class="highlight-name">lemontine</span>, you might also know me as darroll!</div>
           
           <div class="about-section">
             <div class="about-title">about me</div>
-            <div class="about-line"><span class="about-label">LEMONTINE:</span> A fourth-year computer science student at UCD, with a focus on machine learning and AI.</div>
-            <div class="about-line"><span class="about-label">HOBBIES:</span> Programming, video games, video editing, computer building, & hackathons.</div>
-            <div class="about-line"><span class="about-label">ENJOYS:</span> Learning about and applying machine learning and AI, full-stack web development,</div>
-            <div class="about-line indent">hardware/software concepts.</div>
+            <div class="about-line"><span class="about-label">LEMONTINE:</span> Photos UI Engineer @ Apple. UC Davis CS Alumni, with a focus on machine learning and AI.</div>
+            <div class="about-line"><span class="about-label">HOBBIES:</span> Programming, video games, video editing, computer building, and game development.</div>
+            <div class="about-line"><span class="about-label">ENJOYS:</span> Learning about new technologies, AI ethics, travel, cosplay, and anime.</div>
             <div class="about-line"><span class="about-label">SPECS:</span> RTX 4070 and an AMD Ryzen 9 5900X.</div>
             
             <div class="favorites-section">
               <div class="about-label">FAVORITES:</div>
               <div class="about-line indent"><span class="fav-category">~Anime/TV/Movies:</span> Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man, Dandadan</div>
-              <div class="about-line indent"><span class="fav-category">~Video Games:</span> Minecraft, Portal 2, Team Fortress 2, Letframe, Zenless Zone Zero, Fortnite</div>
+              <div class="about-line indent"><span class="fav-category">~Video Games:</span> Minecraft, Portal 2, Team Fortress 2, Warframe, Zenless Zone Zero, Fortnite</div>
               <div class="about-line indent"><span class="fav-category">~Artists:</span> Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People</div>
             </div>
             
@@ -767,7 +729,14 @@ class WindowManager {
 
 			// Check shared maximization state for all content windows
 			if (this.isContentWindowMaximized && !isMobile) {
-				// Start maximized
+				// Start maximized: capture original state first so restore works
+				this.originalWindowStates.set(config.id, {
+					width: windowElement.style.width,
+					height: windowElement.style.height,
+					left: windowElement.style.left,
+					top: windowElement.style.top,
+				});
+				// Apply maximized dimensions
 				this.applyMaximizedState(windowElement, config);
 				windowElement.dataset.maximized = "true";
 			} else {
@@ -962,150 +931,248 @@ class WindowManager {
 
 	private getResearchContent(): string {
 		return `
-      <div class="terminal-text">
-        <h1>$ ls research/</h1>
-        
-        <h2>PPO Gameplaying AI</h2>
-        <p>Implemented Proximal Policy Optimization for autonomous game agents. Developed reinforcement learning models that achieve superhuman performance in classic Atari games through policy gradient methods and reward engineering.</p>
-        <p><strong>Technologies:</strong> Python, PyTorch, OpenAI Gym, Stable Baselines3</p>
-        
-        <h2>Video Content Description with LLM</h2>
-        <p>Created a multi-modal AI system that generates detailed descriptions of video content using large language models. Combines computer vision and natural language processing for automated video analysis and captioning.</p>
-        <p><strong>Technologies:</strong> Python, Transformers, OpenCV, CLIP, GPT-4 API</p>
-        
-        <h2>Gamification of Education</h2>
-        <p>Research into applying game design principles to educational platforms. Studied engagement metrics and learning outcomes when traditional coursework is transformed into interactive, game-like experiences.</p>
-        <p><strong>Focus Areas:</strong> UX Design, Educational Psychology, Data Analysis</p>
-        
-        <h3>Publications & Presentations</h3>
-        <ul>
-          <li>UC Davis Undergraduate Research Conference 2024</li>
-          <li>AI/ML Research Symposium - "Reward Shaping in RL Agents"</li>
-          <li>Educational Technology Workshop - "Games as Learning Tools"</li>
-        </ul>
-      </div>
-    `;
+	      <div class="terminal-text">
+	        <h1>$ ls research/</h1>
+
+							<div class="cards">
+								<article class="card clickable" role="link" tabindex="0" data-url="https://github.com/UCD-193AB-ws24/Minecapstone">
+	            <header class="card-head">
+	              <div class="card-kicker">Senior Design — UC Davis</div>
+	              <h2 class="card-title">Simulated Profiling Environment for Embodied Intelligence (SPEEN)</h2>
+	              <div class="card-meta">Jan 2025 – Jun 2025</div>
+	            </header>
+	            <div class="card-body">
+	              <p>SPEEN is a prototype environment for evaluating LLM-based agentic AI inside a physically simulated world, focusing on embodied interaction, visual modality, and sequential reasoning. I led agent control, environment generation, navigation, test scenarios, and prompt/control interfaces.</p>
+	              <ul>
+	                <li>Shifted mid-project toward rigorous evaluation axes for Embodied AI.</li>
+	                <li>Built procedural worlds, agent-environment tooling, and analysis harnesses.</li>
+	              </ul>
+	            </div>
+	          </article>
+
+						  <article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/AudioVideoDescriptiveAI">
+	            <header class="card-head">
+	              <div class="card-kicker">Applied ML</div>
+	              <h2 class="card-title">Context Embedding for Enhanced Video Description by LLM</h2>
+	              <div class="card-meta">Jul 2024 – Sep 2024</div>
+	            </header>
+	            <div class="card-body">
+	              <p>Project lead on a hacky-but-effective approach to restore temporal/audio context to a vision-only LLM by embedding per-frame cues derived from audio classification (PANNs). Produced narrated recap videos; surfaced limits in multimodal prompting and multi-label audio tagging.</p>
+	              <ul>
+	                <li>Authored methodology and analysis; identified dataset noise and hallucination modes.</li>
+	                <li>Explored fine-tuning/prompting directions for future reliability.</li>
+	              </ul>
+	            </div>
+	          </article>
+
+						  <article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/SonicGameplayingAI">
+	            <header class="card-head">
+	              <div class="card-kicker">Reinforcement Learning</div>
+	              <h2 class="card-title">Gameplaying AI with Proximal Policy Optimization</h2>
+	              <div class="card-meta">Mar 2024 – Jun 2024</div>
+	            </header>
+	            <div class="card-body">
+	              <p>Self-led reimplementation of PPO applied to Sonic the Hedgehog (Genesis). Built the training environment, tuned hyperparameters, and analyzed learning dynamics; reached consistent level clears with ~2 hours of training.</p>
+	              <ul>
+	                <li>Emphasis on data richness and tuning over hand-crafted curriculum.</li>
+	              </ul>
+	            </div>
+	          </article>
+	        </div>
+	      </div>
+	    `;
 	}
 
 	private getProjectsContent(): string {
 		return `
-      <div class="terminal-text">
-        <h1>$ ls projects/</h1>
-        
-        <h2>clembot</h2>
-        <p>Discord bot for UC Davis computer science students with course management, study group coordination, and academic resource sharing. Serves 500+ active users with automated scheduling and notification systems.</p>
-        <p><strong>Tech Stack:</strong> Node.js, Discord.js, PostgreSQL, Docker</p>
-        
-        <h2>gmod_ultrakill_hud</h2>
-        <p>Custom HUD modification for Garry's Mod inspired by ULTRAKILL's visual design. Features dynamic health/armor displays, style meter, and weapon switching animations with smooth UI transitions.</p>
-        <p><strong>Tech Stack:</strong> Lua, GLua, Source Engine</p>
-        
-        <h2>GridGame</h2>
-        <p>Multiplayer puzzle game built with real-time synchronization. Players collaborate to solve grid-based challenges with physics simulation and networking architecture supporting up to 8 concurrent players.</p>
-        <p><strong>Tech Stack:</strong> Java, LibGDX, WebSocket, Maven</p>
-        
-        <h2>FloodFinder</h2>
-        <p>Machine learning application for flood risk prediction using satellite imagery and weather data. Provides early warning system for coastal communities with 85% accuracy in flood detection.</p>
-        <p><strong>Tech Stack:</strong> Python, TensorFlow, Satellite APIs, Flask</p>
-        
-        <h2>softwareInstaller</h2>
-        <p>Cross-platform software deployment tool with dependency resolution and rollback capabilities. Automates installation processes across Windows, macOS, and Linux environments.</p>
-        <p><strong>Tech Stack:</strong> Rust, Cross-compilation, Package Management</p>
-        
-        <h2>misc.dev</h2>
-        <p>Collection of developer utilities and tools including code formatters, API testing helpers, and development environment setup scripts. Open source toolkit used by 100+ developers.</p>
-        <p><strong>Tech Stack:</strong> TypeScript, CLI Tools, GitHub Actions</p>
-        
-        <p><a href="https://github.com/darrollsaddi" target="_blank">View all projects on GitHub →</a></p>
-      </div>
-    `;
+	      <div class="terminal-text">
+	        <h1>$ ls projects/</h1>
+
+							<div class="cards">
+								<article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/clembot">
+	            <header class="card-head">
+	              <div class="card-kicker">Personal AI Assistant</div>
+	              <h2 class="card-title">Project Clembot</h2>
+	              <div class="card-meta">Dec 2021 – Dec 2023</div>
+	            </header>
+	            <div class="card-body">
+	              <p>Discord bot with AI chat, image generation/analysis, link downloading, music, reminders, birthdays, and many social tools. Built iteratively over ~3 years.</p>
+	            </div>
+	          </article>
+
+						  <article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/AudioVideoDescriptiveAI">
+	            <header class="card-head">
+	              <div class="card-kicker">Applied ML</div>
+	              <h2 class="card-title">Context Embedding Video Describer</h2>
+	              <div class="card-meta">Summer 2024</div>
+	            </header>
+	            <div class="card-body">
+	              <p>Embeds temporal/audio cues into frames and prompts a vision-LLM for narrated recaps. Uses PANNs for audio tags and highlights multimodal tradeoffs.</p>
+	            </div>
+	          </article>
+
+						  <article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/SonicGameplayingAI">
+	            <header class="card-head">
+	              <div class="card-kicker">Reinforcement Learning</div>
+	              <h2 class="card-title">Sonic PPO</h2>
+	              <div class="card-meta">Spring 2024</div>
+	            </header>
+	            <div class="card-body">
+	              <p>PPO implementation + environment for Sonic on Genesis; achieved consistent clears after ~2 hours of training through careful tuning.</p>
+	            </div>
+	          </article>
+
+	          <article class="card">
+	            <header class="card-head">
+	              <div class="card-kicker">Client Work</div>
+	              <h2 class="card-title">Comfort Living for Seniors</h2>
+	              <div class="card-meta">2021 – 2025</div>
+	            </header>
+	            <div class="card-body">
+	              <p>Designed a web interface for patient data entry to go paperless; complex spreadsheet-driven workflows; ongoing maintenance and features.</p>
+	            </div>
+	          </article>
+
+	        </div>
+
+	        <p style="margin-top:12px"><a href="https://github.com/Iemontine" target="_blank" rel="noopener">More on GitHub →</a></p>
+	      </div>
+	    `;
 	}
 
 	private getExperienceContent(): string {
 		return `
-      <div class="terminal-text">
-        <h1>$ cat experience.log</h1>
-        
-        <h2>CODELAB AI Developer</h2>
-        <p><em>Software Engineering Intern | Summer 2024</em></p>
-        <ul>
-          <li>Developed machine learning pipelines for natural language processing</li>
-          <li>Optimized model inference speed by 40% through quantization techniques</li>
-          <li>Built RESTful APIs for ML model deployment using FastAPI and Docker</li>
-          <li>Collaborated with cross-functional teams on AI product features</li>
-        </ul>
-        
-        <h2>UC Davis Library IT</h2>
-        <p><em>Technical Support Specialist | 2023 - Present</em></p>
-        <ul>
-          <li>Provide technical support for 40,000+ students and faculty</li>
-          <li>Maintain and troubleshoot campus network infrastructure</li>
-          <li>Develop automation scripts for system maintenance tasks</li>
-          <li>Train new staff on help desk procedures and ticketing systems</li>
-        </ul>
-        
-        <h2>Comfort Living</h2>
-        <p><em>IT Assistant | 2022 - 2023</em></p>
-        <ul>
-          <li>Managed database systems for property management operations</li>
-          <li>Implemented digital workflows reducing processing time by 30%</li>
-          <li>Provided technical support for office software and hardware</li>
-          <li>Created documentation for IT procedures and best practices</li>
-        </ul>
-        
-        <h2>Monsters' Shift</h2>
-        <p><em>Game Development Intern | Summer 2022</em></p>
-        <ul>
-          <li>Contributed to indie game development using Unity and C#</li>
-          <li>Implemented game mechanics and user interface components</li>
-          <li>Participated in agile development cycles and code reviews</li>
-          <li>Gained experience in game design and player experience testing</li>
-        </ul>
-        
-        <h2>STEM Club President</h2>
-        <p><em>Leadership Role | 2021 - 2022</em></p>
-        <ul>
-          <li>Led organization of 200+ members focused on STEM education</li>
-          <li>Organized hackathons, coding workshops, and tech talks</li>
-          <li>Secured sponsorships and partnerships with local tech companies</li>
-          <li>Mentored underclassmen in programming and career development</li>
-        </ul>
-      </div>
-    `;
+	      <div class="terminal-text">
+	        <h1>$ cat experience.log</h1>
+
+	        <div class="timeline">
+	          <div class="tl-item">
+	            <div class="tl-head">
+	              <div class="tl-role">Photos UI Engineer</div>
+				  <div class="tl-org">Apple - Cupertino, CA</div>
+				  <div class="tl-date">Nov 2025 - Present</div>
+	            </div>
+	            <div class="tl-body">
+	              <ul>
+					<li>Shaping next-gen Photos experiences across Apple's ecosystem, leveraging CV/ML and evolving AI capabilities.</li>
+	              </ul>
+	            </div>
+	          </div>
+
+	          <div class="tl-item">
+	            <div class="tl-head">
+	              <div class="tl-role">Photos UI Intern</div>
+				  <div class="tl-org">Apple - Cupertino, CA</div>
+				  <div class="tl-date">Jun 2025 - Sep 2025</div>
+	            </div>
+	            <div class="tl-body">
+	              <ul>
+	                <li>Contributed shipping and prototype UI features in Photos with AI/ML‑based approaches.</li>
+	                <li>Drove ideas from exploration to polished, user‑facing experiences.</li>
+	              </ul>
+	            </div>
+	          </div>
+
+	          <div class="tl-item">
+	            <div class="tl-head">
+	              <div class="tl-role">IT Infrastructure Services Worker</div>
+				  <div class="tl-org">UC Davis Library - Davis, CA</div>
+				  <div class="tl-date">Dec 2023 - Sep 2025</div>
+	            </div>
+	            <div class="tl-body">
+	              <ul>
+	                <li>Automated large‑scale database migrations in Python.</li>
+	                <li>Built .NET tools that accelerated workstation deployments.</li>
+	                <li>Troubleshot equipment/software across multiple departments.</li>
+	              </ul>
+	            </div>
+	          </div>
+
+	          <div class="tl-item">
+	            <div class="tl-head">
+				  <div class="tl-role">AI Developer - Project Volare</div>
+				  <div class="tl-org">CodeLab - Davis, CA</div>
+				  <div class="tl-date">Oct 2024 - Jun 2025</div>
+	            </div>
+	            <div class="tl-body">
+	              <ul>
+	                <li>Back‑end AI for interview practice: tone analysis, LLM integration, realtime speech recognition.</li>
+	                <li>Collaborated with design team; adhered to specs and formal processes.</li>
+	              </ul>
+	            </div>
+	          </div>
+
+	          <div class="tl-item">
+	            <div class="tl-head">
+	              <div class="tl-role">Systems Developer & Administrator</div>
+				  <div class="tl-org">Comfort Living for Seniors - Remote</div>
+				  <div class="tl-date">Aug 2021 - Sep 2025</div>
+	            </div>
+	            <div class="tl-body">
+	              <ul>
+	                <li>Built web interface for patient data; moved operations paperless.</li>
+	                <li>Implemented complex spreadsheet workflows; ongoing maintenance and features.</li>
+	              </ul>
+	            </div>
+	          </div>
+
+	          <div class="tl-item">
+	            <div class="tl-head">
+	              <div class="tl-role">Technology Services Student Worker</div>
+				  <div class="tl-org">Travis Unified School District - Fairfield, CA</div>
+				  <div class="tl-date">May 2019 - Aug 2021</div>
+	            </div>
+	            <div class="tl-body">
+	              <ul>
+					<li>Imaged, repaired, and deployed hundreds of devices across a nine-school district.</li>
+	              </ul>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    `;
 	}
 
 	private getContactContent(): string {
 		return `
-      <div class="terminal-text">
-        <h1>$ contact --info</h1>
-        
-        <h2>Get in Touch</h2>
-        <p>I'm always interested in discussing new opportunities, collaborations, or just chatting about technology and games!</p>
-        
-        <h3>Professional Channels</h3>
-        <p><strong>Email:</strong> <a href="mailto:dsaddi@ucdavis.edu">dsaddi@ucdavis.edu</a></p>
-        <p><strong>LinkedIn:</strong> <a href="https://linkedin.com/in/darroll-saddi" target="_blank">linkedin.com/in/darroll-saddi</a></p>
-        <p><strong>GitHub:</strong> <a href="https://github.com/darrollsaddi" target="_blank">github.com/darrollsaddi</a></p>
-        
-        <h3>Gaming & Social</h3>
-        <p><strong>Steam:</strong> Iemontine</p>
-        <p><strong>Discord:</strong> iemontine</p>
-        
-        <h3>Portfolio & Resume</h3>
-        <p><strong>Website:</strong> <a href="https://darrollsaddi.github.io/portfolio" target="_blank">darrollsaddi.github.io/portfolio</a></p>
-        <p><strong>Resume:</strong> <a href="/resume.pdf" target="_blank">Download PDF</a></p>
-        
-  <div style="margin-top: 20px; padding: 10px; border: 1px solid var(--terminal-teal); border-radius: 4px; background: rgba(79, 174, 155, 0.1);">
-          <h3>Looking for opportunities in:</h3>
-          <ul>
-            <li>Machine Learning Engineering</li>
-            <li>Software Development</li>
-            <li>AI Research Internships</li>
-            <li>Game Development</li>
-          </ul>
-        </div>
-      </div>
-    `;
+	      <div class="terminal-text">
+	        <h1>$ contact --info</h1>
+
+	        <div class="contact-grid">
+	          <div class="contact-row">
+	            <div class="mono">GitHub:</div>
+	            <a class="btn" href="https://github.com/Iemontine" target="_blank" rel="noopener">github.com/Iemontine</a>
+	          </div>
+	          <div class="contact-row">
+	            <div class="mono">LinkedIn:</div>
+	            <a class="btn" href="https://linkedin.com/in/darrolls/" target="_blank" rel="noopener">linkedin.com/in/darrolls</a>
+	          </div>
+	        </div>
+
+	        <div class="contact-panel">
+	          <div class="panel-title">I'm open to being messaged on...</div>
+	          <div class="panel-rows">
+	            <div class="panel-row">
+	              <div class="service-icon steam" aria-hidden="true"></div>
+	              <div class="contact-label">Steam</div>
+	              <div class="value-pill mono" id="contact-steam">https://steamcommunity.com/id/computereality</div>
+	              <div class="actions">
+	                <button class="btn small" data-copy="#contact-steam">Copy</button>
+	                <a class="btn small" href="https://steamcommunity.com/id/computereality" target="_blank" rel="noopener">Open</a>
+	              </div>
+	            </div>
+	            <div class="panel-row">
+	              <div class="service-icon discord" aria-hidden="true"></div>
+	              <div class="contact-label">Discord</div>
+	              <div class="value-pill mono" id="contact-discord">clemtine</div>
+	              <div class="actions">
+	                <button class="btn small" data-copy="#contact-discord">Copy</button>
+	              </div>
+	            </div>
+	          </div>
+	        </div>
+	      </div>
+	    `;
 	}
 
 	// ============================
@@ -1135,7 +1202,7 @@ class WindowManager {
 	}
 
 	private getAsciiArt(windowId: string | null): string {
-		return asciiArts[windowId || "research"] || defaultAscii;
+		return asciiArts[windowId || "about-me"] || defaultAscii;
 	}
 
 	private updateAsciiWindow(): void {
@@ -1446,8 +1513,6 @@ class WindowManager {
 		this.charWidthPerPx = ratio > 0 ? ratio : 0.6;
 		return this.charWidthPerPx;
 	}
-
-	// All typing/animation logic removed for simplicity. ASCII renders instantly.
 }
 
 // ============================
@@ -1464,6 +1529,47 @@ document.addEventListener("DOMContentLoaded", () => {
 			"%c[TERMINAL] Portfolio Initialized",
 			"color: #FFA500; font-family: monospace;"
 		);
+	}
+});
+
+// Copy-to-clipboard for contact buttons and any [data-copy]
+document.addEventListener('click', async (e) => {
+	const t = e.target as HTMLElement;
+	if (t && t.matches('button[data-copy]')) {
+		const sel = t.getAttribute('data-copy') || '';
+		const el = document.querySelector(sel) as HTMLElement | null;
+		if (!el) return;
+		const text = (el.textContent || '').trim();
+		try {
+			await navigator.clipboard.writeText(text);
+			t.classList.add('success');
+			const prev = t.textContent;
+			t.textContent = 'Copied!';
+			setTimeout(() => { t.textContent = prev || 'Copy'; t.classList.remove('success'); }, 900);
+		} catch (err) {
+			console.error('Copy failed', err);
+		}
+	}
+});
+
+// Clickable cards: open primary URL on click or keyboard
+document.addEventListener('click', (e) => {
+	const target = e.target as HTMLElement;
+	const card = target.closest('.card.clickable') as HTMLElement | null;
+	if (!card) return;
+	const url = card.getAttribute('data-url');
+	if (url) window.open(url, '_blank', 'noopener');
+});
+
+document.addEventListener('keydown', (e) => {
+	const target = e.target as HTMLElement;
+	if (!target || !target.classList || !target.classList.contains('clickable')) return;
+	if (e.key === 'Enter' || e.key === ' ') {
+		const url = target.getAttribute('data-url');
+		if (url) {
+			e.preventDefault();
+			window.open(url, '_blank', 'noopener');
+		}
 	}
 });
 
