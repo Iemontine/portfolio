@@ -11,10 +11,7 @@ interface WindowConfig {
 	content: string;
 	width?: number;
 	height?: number;
-	x?: number;
-	y?: number;
 	theme?: "default";
-	isFixed?: boolean;
 }
 
 interface DesktopIcon {
@@ -49,10 +46,7 @@ class WindowManager {
 	private pendingFontSize: number | null = null;
 
 	// Window state management for maximize/restore
-	private originalWindowStates: Map<
-		string,
-		{ width: string; height: string; left: string; top: string }
-	> = new Map();
+	private originalWindowStates: Map<string, { width: string; height: string }>= new Map();
 
 	// Shared maximization state for content windows (not About Me)
 	private isContentWindowMaximized: boolean = true;
@@ -72,58 +66,18 @@ class WindowManager {
 		// Responsive updates on resize
 		window.addEventListener("resize", () => {
 			this.handleResize();
-			// Recompute ASCII font-size on resize when visible
-			if (this.asciiWindow && this.asciiWindow.style.display !== "none") {
-				// Skip if still hidden (first-show sizing)
-				if ((this.asciiWindow as HTMLElement).style.visibility === "hidden") return;
-				const asciiElement = this.asciiWindow.querySelector(
-					".ascii-art"
-				) as HTMLElement;
-				if (asciiElement) {
-					// Skip sizing if no content yet
-					if (!(asciiElement.textContent || "").trim()) return;
-					const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
-					const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
-					const size = this.calculateOptimalFontSize(
-						this.targetText || asciiElement.textContent || "",
-						activeId === "about-me" ? 64 : 14
-					);
-					if (size > 0) {
-						if (this.typingMode === "idle") {
-							asciiElement.style.fontSize = `${size}px`;
-							this.pendingFontSize = null;
-						} else {
-							this.pendingFontSize = size;
-						}
-					}
-				}
-			}
+			this.recalcAsciiFontSizeIfReady();
 		});
 
 		// Keep ASCII responsive to container mutations/zoom
 		const setupAsciiObserver = () => {
 			if (!this.asciiWindow) return;
-			const asciiElement = this.asciiWindow.querySelector(".ascii-art") as HTMLElement | null;
+			const asciiElement = this.asciiWindow.querySelector(
+				".ascii-art"
+			) as HTMLElement | null;
 			if (!asciiElement) return;
 			const ro = new ResizeObserver(() => {
-				// Skip if still hidden (first-show sizing)
-				if ((this.asciiWindow as HTMLElement).style.visibility === "hidden") return;
-				// Skip if no text yet
-				if (!(asciiElement.textContent || "").trim()) return;
-				const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
-				const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
-				const size = this.calculateOptimalFontSize(
-					this.targetText || asciiElement.textContent || "",
-					activeId === "about-me" ? 64 : 14
-				);
-				if (size > 0) {
-					if (this.typingMode === "idle") {
-						asciiElement.style.fontSize = `${size}px`;
-						this.pendingFontSize = null;
-					} else {
-						this.pendingFontSize = size;
-					}
-				}
+				this.recalcAsciiFontSizeIfReady();
 			});
 			ro.observe(this.asciiWindow);
 		};
@@ -187,7 +141,6 @@ class WindowManager {
       <div class="label">${icon.label}</div>
     `;
 
-
 		iconElement.addEventListener("click", () => {
 			this.toggleWindow(icon.windowId);
 		});
@@ -211,19 +164,19 @@ class WindowManager {
 		container.className = "top-right-container";
 
 		// Box 1: Data Matrix (wider)
-			const dataBox = document.createElement("div");
-			dataBox.className = "info-box data-matrix";
-			// Append first so measurements are correct
-			container.appendChild(dataBox);
-			// Generate after layout to ensure correct sizing
-			requestAnimationFrame(() => {
-				dataBox.innerHTML = this.generateColumnsForBox(dataBox);
-			});
-			// Update columns when the box resizes
-			const ro = new ResizeObserver(() => {
-				dataBox.innerHTML = this.generateColumnsForBox(dataBox);
-			});
-			ro.observe(dataBox);
+		const dataBox = document.createElement("div");
+		dataBox.className = "info-box data-matrix";
+		// Append first so measurements are correct
+		container.appendChild(dataBox);
+		// Generate after layout to ensure correct sizing
+		requestAnimationFrame(() => {
+			dataBox.innerHTML = this.generateColumnsForBox(dataBox);
+		});
+		// Update columns when the box resizes
+		const ro = new ResizeObserver(() => {
+			dataBox.innerHTML = this.generateColumnsForBox(dataBox);
+		});
+		ro.observe(dataBox);
 
 		// Box 2: Stats (narrow)
 		const statsBox = document.createElement("div");
@@ -238,13 +191,13 @@ class WindowManager {
 		// Box 3: Logo (square)
 		const logoBox = document.createElement("div");
 		logoBox.className = "info-box logo";
-		const img = document.createElement('img');
-		img.className = 'logo-img logo-spin';
-		img.setAttribute('aria-hidden','true');
-		img.setAttribute('role','presentation');
-		img.decoding = 'async';
-		(img as any).loading = 'eager';
-		img.src = 'clem.png';
+		const img = document.createElement("img");
+		img.className = "logo-img logo-spin";
+		img.setAttribute("aria-hidden", "true");
+		img.setAttribute("role", "presentation");
+		img.decoding = "async";
+		(img as any).loading = "eager";
+		img.src = "clem.png";
 		logoBox.appendChild(img);
 		container.appendChild(logoBox);
 
@@ -254,7 +207,7 @@ class WindowManager {
 		}, 2000);
 	}
 
-		private generateColumns(colCount: number, heightRows: number): string {
+	private generateColumns(colCount: number, heightRows: number): string {
 		const alphabets = [
 			"░▒▓█",
 			"·•◦",
@@ -263,7 +216,7 @@ class WindowManager {
 			"⎯⎯⎯",
 			"abcdef",
 			"+=-",
-			"∴∵∶"
+			"∴∵∶",
 		];
 		const dir = (i: number) => (i % 2 === 0 ? 1 : -1);
 		let html = '<div class="data-columns">';
@@ -277,36 +230,37 @@ class WindowManager {
 			// Randomize animation phase so columns are desynced without re-rendering
 			const delay = (Math.random() * parseFloat(dur)).toFixed(2);
 			const direction = dir(i);
-			html += `<div class=\"data-col\"><span class=\"data-stream\" style=\"animation-duration:${dur}s; animation-direction:${direction>0?'normal':'reverse'}; animation-delay:-${delay}s;\">${stream}</span></div>`;
+			html += `<div class=\"data-col\"><span class=\"data-stream\" style=\"animation-duration:${dur}s; animation-direction:${
+				direction > 0 ? "normal" : "reverse"
+			}; animation-delay:-${delay}s;\">${stream}</span></div>`;
 		}
 		html += "</div>";
-			return html;
+		return html;
 	}
 
-		private generateColumnsForBox(box: HTMLElement): string {
-			const cs = getComputedStyle(box);
-			const padL = parseFloat(cs.paddingLeft || '0');
-			const padR = parseFloat(cs.paddingRight || '0');
-			const padT = parseFloat(cs.paddingTop || '0');
-			const padB = parseFloat(cs.paddingBottom || '0');
-			const innerW = Math.max(0, box.clientWidth - padL - padR);
-			const innerH = Math.max(0, box.clientHeight - padT - padB);
-			const colW = 10; // must match CSS grid-auto-columns
-			const gap = 4;   // must match CSS gap
-			const colCount = Math.max(10, Math.ceil((innerW + gap) / (colW + gap)));
-			const linePx = 9; // must match .data-stream font-size * line-height
-			const rows = Math.max(24, Math.ceil(innerH / linePx) * 2);
-			return this.generateColumns(colCount, rows);
-		}
-
+	private generateColumnsForBox(box: HTMLElement): string {
+		const cs = getComputedStyle(box);
+		const padL = parseFloat(cs.paddingLeft || "0");
+		const padR = parseFloat(cs.paddingRight || "0");
+		const padT = parseFloat(cs.paddingTop || "0");
+		const padB = parseFloat(cs.paddingBottom || "0");
+		const innerW = Math.max(0, box.clientWidth - padL - padR);
+		const innerH = Math.max(0, box.clientHeight - padT - padB);
+		const colW = 10; // must match CSS grid-auto-columns
+		const gap = 4; // must match CSS gap
+		const colCount = Math.max(10, Math.ceil((innerW + gap) / (colW + gap)));
+		const linePx = 9; // must match .data-stream font-size * line-height
+		const rows = Math.max(24, Math.ceil(innerH / linePx) * 2);
+		return this.generateColumns(colCount, rows);
+	}
 
 	private updateStats(container: HTMLElement): void {
 		const speed = (1.8 + Math.random() * 1.6).toFixed(2);
 		const count = (900 + Math.floor(Math.random() * 400)).toString();
 		const temp = (35 + Math.random() * 20).toFixed(1);
-		const s = container.querySelector('#stat-speed') as HTMLElement;
-		const c = container.querySelector('#stat-count') as HTMLElement;
-		const t = container.querySelector('#stat-temp') as HTMLElement;
+		const s = container.querySelector("#stat-speed") as HTMLElement;
+		const c = container.querySelector("#stat-count") as HTMLElement;
+		const t = container.querySelector("#stat-temp") as HTMLElement;
 		if (s) s.textContent = speed;
 		if (c) c.textContent = count;
 		if (t) t.textContent = temp;
@@ -399,7 +353,11 @@ class WindowManager {
 		this.updateAsciiWindow();
 
 		// Ensure at-most-one content window is visible: instantly close others
-		this.closeAllContentWindows({ exceptId: windowId, instant: true, suppressAscii: true });
+		this.closeAllContentWindows({
+			exceptId: windowId,
+			instant: true,
+			suppressAscii: true,
+		});
 
 		const config = this.getWindowConfig(windowId);
 		if (config) {
@@ -407,10 +365,12 @@ class WindowManager {
 		}
 	}
 
-
-
 	// Close all content windows with options to instantly hide and suppress ASCII updates
-	private closeAllContentWindows(options?: { exceptId?: string; instant?: boolean; suppressAscii?: boolean }): void {
+	private closeAllContentWindows(options?: {
+		exceptId?: string;
+		instant?: boolean;
+		suppressAscii?: boolean;
+	}): void {
 		const exceptId = options?.exceptId || null;
 		const instant = options?.instant === true;
 		const suppress = options?.suppressAscii === true;
@@ -733,8 +693,6 @@ class WindowManager {
 				this.originalWindowStates.set(config.id, {
 					width: windowElement.style.width,
 					height: windowElement.style.height,
-					left: windowElement.style.left,
-					top: windowElement.style.top,
 				});
 				// Apply maximized dimensions
 				this.applyMaximizedState(windowElement, config);
@@ -810,7 +768,10 @@ class WindowManager {
 		}
 	}
 
-	private closeWindow(windowId: string, opts?: { suppressAscii?: boolean; instant?: boolean }): void {
+	private closeWindow(
+		windowId: string,
+		opts?: { suppressAscii?: boolean; instant?: boolean }
+	): void {
 		const windowElement = this.windows.get(windowId);
 		if (!windowElement) return;
 
@@ -876,8 +837,6 @@ class WindowManager {
 				this.originalWindowStates.set(windowId, {
 					width: windowElement.style.width,
 					height: windowElement.style.height,
-					left: windowElement.style.left,
-					top: windowElement.style.top,
 				});
 
 				// Apply maximized dimensions (Tailwind handles centering)
@@ -939,7 +898,7 @@ class WindowManager {
 	            <header class="card-head">
 	              <div class="card-kicker">Senior Design — UC Davis</div>
 	              <h2 class="card-title">Simulated Profiling Environment for Embodied Intelligence (SPEEN)</h2>
-	              <div class="card-meta">Jan 2025 – Jun 2025</div>
+	              <div class="card-meta">Spring 2025</div>
 	            </header>
 	            <div class="card-body">
 	              <p>SPEEN is a prototype environment for evaluating LLM-based agentic AI inside a physically simulated world, focusing on embodied interaction, visual modality, and sequential reasoning. I led agent control, environment generation, navigation, test scenarios, and prompt/control interfaces.</p>
@@ -954,7 +913,7 @@ class WindowManager {
 	            <header class="card-head">
 	              <div class="card-kicker">Applied ML</div>
 	              <h2 class="card-title">Context Embedding for Enhanced Video Description by LLM</h2>
-	              <div class="card-meta">Jul 2024 – Sep 2024</div>
+	              <div class="card-meta">Summer 2024</div>
 	            </header>
 	            <div class="card-body">
 	              <p>Project lead on a hacky-but-effective approach to restore temporal/audio context to a vision-only LLM by embedding per-frame cues derived from audio classification (PANNs). Produced narrated recap videos; surfaced limits in multimodal prompting and multi-label audio tagging.</p>
@@ -969,7 +928,7 @@ class WindowManager {
 	            <header class="card-head">
 	              <div class="card-kicker">Reinforcement Learning</div>
 	              <h2 class="card-title">Gameplaying AI with Proximal Policy Optimization</h2>
-	              <div class="card-meta">Mar 2024 – Jun 2024</div>
+	              <div class="card-meta">Spring 2024</div>
 	            </header>
 	            <div class="card-body">
 	              <p>Self-led reimplementation of PPO applied to Sonic the Hedgehog (Genesis). Built the training environment, tuned hyperparameters, and analyzed learning dynamics; reached consistent level clears with ~2 hours of training.</p>
@@ -1226,7 +1185,8 @@ class WindowManager {
 			if (aw.style.display !== "none") {
 				// Cancel an in-flight enter to avoid double-listener and ensure we exit cleanly
 				if (aw.classList.contains("ascii-enter")) {
-					if (this.asciiEnterHandler) aw.removeEventListener("animationend", this.asciiEnterHandler);
+					if (this.asciiEnterHandler)
+						aw.removeEventListener("animationend", this.asciiEnterHandler);
 					aw.classList.remove("ascii-enter");
 					this.asciiEnterHandler = null;
 				}
@@ -1262,7 +1222,8 @@ class WindowManager {
 		// Ensure visible and animate in when coming from hidden
 		// Cancel a pending exit if we're showing again quickly
 		if (aw.classList.contains("ascii-exit")) {
-			if (this.asciiExitHandler) aw.removeEventListener("animationend", this.asciiExitHandler);
+			if (this.asciiExitHandler)
+				aw.removeEventListener("animationend", this.asciiExitHandler);
 			aw.classList.remove("ascii-exit");
 			this.asciiExitHandler = null;
 		}
@@ -1292,7 +1253,7 @@ class WindowManager {
 		const asciiRoot = this.asciiWindow as HTMLElement;
 		const overrideLh = asciiRoot.style.getPropertyValue("--ascii-line-height");
 		if (!overrideLh) {
-			const lines = (asciiArt.trimEnd().split("\n").length) || 1;
+			const lines = asciiArt.trimEnd().split("\n").length || 1;
 			let dyn = 1.0;
 			if (lines > 70) dyn = 0.85;
 			else if (lines > 60) dyn = 0.9;
@@ -1448,18 +1409,23 @@ class WindowManager {
 		return i;
 	}
 
-	private calculateOptimalFontSize(asciiContent: string, maxPx: number = 14): number {
-	if (!this.asciiWindow) return 10;
-	// Prefer the content container to account for padding
-	const contentEl = this.asciiWindow.querySelector('.ascii-content') as HTMLElement | null;
-	const measureEl = contentEl || this.asciiWindow;
-	const cs = getComputedStyle(measureEl);
-	const padL = parseFloat(cs.paddingLeft || '0');
-	const padR = parseFloat(cs.paddingRight || '0');
-	const padT = parseFloat(cs.paddingTop || '0');
-	const padB = parseFloat(cs.paddingBottom || '0');
-	const innerW = Math.max(0, measureEl.clientWidth - padL - padR);
-	const innerH = Math.max(0, measureEl.clientHeight - padT - padB);
+	private calculateOptimalFontSize(
+		asciiContent: string,
+		maxPx: number = 14
+	): number {
+		if (!this.asciiWindow) return 10;
+		// Prefer the content container to account for padding
+		const contentEl = this.asciiWindow.querySelector(
+			".ascii-content"
+		) as HTMLElement | null;
+		const measureEl = contentEl || this.asciiWindow;
+		const cs = getComputedStyle(measureEl);
+		const padL = parseFloat(cs.paddingLeft || "0");
+		const padR = parseFloat(cs.paddingRight || "0");
+		const padT = parseFloat(cs.paddingTop || "0");
+		const padB = parseFloat(cs.paddingBottom || "0");
+		const innerW = Math.max(0, measureEl.clientWidth - padL - padR);
+		const innerH = Math.max(0, measureEl.clientHeight - padT - padB);
 
 		// Parse ASCII content to get dimensions
 		const lines = asciiContent.trimEnd().split("\n");
@@ -1470,21 +1436,26 @@ class WindowManager {
 		// Character width ratio measured via probe for current font (fallback 0.6)
 		const chPerPx = this.measureCharWidthPerPx(measureEl);
 		// Derive dynamic line-height similar to previous ArtBox logic to fit height better
-		const linesCount = lineCount;
 		let dynLineHeight = 0.7; // base fallback matching CSS
-		if (linesCount > 70) dynLineHeight = 0.55;
-		else if (linesCount > 60) dynLineHeight = 0.60;
-		else if (linesCount > 50) dynLineHeight = 0.65;
-		else if (linesCount > 40) dynLineHeight = 0.70;
+		if (lineCount > 70) dynLineHeight = 0.55;
+		else if (lineCount > 60) dynLineHeight = 0.6;
+		else if (lineCount > 50) dynLineHeight = 0.65;
+		else if (lineCount > 40) dynLineHeight = 0.7;
 		else dynLineHeight = 0.75;
 		// Respect an explicit CSS override if present
-		const lhVar = getComputedStyle(this.asciiWindow).getPropertyValue("--ascii-line-height").trim();
+		const lhVar = getComputedStyle(this.asciiWindow)
+			.getPropertyValue("--ascii-line-height")
+			.trim();
 		const lineHeightRatio = lhVar ? parseFloat(lhVar) : dynLineHeight;
 		// Subtract a small epsilon to ensure we never overflow width
 		const epsilonW = 0.5;
 		const epsilonH = 1.0;
-		const fontSizeByWidth = Math.floor((innerW - epsilonW) / Math.max(1, maxLineLength * chPerPx));
-		const fontSizeByHeight = Math.floor((innerH - epsilonH) / Math.max(1, lineCount * lineHeightRatio));
+		const fontSizeByWidth = Math.floor(
+			(innerW - epsilonW) / Math.max(1, maxLineLength * chPerPx)
+		);
+		const fontSizeByHeight = Math.floor(
+			(innerH - epsilonH) / Math.max(1, lineCount * lineHeightRatio)
+		);
 
 		// Use the smaller constraint to ensure everything fits
 		const calculatedSize = Math.min(fontSizeByWidth, fontSizeByHeight);
@@ -1493,19 +1464,41 @@ class WindowManager {
 		return Math.max(4, Math.min(maxPx, calculatedSize));
 	}
 
+	// Recalculate ASCII font-size when visible and content exists; defer if typing
+	private recalcAsciiFontSizeIfReady(): void {
+		if (!this.asciiWindow || this.asciiWindow.style.display === "none") return;
+		if ((this.asciiWindow as HTMLElement).style.visibility === "hidden") return;
+		const asciiElement = this.asciiWindow.querySelector(".ascii-art") as HTMLElement | null;
+		if (!asciiElement) return;
+		const text = (asciiElement.textContent || "").trim();
+		if (!text) return;
+		const aboutVisible = !!(this.aboutMeWindow && this.aboutMeWindow.style.display !== "none");
+		const activeId = this.currentContentWindow || (aboutVisible ? "about-me" : null);
+		const size = this.calculateOptimalFontSize(this.targetText || text, activeId === "about-me" ? 64 : 14);
+		if (size > 0) {
+			if (this.typingMode === "idle") {
+				asciiElement.style.fontSize = `${size}px`;
+				this.pendingFontSize = null;
+			} else {
+				this.pendingFontSize = size;
+			}
+		}
+	}
+
 	private measureCharWidthPerPx(container: HTMLElement): number {
-		if (this.charWidthPerPx && this.charWidthPerPx > 0) return this.charWidthPerPx;
-		const probe = document.createElement('div');
-		probe.style.position = 'absolute';
-		probe.style.visibility = 'hidden';
-		probe.style.whiteSpace = 'nowrap';
-		probe.style.left = '-9999px';
-		probe.style.top = '0';
-		probe.style.fontFamily = 'MS UI Gothic, monospace';
-		probe.style.fontSize = '100px';
-		probe.style.lineHeight = '100px';
-		probe.style.width = '1ch';
-		probe.textContent = '0';
+		if (this.charWidthPerPx && this.charWidthPerPx > 0)
+			return this.charWidthPerPx;
+		const probe = document.createElement("div");
+		probe.style.position = "absolute";
+		probe.style.visibility = "hidden";
+		probe.style.whiteSpace = "nowrap";
+		probe.style.left = "-9999px";
+		probe.style.top = "0";
+		probe.style.fontFamily = "MS UI Gothic, monospace";
+		probe.style.fontSize = "100px";
+		probe.style.lineHeight = "100px";
+		probe.style.width = "1ch";
+		probe.textContent = "0";
 		container.appendChild(probe);
 		const widthPx = probe.getBoundingClientRect().width || 60;
 		probe.remove();
@@ -1533,42 +1526,46 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // Copy-to-clipboard for contact buttons and any [data-copy]
-document.addEventListener('click', async (e) => {
+document.addEventListener("click", async (e) => {
 	const t = e.target as HTMLElement;
-	if (t && t.matches('button[data-copy]')) {
-		const sel = t.getAttribute('data-copy') || '';
+	if (t && t.matches("button[data-copy]")) {
+		const sel = t.getAttribute("data-copy") || "";
 		const el = document.querySelector(sel) as HTMLElement | null;
 		if (!el) return;
-		const text = (el.textContent || '').trim();
+		const text = (el.textContent || "").trim();
 		try {
 			await navigator.clipboard.writeText(text);
-			t.classList.add('success');
+			t.classList.add("success");
 			const prev = t.textContent;
-			t.textContent = 'Copied!';
-			setTimeout(() => { t.textContent = prev || 'Copy'; t.classList.remove('success'); }, 900);
+			t.textContent = "Copied!";
+			setTimeout(() => {
+				t.textContent = prev || "Copy";
+				t.classList.remove("success");
+			}, 900);
 		} catch (err) {
-			console.error('Copy failed', err);
+			console.error("Copy failed", err);
 		}
 	}
 });
 
 // Clickable cards: open primary URL on click or keyboard
-document.addEventListener('click', (e) => {
+document.addEventListener("click", (e) => {
 	const target = e.target as HTMLElement;
-	const card = target.closest('.card.clickable') as HTMLElement | null;
+	const card = target.closest(".card.clickable") as HTMLElement | null;
 	if (!card) return;
-	const url = card.getAttribute('data-url');
-	if (url) window.open(url, '_blank', 'noopener');
+	const url = card.getAttribute("data-url");
+	if (url) window.open(url, "_blank", "noopener");
 });
 
-document.addEventListener('keydown', (e) => {
+document.addEventListener("keydown", (e) => {
 	const target = e.target as HTMLElement;
-	if (!target || !target.classList || !target.classList.contains('clickable')) return;
-	if (e.key === 'Enter' || e.key === ' ') {
-		const url = target.getAttribute('data-url');
+	if (!target || !target.classList || !target.classList.contains("clickable"))
+		return;
+	if (e.key === "Enter" || e.key === " ") {
+		const url = target.getAttribute("data-url");
 		if (url) {
 			e.preventDefault();
-			window.open(url, '_blank', 'noopener');
+			window.open(url, "_blank", "noopener");
 		}
 	}
 });
