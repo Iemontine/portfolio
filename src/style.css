@@ -1514,7 +1514,7 @@ html::before {
 }
 
 .ascii-art {
-	font-family: "MS UI Gothic", monospace;
+	font-family: Consolas, 'Courier New', monospace;
 	font-size: 11px;
 	line-height: var(--ascii-line-height, 1.0);
 	color: var(--terminal-teal);
