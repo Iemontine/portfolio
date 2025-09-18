@@ -513,7 +513,7 @@ J----(===)----L
             <div class="currents-title">currents</div>
             <div class="current-item"><span class="status-watching">~Watching:</span> Apothecary Diaries</div>
             <div class="current-item"><span class="status-playing">~Playing:</span> Elden Ring: Nightreign, Hollow Knight</div>
-            <div class="current-item"><span class="status-listening">~Listening to:</span> Cafune </div>
+            <div class="current-item"><span class="status-listening">~Listening to:</span> Cafuné </div>
           </div>
           
           <div class="intro-text">I'm <span class="highlight-name">lemontine</span>, you might also know me as darroll!</div>
