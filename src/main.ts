@@ -1,5 +1,9 @@
 import "./style.css";
 import { asciiArts, defaultAscii } from "./ascii-art";
+import experienceHtml from "./content/experience.html?raw";
+import researchHtml from "./content/research.html?raw";
+import projectsHtml from "./content/projects.html?raw";
+import contactHtml from "./content/contact.html?raw";
 
 // ============================
 // INTERFACES & TYPES
@@ -26,7 +30,8 @@ interface DesktopIcon {
 
 class WindowManager {
 	private windows: Map<string, HTMLElement> = new Map();
-	private zIndexCounter: number = 400; // Above static chrome
+	// Z-order is determined by DOM order in #window-container;
+	// last child renders on top. No global z-index counter needed.
 	private currentContentWindow: string | null = null;
 	private asciiWindow: HTMLElement | null = null;
 
@@ -287,7 +292,7 @@ class WindowManager {
 			aboutIcon.style.position = "absolute";
 			aboutIcon.style.bottom = "0px";
 			aboutIcon.style.right = "0px";
-			aboutIcon.style.zIndex = "1"; // Low z-index within desktop context
+			// No explicit z-index; desktop grid establishes order
 		}
 
 		const desktop = document.getElementById("desktop")!;
@@ -297,7 +302,7 @@ class WindowManager {
 	private getAboutMeContent(): string {
 		return `
       <div class="terminal-text">
-        <div class="system-header">lemontine [Version 2.025.915]</div>
+        <div class="system-header">lemontine [Version 2.025.917]</div>
         
         <div class="section">
           <div class="section-title">LEMONTINE</div>
@@ -344,7 +349,7 @@ class WindowManager {
 		if (this.windows.has(windowId)) {
 			this.currentContentWindow = windowId;
 			this.updateAsciiWindow();
-			this.bringToFront(windowId);
+			this.moveWindowToFront(windowId);
 			return;
 		}
 
@@ -413,7 +418,7 @@ class WindowManager {
 		aboutElement.style.bottom = "20px";
 		aboutElement.style.right = "20px";
 		// Size will be computed responsively below
-		aboutElement.style.zIndex = "100"; // High z-index but separate from content windows
+	// layer handled by DOM order; no inline z-index
 
 		aboutElement.innerHTML = `
       <div class="window-titlebar">
@@ -601,7 +606,7 @@ class WindowManager {
 
 	private bringAboutMeToFront(): void {
 		if (this.aboutMeWindow) {
-			this.aboutMeWindow.style.zIndex = "100";
+			// layer handled by DOM order
 		}
 	}
 
@@ -703,7 +708,7 @@ class WindowManager {
 			}
 		}
 
-		windowElement.style.zIndex = String(this.zIndexCounter++);
+	// DOM order controls stacking; append later for front-most
 
 		windowElement.innerHTML = `
       <div class="window-titlebar">
@@ -726,12 +731,13 @@ class WindowManager {
 		windowElement.classList.add("window-enter");
 		setTimeout(() => windowElement.classList.remove("window-enter"), 400);
 
+		// Append once; DOM order ensures it's on top
 		windowContainer.appendChild(windowElement);
 		this.windows.set(config.id, windowElement);
 
 		// Focus the window
 		windowElement.addEventListener("mousedown", () => {
-			this.bringToFront(config.id);
+			this.moveWindowToFront(config.id);
 		});
 	}
 
@@ -761,11 +767,15 @@ class WindowManager {
 		});
 	}
 
-	private bringToFront(windowId: string): void {
+	private moveWindowToFront(windowId: string): void {
 		const windowElement = this.windows.get(windowId);
-		if (windowElement) {
-			windowElement.style.zIndex = String(this.zIndexCounter++);
-		}
+		const container = document.getElementById("window-container");
+		if (!windowElement || !container) return;
+			// Move node to end only if not already last to avoid animation restarts
+			const last = container.lastElementChild;
+			if (last !== windowElement) {
+				container.appendChild(windowElement);
+			}
 	}
 
 	private closeWindow(
@@ -821,8 +831,7 @@ class WindowManager {
 				if (originalState) {
 					windowElement.style.width = originalState.width;
 					windowElement.style.height = originalState.height;
-					// Remove maximized z-index boost
-					windowElement.classList.remove("z-20");
+					// No z-index boost required; DOM order is used
 				}
 
 				// Update window state to non-maximized
@@ -880,259 +889,28 @@ class WindowManager {
 		windowElement.style.width = `${finalWidth}px`;
 		windowElement.style.height = `${finalHeight}px`;
 
-		// Add z-index boost for maximized windows
-		windowElement.classList.add("z-20");
+	// No z-index boost required; DOM order is used
 	}
 
 	// ============================
 	// CONTENT METHODS
 	// ============================
 
-	private getResearchContent(): string {
-		return `
-	      <div class="terminal-text">
-	        <h1>$ ls research/</h1>
+		private getResearchContent(): string {
+				return researchHtml;
+		}
 
-							<div class="cards">
-								<article class="card clickable" role="link" tabindex="0" data-url="https://github.com/UCD-193AB-ws24/Minecapstone">
-	            <header class="card-head">
-	              <div class="card-kicker">Senior Design — UC Davis</div>
-	              <h2 class="card-title">Simulated Profiling Environment for Embodied Intelligence (SPEEN)</h2>
-	              <div class="card-meta">Spring 2025</div>
-	            </header>
-	            <div class="card-body">
-	              <p>SPEEN is a prototype environment for evaluating LLM-based agentic AI inside a physically simulated world, focusing on embodied interaction, visual modality, and sequential reasoning. I led agent control, environment generation, navigation, test scenarios, and prompt/control interfaces.</p>
-	              <ul>
-	                <li>Shifted mid-project toward rigorous evaluation axes for Embodied AI.</li>
-	                <li>Built procedural worlds, agent-environment tooling, and analysis harnesses.</li>
-	              </ul>
-	            </div>
-	          </article>
-
-						  <article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/AudioVideoDescriptiveAI">
-	            <header class="card-head">
-	              <div class="card-kicker">Applied ML</div>
-	              <h2 class="card-title">Context Embedding for Enhanced Video Description by LLM</h2>
-	              <div class="card-meta">Summer 2024</div>
-	            </header>
-	            <div class="card-body">
-	              <p>Project lead on a hacky-but-effective approach to restore temporal/audio context to a vision-only LLM by embedding per-frame cues derived from audio classification (PANNs). Produced narrated recap videos; surfaced limits in multimodal prompting and multi-label audio tagging.</p>
-	              <ul>
-	                <li>Authored methodology and analysis; identified dataset noise and hallucination modes.</li>
-	                <li>Explored fine-tuning/prompting directions for future reliability.</li>
-	              </ul>
-	            </div>
-	          </article>
-
-						  <article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/SonicGameplayingAI">
-	            <header class="card-head">
-	              <div class="card-kicker">Reinforcement Learning</div>
-	              <h2 class="card-title">Gameplaying AI with Proximal Policy Optimization</h2>
-	              <div class="card-meta">Spring 2024</div>
-	            </header>
-	            <div class="card-body">
-	              <p>Self-led reimplementation of PPO applied to Sonic the Hedgehog (Genesis). Built the training environment, tuned hyperparameters, and analyzed learning dynamics; reached consistent level clears with ~2 hours of training.</p>
-	              <ul>
-	                <li>Emphasis on data richness and tuning over hand-crafted curriculum.</li>
-	              </ul>
-	            </div>
-	          </article>
-	        </div>
-	      </div>
-	    `;
-	}
-
-	private getProjectsContent(): string {
-		return `
-	      <div class="terminal-text">
-	        <h1>$ ls projects/</h1>
-
-							<div class="cards">
-								<article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/clembot">
-	            <header class="card-head">
-	              <div class="card-kicker">Personal AI Assistant</div>
-	              <h2 class="card-title">Project Clembot</h2>
-	              <div class="card-meta">Dec 2021 – Dec 2023</div>
-	            </header>
-	            <div class="card-body">
-	              <p>Discord bot with AI chat, image generation/analysis, link downloading, music, reminders, birthdays, and many social tools. Built iteratively over ~3 years.</p>
-	            </div>
-	          </article>
-
-						  <article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/AudioVideoDescriptiveAI">
-	            <header class="card-head">
-	              <div class="card-kicker">Applied ML</div>
-	              <h2 class="card-title">Context Embedding Video Describer</h2>
-	              <div class="card-meta">Summer 2024</div>
-	            </header>
-	            <div class="card-body">
-	              <p>Embeds temporal/audio cues into frames and prompts a vision-LLM for narrated recaps. Uses PANNs for audio tags and highlights multimodal tradeoffs.</p>
-	            </div>
-	          </article>
-
-						  <article class="card clickable" role="link" tabindex="0" data-url="https://github.com/Iemontine/SonicGameplayingAI">
-	            <header class="card-head">
-	              <div class="card-kicker">Reinforcement Learning</div>
-	              <h2 class="card-title">Sonic PPO</h2>
-	              <div class="card-meta">Spring 2024</div>
-	            </header>
-	            <div class="card-body">
-	              <p>PPO implementation + environment for Sonic on Genesis; achieved consistent clears after ~2 hours of training through careful tuning.</p>
-	            </div>
-	          </article>
-
-	          <article class="card">
-	            <header class="card-head">
-	              <div class="card-kicker">Client Work</div>
-	              <h2 class="card-title">Comfort Living for Seniors</h2>
-	              <div class="card-meta">2021 – 2025</div>
-	            </header>
-	            <div class="card-body">
-	              <p>Designed a web interface for patient data entry to go paperless; complex spreadsheet-driven workflows; ongoing maintenance and features.</p>
-	            </div>
-	          </article>
-
-	        </div>
-
-	        <p style="margin-top:12px"><a href="https://github.com/Iemontine" target="_blank" rel="noopener">More on GitHub →</a></p>
-	      </div>
-	    `;
-	}
+		private getProjectsContent(): string {
+				return projectsHtml;
+		}
 
 	private getExperienceContent(): string {
-		return `
-	      <div class="terminal-text">
-	        <h1>$ cat experience.log</h1>
-
-	        <div class="timeline">
-	          <div class="tl-item">
-	            <div class="tl-head">
-	              <div class="tl-role">Photos UI Engineer</div>
-				  <div class="tl-org">Apple - Cupertino, CA</div>
-				  <div class="tl-date">Nov 2025 - Present</div>
-	            </div>
-	            <div class="tl-body">
-	              <ul>
-					<li>Shaping next-gen Photos experiences across Apple's ecosystem, leveraging CV/ML and evolving AI capabilities.</li>
-	              </ul>
-	            </div>
-	          </div>
-
-	          <div class="tl-item">
-	            <div class="tl-head">
-	              <div class="tl-role">Photos UI Intern</div>
-				  <div class="tl-org">Apple - Cupertino, CA</div>
-				  <div class="tl-date">Jun 2025 - Sep 2025</div>
-	            </div>
-	            <div class="tl-body">
-	              <ul>
-	                <li>Contributed shipping and prototype UI features in Photos with AI/ML‑based approaches.</li>
-	                <li>Drove ideas from exploration to polished, user‑facing experiences.</li>
-	              </ul>
-	            </div>
-	          </div>
-
-	          <div class="tl-item">
-	            <div class="tl-head">
-	              <div class="tl-role">IT Infrastructure Services Worker</div>
-				  <div class="tl-org">UC Davis Library - Davis, CA</div>
-				  <div class="tl-date">Dec 2023 - Sep 2025</div>
-	            </div>
-	            <div class="tl-body">
-	              <ul>
-	                <li>Automated large‑scale database migrations in Python.</li>
-	                <li>Built .NET tools that accelerated workstation deployments.</li>
-	                <li>Troubleshot equipment/software across multiple departments.</li>
-	              </ul>
-	            </div>
-	          </div>
-
-	          <div class="tl-item">
-	            <div class="tl-head">
-				  <div class="tl-role">AI Developer - Project Volare</div>
-				  <div class="tl-org">CodeLab - Davis, CA</div>
-				  <div class="tl-date">Oct 2024 - Jun 2025</div>
-	            </div>
-	            <div class="tl-body">
-	              <ul>
-	                <li>Back‑end AI for interview practice: tone analysis, LLM integration, realtime speech recognition.</li>
-	                <li>Collaborated with design team; adhered to specs and formal processes.</li>
-	              </ul>
-	            </div>
-	          </div>
-
-	          <div class="tl-item">
-	            <div class="tl-head">
-	              <div class="tl-role">Systems Developer & Administrator</div>
-				  <div class="tl-org">Comfort Living for Seniors - Remote</div>
-				  <div class="tl-date">Aug 2021 - Sep 2025</div>
-	            </div>
-	            <div class="tl-body">
-	              <ul>
-	                <li>Built web interface for patient data; moved operations paperless.</li>
-	                <li>Implemented complex spreadsheet workflows; ongoing maintenance and features.</li>
-	              </ul>
-	            </div>
-	          </div>
-
-	          <div class="tl-item">
-	            <div class="tl-head">
-	              <div class="tl-role">Technology Services Student Worker</div>
-				  <div class="tl-org">Travis Unified School District - Fairfield, CA</div>
-				  <div class="tl-date">May 2019 - Aug 2021</div>
-	            </div>
-	            <div class="tl-body">
-	              <ul>
-					<li>Imaged, repaired, and deployed hundreds of devices across a nine-school district.</li>
-	              </ul>
-	            </div>
-	          </div>
-	        </div>
-	      </div>
-	    `;
+		return experienceHtml;
 	}
 
-	private getContactContent(): string {
-		return `
-	      <div class="terminal-text">
-	        <h1>$ contact --info</h1>
-
-	        <div class="contact-grid">
-	          <div class="contact-row">
-	            <div class="mono">GitHub:</div>
-	            <a class="btn" href="https://github.com/Iemontine" target="_blank" rel="noopener">github.com/Iemontine</a>
-	          </div>
-	          <div class="contact-row">
-	            <div class="mono">LinkedIn:</div>
-	            <a class="btn" href="https://linkedin.com/in/darrolls/" target="_blank" rel="noopener">linkedin.com/in/darrolls</a>
-	          </div>
-	        </div>
-
-	        <div class="contact-panel">
-	          <div class="panel-title">I'm open to being messaged on...</div>
-	          <div class="panel-rows">
-	            <div class="panel-row">
-	              <div class="service-icon steam" aria-hidden="true"></div>
-	              <div class="contact-label">Steam</div>
-	              <div class="value-pill mono" id="contact-steam">https://steamcommunity.com/id/computereality</div>
-	              <div class="actions">
-	                <button class="btn small" data-copy="#contact-steam">Copy</button>
-	                <a class="btn small" href="https://steamcommunity.com/id/computereality" target="_blank" rel="noopener">Open</a>
-	              </div>
-	            </div>
-	            <div class="panel-row">
-	              <div class="service-icon discord" aria-hidden="true"></div>
-	              <div class="contact-label">Discord</div>
-	              <div class="value-pill mono" id="contact-discord">clemtine</div>
-	              <div class="actions">
-	                <button class="btn small" data-copy="#contact-discord">Copy</button>
-	              </div>
-	            </div>
-	          </div>
-	        </div>
-	      </div>
-	    `;
-	}
+		private getContactContent(): string {
+				return contactHtml;
+		}
 
 	// ============================
 	// ASCII WINDOW SYSTEM
@@ -1525,26 +1303,45 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 });
 
-// Copy-to-clipboard for contact buttons and any [data-copy]
+
+// Keyboard support for contact cards only
+document.addEventListener("keydown", (e) => {
+	const t = e.target as HTMLElement;
+	if (!t || !t.matches('.contact-card.contact-action')) return;
+	if (e.key === "Enter" || e.key === " ") { e.preventDefault(); (t as HTMLElement).click(); }
+});
+
+// Contact card copy action (Discord): delegated click handler
 document.addEventListener("click", async (e) => {
 	const t = e.target as HTMLElement;
-	if (t && t.matches("button[data-copy]")) {
-		const sel = t.getAttribute("data-copy") || "";
-		const el = document.querySelector(sel) as HTMLElement | null;
-		if (!el) return;
-		const text = (el.textContent || "").trim();
-		try {
-			await navigator.clipboard.writeText(text);
-			t.classList.add("success");
-			const prev = t.textContent;
-			t.textContent = "Copied!";
-			setTimeout(() => {
-				t.textContent = prev || "Copy";
-				t.classList.remove("success");
-			}, 900);
-		} catch (err) {
-			console.error("Copy failed", err);
+	const card = t.closest('.contact-card.contact-action') as HTMLElement | null;
+	if (!card) return;
+	const action = card.getAttribute('data-action');
+	if (action !== 'copy') return;
+	const sel = card.getAttribute('data-copy') || '';
+	let text = '';
+	if (sel) {
+		const src = document.querySelector(sel) as HTMLElement | null;
+		if (src) text = (src.textContent || '').trim();
+	}
+	if (!text) return;
+	try {
+		await navigator.clipboard.writeText(text);
+		card.classList.add('copied');
+		const hint = card.querySelector('.copy-hint') as HTMLElement | null;
+		if (hint) {
+			if (!(hint as any).dataset.origText) {
+				(hint as any).dataset.origText = hint.textContent || 'Click to copy';
+			}
+			hint.textContent = 'Copied!';
 		}
+		setTimeout(() => {
+			card.classList.remove('copied');
+			const h = card.querySelector('.copy-hint') as HTMLElement | null;
+			if (h) h.textContent = (h as any).dataset.origText || 'Click to copy';
+		}, 1200);
+	} catch (err) {
+		// noop on failure
 	}
 });
 
@@ -1555,6 +1352,54 @@ document.addEventListener("click", (e) => {
 	if (!card) return;
 	const url = card.getAttribute("data-url");
 	if (url) window.open(url, "_blank", "noopener");
+});
+
+// Experience deck: expand/collapse sections and allow clicking header area
+document.addEventListener("click", (e) => {
+	const target = e.target as HTMLElement;
+	const header = target.closest(".xp-header") as HTMLElement | null;
+	if (!header) return;
+	const item = header.closest(".xp-item") as HTMLElement | null;
+	if (!item) return;
+	const open = item.getAttribute("data-open") === "true";
+	// Smooth height animation by measuring scrollHeight
+	const body = item.querySelector(".xp-body") as HTMLElement | null;
+	if (body) {
+		if (open) {
+			body.style.maxHeight = body.scrollHeight + "px"; // set current so transition runs
+			requestAnimationFrame(() => {
+				item.setAttribute("data-open", "false");
+				body.style.maxHeight = "0px";
+			});
+		} else {
+			item.setAttribute("data-open", "true");
+			const run = () => (body.style.maxHeight = body.scrollHeight + "px");
+			requestAnimationFrame(run);
+			setTimeout(() => (body.style.maxHeight = ""), 260);
+		}
+	} else {
+		item.setAttribute("data-open", open ? "false" : "true");
+	}
+});
+
+// Ripple origin tracking on experience cards and generic pond elements
+document.addEventListener("pointermove", (e) => {
+	const target = (e.target as HTMLElement).closest(".xp-item, .pond") as HTMLElement | null;
+	if (!target) return;
+	const rect = target.getBoundingClientRect();
+	const x = ((e.clientX - rect.left) / rect.width) * 100;
+	const y = ((e.clientY - rect.top) / rect.height) * 100;
+	target.style.setProperty("--rip-x", x + "%");
+	target.style.setProperty("--rip-y", y + "%");
+});
+document.addEventListener("pointerenter", (e) => {
+	const target = (e.target as HTMLElement).closest(".xp-item, .pond") as HTMLElement | null;
+	if (!target) return;
+	const rect = target.getBoundingClientRect();
+	const x = ((e.clientX - rect.left) / rect.width) * 100;
+	const y = ((e.clientY - rect.top) / rect.height) * 100;
+	target.style.setProperty("--rip-x", x + "%");
+	target.style.setProperty("--rip-y", y + "%");
 });
 
 document.addEventListener("keydown", (e) => {
@@ -1582,6 +1427,16 @@ document.addEventListener("keydown", (e) => {
 				break;
 			// Reserved keys can be added later
 		}
+	}
+});
+
+// Keyboard toggle for experience headers
+document.addEventListener("keydown", (e) => {
+	const target = e.target as HTMLElement;
+	if (!target || !target.classList || !target.classList.contains("xp-header")) return;
+	if (e.key === "Enter" || e.key === " ") {
+		e.preventDefault();
+		(target as HTMLElement).click();
 	}
 });
 
