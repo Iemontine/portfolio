@@ -301,44 +301,44 @@ class WindowManager {
 
 	private getAboutMeContent(): string {
 		return `
-      <div class="terminal-text">
-        <div class="system-header">lemontine [Version 2.025.917]</div>
-        
-        <div class="section">
-          <div class="section-title">LEMONTINE</div>
-          
-          <div class="currents-section">
-            <div class="currents-title">currents</div>
-            <div class="current-item"><span class="status-watching">~Watching:</span> Apothecary Diaries</div>
-            <div class="current-item"><span class="status-playing">~Playing:</span> Elden Ring: Nightreign, Hollow Knight</div>
-            <div class="current-item"><span class="status-listening">~Listening to:</span> Cafuné </div>
-          </div>
-          
-          <div class="intro-text">I'm <span class="highlight-name">lemontine</span>, you might also know me as darroll!</div>
-          
-          <div class="about-section">
-            <div class="about-title">about me</div>
-            <div class="about-line"><span class="about-label">LEMONTINE:</span> Photos UI Engineer @ Apple. UC Davis CS Alumni, with a focus on machine learning and AI.</div>
-            <div class="about-line"><span class="about-label">HOBBIES:</span> Programming, video games, video editing, computer building, and game development.</div>
-            <div class="about-line"><span class="about-label">ENJOYS:</span> Learning about new technologies, AI ethics, travel, cosplay, and anime.</div>
-            <div class="about-line"><span class="about-label">SPECS:</span> RTX 4070 and an AMD Ryzen 9 5900X.</div>
-            
-            <div class="favorites-section">
-              <div class="about-label">FAVORITES:</div>
-              <div class="about-line indent"><span class="fav-category">~Anime/TV/Movies:</span> Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man, Dandadan</div>
-              <div class="about-line indent"><span class="fav-category">~Video Games:</span> Minecraft, Portal 2, Team Fortress 2, Warframe, Zenless Zone Zero, Fortnite</div>
-              <div class="about-line indent"><span class="fav-category">~Artists:</span> Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People</div>
-            </div>
-            
-            <div class="skills-line">
-              proficient in <span class="skill-highlight">Python</span>, <span class="skill-highlight">Java</span>, <span class="skill-highlight">Typescript</span>, <span class="skill-highlight">C</span>, <span class="skill-highlight">C++</span>, <span class="skill-highlight">CSharp</span>, <span class="skill-highlight">HTML/Tailwind/CSS</span>, <span class="skill-highlight">VB.Net</span>, <span class="skill-highlight">Bash scripting</span>.
-            </div>
-            <div class="apis-line">
-              favorite libraries/APIs: <span class="api-highlight">pytorch</span>, <span class="api-highlight">Microsoft Azure</span>, <span class="api-highlight">openai</span>, <span class="api-highlight">gymnasium</span>, <span class="api-highlight">pycord</span>, <span class="api-highlight">Pillow</span>, <span class="api-highlight">BeautifulSoup</span>
-            </div>
-          </div>
-        </div>
-      </div>
+<div class="terminal-text">
+	<div class="system-header">lemontine [Version 2.025.915]</div>
+
+	<div class="section">
+		<div class="section-title">LEMONTINE</div>
+		
+		<div class="currents-section">
+		<div class="currents-title">currents</div>
+		<div class="current-item"><span class="status-watching">~Watching:</span> Apothecary Diaries</div>
+		<div class="current-item"><span class="status-playing">~Playing:</span> Elden Ring: Nightreign, Hollow Knight</div>
+		<div class="current-item"><span class="status-listening">~Listening to:</span> Cafune </div>
+		</div>
+		
+		<div class="intro-text">I'm <span class="highlight-name">lemontine</span>, you might also know me as darroll!</div>
+		
+		<div class="about-section">
+		<div class="about-title">about me</div>
+		<div class="about-line"><span class="about-label">LEMONTINE:</span> Photos UI Engineer @ Apple. UC Davis CS Alumni, with a focus on machine learning and AI.</div>
+		<div class="about-line"><span class="about-label">HOBBIES:</span> Programming, video games, video editing, computer building, and game development.</div>
+		<div class="about-line"><span class="about-label">ENJOYS:</span> Learning about new technologies, AI ethics, travel, cosplay, and anime.</div>
+		<div class="about-line"><span class="about-label">SPECS:</span> RTX 4070 and an AMD Ryzen 9 5900X.</div>
+		
+		<div class="favorites-section">
+			<div class="about-label">FAVORITES:</div>
+			<div class="about-line indent"><span class="fav-category">~Anime/TV/Movies:</span> Scott Pilgrim vs the World, Shaun of the Dead, Chainsaw Man, Dandadan</div>
+			<div class="about-line indent"><span class="fav-category">~Video Games:</span> Minecraft, Portal 2, Team Fortress 2, Warframe, Zenless Zone Zero, Fortnite</div>
+			<div class="about-line indent"><span class="fav-category">~Artists:</span> Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People</div>
+		</div>
+		
+		<div class="skills-line">
+			proficient in <span class="skill-highlight">Python</span>, <span class="skill-highlight">Java</span>, <span class="skill-highlight">Typescript</span>, <span class="skill-highlight">C</span>, <span class="skill-highlight">C++</span>, <span class="skill-highlight">CSharp</span>, <span class="skill-highlight">HTML/Tailwind/CSS</span>, <span class="skill-highlight">VB.Net</span>, <span class="skill-highlight">Bash scripting</span>.
+		</div>
+		<div class="apis-line">
+			favorite libraries/APIs: <span class="api-highlight">pytorch</span>, <span class="api-highlight">Microsoft Azure</span>, <span class="api-highlight">openai</span>, <span class="api-highlight">gymnasium</span>, <span class="api-highlight">pycord</span>, <span class="api-highlight">Pillow</span>, <span class="api-highlight">BeautifulSoup</span>
+		</div>
+		</div>
+	</div>
+</div>
     `;
 	}
 
@@ -672,9 +672,9 @@ class WindowManager {
 		}`;
 
 		if (isMobile) {
-			// Mobile content windows - top positioning
-			baseClasses +=
-				" fixed top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[calc(100%-20px)] max-w-[500px] h-[50vh] max-h-[400px]";
+			// Mobile content windows – let CSS media queries fully control position/size
+			// Avoid adding translate/centering classes that conflict with mobile rules.
+			baseClasses += " fixed";
 		} else {
 			// Desktop content windows - center positioning
 			baseClasses +=

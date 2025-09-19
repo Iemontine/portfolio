@@ -192,7 +192,7 @@ html::after {
 	 SITE HEADER
 	 ============================ */
 
-.site-header {
+#site-header {
 	position: fixed;
 	top: 11px; /* Align inside the site border */
 	left: 11px;
@@ -207,13 +207,13 @@ html::after {
 	box-shadow: var(--glow-teal);
 }
 
-.site-header .logo {
+#site-header .logo {
 	width: 16px;
 	height: 16px;
 	image-rendering: pixelated;
 }
 
-.site-header .brand-text {
+#site-header .brand-text {
 	font-family: "MS UI Gothic", monospace;
 	font-size: 12px;
 	color: var(--terminal-teal);
@@ -710,7 +710,7 @@ html::after {
    TOP RIGHT INFO BOXES
 	============================ */
 
-.top-right-container {
+#top-right-container {
 	position: fixed;
 	top: 11px;
 	right: 50px;
@@ -1269,22 +1269,16 @@ html::after {
 		min-height: 400px;
 	}
 
-	.top-right-container {
-		gap: 8px;
-	}
-
 	.info-box {
 		width: 100px;
 		height: 80px;
 		padding: 8px;
 		font-size: 9px;
 	}
-
 }
 
 /* Mobile */
 @media (max-width: 768px) {
-	/* Hide CRT/border on mobile */
 	body::before,
 	body::after,
 	html::after,
@@ -1305,10 +1299,10 @@ html::after {
 		left: 0 !important;
 		width: 100vw !important;
 		height: 100vh !important;
+		z-index: 2000 !important;
 	}
 
-	/* Hide decorations on mobile */
-	.top-right-container {
+	#top-right-container {
 		display: none;
 	}
 
@@ -1386,7 +1380,7 @@ html::after {
 		min-height: unset !important;
 		max-width: none !important;
 		max-height: none !important;
-		z-index: 300;
+		z-index: 3100 !important; /* Above content windows and header */
 		border-radius: 4px; /* Restore border radius with padding */
 		margin: 0;
 	}
@@ -1402,23 +1396,23 @@ html::after {
 	/* Content windows (top half) */
 	.terminal-window:not(.about-window) {
 		position: fixed !important;
-		top: 10px !important; /* Add top padding */
-		left: 10px !important; /* Add left padding */
-		right: 10px !important; /* Add right padding */
-		bottom: calc(50vh + 10px) !important; /* Stop above about window with gap */
-		width: calc(100vw - 20px) !important; /* Account for padding */
-		height: calc(50vh - 20px) !important; /* Top half minus padding */
+		top: 0 !important; /* Cover header */
+		left: 0 !important;
+		right: 0 !important;
+		bottom: 50vh !important; /* Stop above about window */
+		width: 100vw !important;
+		height: 50vh !important;
 		min-width: unset !important;
 		min-height: unset !important;
 		max-width: none !important;
 		max-height: none !important;
-		z-index: 200; /* Above desktop icons but below About Me */
-		border-radius: 4px; /* Restore border radius with padding */
+		z-index: 3000 !important; /* Above header; below About Me */
+		border-radius: 0 0 4px 4px; /* Flush top edge */
 		margin: 0;
 	}
 
 	.terminal-window:not(.about-window) .window-content {
-		height: calc(50vh - 50px); /* Account for title bar and padding */
+		height: calc(100% - 30px); /* Fill window minus titlebar */
 		overflow-y: auto;
 		font-size: 12px;
 		line-height: 1.4;
@@ -1428,6 +1422,10 @@ html::after {
 
 /* Small mobile */
 @media (max-width: 480px) {
+	#site-header {
+		display: none;
+	}
+
 	#desktop {
 		top: 5px;
 		left: 5px;
@@ -1461,11 +1459,12 @@ html::after {
 		bottom: 5px !important;
 		width: calc(100vw - 10px) !important;
 		height: calc(50vh - 10px) !important;
+		z-index: 3100 !important;
 	}
 
 	.about-window .window-content {
 		font-size: 10px;
-		height: calc(50vh - 40px);
+		height: calc(100% - 30px);
 	}
 
 	.terminal-window:not(.about-window) {
@@ -1479,7 +1478,7 @@ html::after {
 
 	.terminal-window:not(.about-window) .window-content {
 		font-size: 11px;
-		height: calc(50vh - 40px);
+		height: calc(100% - 30px);
 	}
 }
 
@@ -1656,21 +1655,9 @@ html::after {
 	/* Hide non-essential elements in portrait mode */
 	@media (orientation: portrait) {
 		.info-box.data-matrix,
-		.info-box.logo {
-			display: none;
-		}
-
+		.info-box.logo,
 		.info-box.stats {
-			width: 80px;
-			height: 60px;
-			padding: 5px;
-			font-size: 8px;
-		}
-
-		.top-right-container {
-			display: flex; /* Re-enable for stats only */
-			top: 10px;
-			right: 10px;
+			display: none;
 		}
 	}
 }
