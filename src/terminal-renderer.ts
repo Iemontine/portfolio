@@ -203,8 +203,18 @@ function renderItemList(items: ProjectEntry[], cmd: string, containerPx: number,
 		for (const l of lines) out.push(boxLn(l, cols, "t-white"));
 		if (item.url) {
 			out.push(boxEmpty(cols));
-			const linkHtml = `${esc("→ ")}<a href="${item.url}" target="_blank" rel="noopener" class="t-link-hover">${esc(item.url)}</a>`;
-			out.push(boxLnRich(linkHtml, `→ ${item.url}`.length, cols));
+			const prefix = "→ ";
+			const maxUrlCols = innerCols - prefix.length;
+			// Character-wrap URLs since they have no spaces for word-wrapping
+			const urlLines: string[] = [];
+			for (let c = 0; c < item.url.length; c += maxUrlCols) {
+				urlLines.push(item.url.substring(c, c + maxUrlCols));
+			}
+			for (let li = 0; li < urlLines.length; li++) {
+				const indent = li === 0 ? prefix : "  ";
+				const html = `${esc(indent)}<a href="${item.url}" target="_blank" rel="noopener" class="t-link-hover">${esc(urlLines[li])}</a>`;
+				out.push(boxLnRich(html, indent.length + urlLines[li].length, cols));
+			}
 		}
 		out.push(boxEmpty(cols));
 		out.push(boxBot(cols));

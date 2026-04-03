@@ -857,7 +857,6 @@ html::after {
 	right: 10px;
 	width: calc(50% - 15px);
 	height: 45%;
-	min-width: 200px;
 	min-height: 200px;
 }
 
@@ -966,7 +965,6 @@ html::after {
 	left: 10px;
 	width: calc(50% - 15px);
 	height: 45%;
-	min-width: 200px;
 	min-height: 200px;
 	background: #000;
 	border: var(--standard-border-width) solid currentColor;
@@ -997,4 +995,79 @@ html::after {
 	filter: contrast(1.15) saturate(1.4) brightness(1.1);
 	text-align: center;
 	white-space: pre;
+}
+
+/* ============================
+   RESPONSIVE — NARROW SCREENS
+   ============================ */
+
+@media (max-width: 768px) {
+	/* Hide decorative boxes that obscure desktop icons */
+	#top-right-container {
+		display: none;
+	}
+
+	/* Hide ASCII art — decorative, not essential */
+	.ascii-window {
+		display: none !important;
+	}
+
+	/* About-me takes the full bottom width (ASCII hidden) */
+	.about-window {
+		left: 10px;
+		right: 10px;
+		width: auto;
+		min-width: 0;
+	}
+
+	/* Content windows: fill top half since decorations are hidden */
+	.terminal-window:not(.about-window) {
+		top: 10px;
+		bottom: calc(45% + 20px);
+	}
+
+	/* Maximized fills everything */
+	.terminal-window:not(.about-window)[data-maximized="true"] {
+		top: 10px;
+		left: 10px;
+		right: 10px;
+		bottom: 10px;
+	}
+}
+
+/* Very narrow — stack vertically */
+@media (max-width: 480px) {
+	#site-header {
+		display: none;
+	}
+
+	/* Desktop icons: compact grid */
+	#desktop {
+		padding: 10px;
+		gap: 10px;
+		grid-template-columns: repeat(auto-fit, 65px);
+		grid-template-rows: auto;
+	}
+
+	.desktop-icon {
+		width: 65px;
+		height: 80px;
+	}
+	.desktop-icon .icon {
+		width: 36px;
+		height: 36px;
+	}
+	.desktop-icon .label {
+		font-size: 9px;
+	}
+
+	/* Bottom box: taller to fit content */
+	.about-window {
+		height: 50%;
+	}
+
+	/* Content windows: use remaining top space */
+	.terminal-window:not(.about-window) {
+		bottom: calc(50% + 15px);
+	}
 }
