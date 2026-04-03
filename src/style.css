@@ -857,7 +857,7 @@ html::after {
 	right: 10px;
 	width: calc(50% - 15px);
 	height: 45%;
-	min-width: 280px;
+	min-width: 200px;
 	min-height: 200px;
 }
 
