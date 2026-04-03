@@ -176,8 +176,8 @@ export const aboutMe = {
 	],
 	skills: [
 		{ name: "Swift", color: "rgb(255,203,58)" },
+		{ name: "Python", color: "rgb(65,105,225)" },
 		{ name: "ObjC", color: "rgba(151, 34, 241, 1)" },
-		{ name: "Python", color: "rgb(255,203,58)" },
 		{ name: "Java", color: "rgb(248,152,34)" },
 		{ name: "Javascript", color: "rgb(240,219,79)" },
 		{ name: "C++", color: "rgb(204,204,255)" },

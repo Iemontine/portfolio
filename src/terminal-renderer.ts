@@ -147,10 +147,17 @@ export function renderExperience(containerPx: number, fontSize: number, font?: s
 		const roleColor = appleRainbow[idx % appleRainbow.length];
 		out.push(boxTop(e.org, cols, "t-title"));
 		out.push(boxEmpty(cols));
-		const roleHtml = `<span style="color:${roleColor}">${esc(e.role)}</span>`;
-		out.push(boxLnRich(roleHtml, e.role.length, cols));
-		const metaHtml = `<span style="color:#888">${esc(`${e.date}  ${e.location}`)}</span>`;
-		out.push(boxLnRich(metaHtml, `${e.date}  ${e.location}`.length, cols));
+		const roleLines = wrapLines(e.role, innerPx, fontSize);
+		for (const rl of roleLines) {
+			const html = `<span style="color:${roleColor}">${esc(rl)}</span>`;
+			out.push(boxLnRich(html, rl.length, cols));
+		}
+		const metaText = `${e.date}  ${e.location}`;
+		const metaLines = wrapLines(metaText, innerPx, fontSize);
+		for (const ml of metaLines) {
+			const html = `<span style="color:#888">${esc(ml)}</span>`;
+			out.push(boxLnRich(html, ml.length, cols));
+		}
 		out.push(boxEmpty(cols));
 		for (const bullet of e.bullets) {
 			const lines = wrapLines(`> ${bullet}`, innerPx, fontSize);
@@ -194,8 +201,11 @@ function renderItemList(items: ProjectEntry[], cmd: string, containerPx: number,
 		const titleColor = appleRainbow[idx % appleRainbow.length];
 		out.push(boxTop(item.kicker, cols, "t-title"));
 		out.push(boxEmpty(cols));
-		const titleHtml = `<span style="color:${titleColor}">${esc(item.title)}</span>`;
-		out.push(boxLnRich(titleHtml, item.title.length, cols));
+		const titleLines = wrapLines(item.title, innerPx, fontSize);
+		for (const tl of titleLines) {
+			const html = `<span style="color:${titleColor}">${esc(tl)}</span>`;
+			out.push(boxLnRich(html, tl.length, cols));
+		}
 		const dateHtml = `<span style="color:#888">${esc(item.date)}</span>`;
 		out.push(boxLnRich(dateHtml, item.date.length, cols));
 		out.push(boxEmpty(cols));
@@ -422,7 +432,7 @@ export function renderAboutMe(containerPx: number, fontSize: number, font?: stri
 
 	// Intro
 	{
-		const introPlain = `I'm ${aboutMe.name}, you might also know me as ${aboutMe.nickname}!`;
+		const introPlain = `i'm ${aboutMe.name}, you might also know me as ${aboutMe.nickname}!`;
 		const lines = wrapLines(introPlain, innerPx, fontSize);
 		for (const line of lines) {
 			const idx = line.indexOf(aboutMe.name);

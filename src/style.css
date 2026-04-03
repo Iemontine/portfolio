@@ -195,12 +195,12 @@ html::after {
 
 #site-header {
 	position: fixed;
-	top: 11px; /* Align inside the site border */
-	left: 11px;
+	top: 11px;
+	left: 50px;
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	z-index: 99; /* below vignette (9999) so it gets CRT edge darkening */
+	z-index: 10001; /* above screen-frame (10000), below window-container (10003) */
 	padding: 4px 8px;
 	background: rgba(0, 0, 0, 0.85);
 	border: var(--standard-border-width) solid var(--terminal-teal);
@@ -739,7 +739,7 @@ html::after {
 	top: 11px;
 	right: 50px;
 	display: flex;
-	z-index: 10001; /* above screen-frame */
+	z-index: 10000; /* above screen-frame (10000), below site-header (10001) and desktop (10002) */
 }
 
 .info-box {
@@ -1003,10 +1003,6 @@ html::after {
 
 @media (max-width: 768px) {
 	/* Hide decorative boxes that obscure desktop icons */
-	#top-right-container {
-		display: none;
-	}
-
 	/* Hide ASCII art — decorative, not essential */
 	.ascii-window {
 		display: none !important;

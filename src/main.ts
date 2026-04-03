@@ -474,8 +474,12 @@ class WindowManager {
 	}
 
 	private bringAboutMeToFront(): void {
-		if (this.aboutMeWindow) {
-			// layer handled by DOM order
+		if (!this.aboutMeWindow) return;
+		const container = document.getElementById("window-container");
+		if (!container) return;
+		const last = container.lastElementChild;
+		if (last !== this.aboutMeWindow) {
+			container.appendChild(this.aboutMeWindow);
 		}
 	}
 
@@ -559,8 +563,9 @@ class WindowManager {
 			(windowElement as any)._contentResizeObserver = ro;
 		}
 
-		// Focus the window
-		windowElement.addEventListener("mousedown", () => {
+		// Focus the window — use click (not mousedown) so DOM reorder
+		// doesn't swallow the click event on window controls
+		windowElement.addEventListener("click", () => {
 			this.moveWindowToFront(config.id);
 		});
 	}
