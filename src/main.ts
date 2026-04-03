@@ -103,9 +103,9 @@ class WindowManager {
 		const desktop = document.getElementById("desktop")!;
 
 		const icons: DesktopIcon[] = [
-			{ id: "research-icon", label: "Research", windowId: "research" },
-			{ id: "projects-icon", label: "Projects", windowId: "projects" },
 			{ id: "experience-icon", label: "Experience", windowId: "experience" },
+			{ id: "projects-icon", label: "Projects", windowId: "projects" },
+			{ id: "research-icon", label: "Research", windowId: "research" },
 			{ id: "contact-icon", label: "Contact", windowId: "contact" },
 		];
 

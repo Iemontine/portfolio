@@ -26,14 +26,21 @@ export interface ContactEntry {
 	copyable?: boolean;
 }
 
+// 		The Photos team develops best-in-class features that showcase the incredible images it can produce. The seamless integration of software and hardware has created magical experiences in features like Memories, Clean Up, and the modern Lock Screen Wallpapers.
+
+// The Photos team is committed to creating innovative experiences by leveraging advanced computer vision, machine learning, and rapidly evolving AI technologies. We build products that reach millions of users, and we’re looking for passionate individuals eager to push the boundaries of what’s possible in this dynamic space!
+
+// Key role in shaping the future of the Photos platform across Apple’s ecosystem, creating impactful experiences that delight millions of users.
 export const experience: ExperienceEntry[] = [
 	{
+
 		org: "Apple",
 		role: "Photos UI Engineer",
 		date: "Nov 2025 — Present",
 		location: "Cupertino, CA",
 		bullets: [
-			"Shaping next-gen Photos experiences across Apple's ecosystem using CV/ML and evolving AI capabilities.",
+			"Developing best-in-class features that reach millions of users across Apple's ecosystems, creating impactful experiences that delight.",
+			"Shaping integration of software and hardware leveraging computer vision, machine learning, and rapidly evolving AI technologies."
 		],
 	},
 	{
@@ -43,7 +50,7 @@ export const experience: ExperienceEntry[] = [
 		location: "Cupertino, CA",
 		bullets: [
 			"Contributed shipping and prototype UI features in Photos with AI/ML-based approaches.",
-			"Drove ideas from exploration to polished, user-facing experiences.",
+			"Worked closely with the Photos team to gain experience driving ideas from exploration to polished, user-facing experiences.",
 		],
 	},
 	{
@@ -93,14 +100,14 @@ export const projects: ProjectEntry[] = [
 		kicker: "Personal AI Assistant",
 		title: "Project Clembot",
 		date: "Dec 2021 – Dec 2023",
-		description: "Discord bot with AI chat, image generation/analysis, link downloading, music, reminders, birthdays, and many social tools. Built iteratively over ~3 years.",
+		description: "Discord bot with agentic chat, agentic image generation/editing, a YouTube/Spotify music player, reminders, birthday tracking, and social tools. Built iteratively over ~3 years.",
 		url: "https://github.com/Iemontine/clembot",
 	},
 	{
 		kicker: "Godot RPG",
 		title: "Monsters' Shift",
 		date: "Nov 2024",
-		description: "Town-life RPG built in Godot where citizens transform into monsters at night. Features pixel-art visuals, a dialogue system via Dialogic, cutscenes, and shader effects.",
+		description: "Producer and gameplay engineer on a 6-person team. Built core infrastructure: interactable objects, scene transitions, cutscene authoring tools, character designer, and story manager. Designed maps, implemented the QTE mechanics and directional audio system, and managed 400+ commits across the team using Agile sprints.",
 		url: "https://github.com/Iemontine/MonstersShift",
 	},
 	{
@@ -124,21 +131,21 @@ export const research: ProjectEntry[] = [
 		kicker: "Senior Design Project — UC Davis",
 		title: "SPEEN: Simulated Profiling Environment for Embodied iNtelligence",
 		date: "Spring 2025",
-		description: "Prototype environment for evaluating LLM-based agentic AI inside a physically simulated world. Led agent control, environment generation, navigation, test scenarios, and prompt/control interfaces.",
+		description: "Project lead. Open-source benchmarking platform for embodied LLM agents in a Minecraft-like Godot environment. Built the agent-environment pipeline, procedural world generation, A* navigation, and structured test scenarios. Implemented chain-of-thought prompting and automated scoring. Observed emergent cooperative behavior and division-of-labor in multi-agent scenarios.",
 		url: "https://github.com/UCD-193AB-ws24/Minecapstone",
 	},
 	{
 		kicker: "Applied ML",
 		title: "Context Embedding for Enhanced Video Description by LLM",
 		date: "Summer 2024",
-		description: "Project lead on restoring temporal/audio context to a vision-only LLM by embedding per-frame cues from audio classification (PANNs). Produced narrated recap videos; surfaced limits in multimodal prompting.",
+		description: "Project lead. Embedded temporal and audio context directly into video frames to enable GPT-4o to describe video content with sound awareness. Trained ResNet50 on AudioSet, then applied PANNs for framewise audio classification. Pipeline produces auto-narrated recap videos via TTS. Revealed limitations in multi-label audio classification and LLM hallucination under multimodal prompting.",
 		url: "https://github.com/Iemontine/AudioVideoDescriptiveAI",
 	},
 	{
 		kicker: "Reinforcement Learning",
 		title: "Gameplaying AI with Proximal Policy Optimization",
 		date: "Spring 2024",
-		description: "Self-led reimplementation of PPO applied to Sonic the Hedgehog (Genesis). Built the training environment, tuned hyperparameters, and analyzed learning dynamics.",
+		description: "Project lead. Reimplementation of PPO applied to Sonic the Hedgehog on Genesis via Stable-Retro. Built the full training environment with custom wrappers (reward shaping, frame stacking, action discretization, multiprocess vectorization). Iterated on reward functions from velocity to progress-based, tuned hyperparameters by observing agent behavior, and achieved 83% winrate with ~31s completion times. Key takeaway: hard-coding human learning heuristics was unnecessary — a well-designed reward function with proper exploration incentives outperformed multi-pass training.",
 		url: "https://github.com/Iemontine/SonicGameplayingAI",
 	},
 ];
@@ -161,18 +168,20 @@ export const aboutMe = {
 	currents: [
 		{ label: "Rewatching", value: "Scott Pilgrim Takes Off", color: "#ae4f4f" },
 		{ label: "Playing", value: "Spider-Man 2", color: "#4fae67" },
-		{ label: "Listening to", value: "Ricky Montgomery", color: "#4f6dae" },
+		{ label: "Listening to", value: "Laufey", color: "#4f6dae" },
 	],
-	bio: "Photos UI Engineer @ Apple. UC Davis CS Alumni, with a focus on machine learning and AI.",
+	bio: "Photos UI SWE @ , UC Davis Alumni (Computer Science focusing on AI/ML)",
 	details: [
-		{ label: "hobbies", value: "Programming, video games, video editing, computer building, and game development." },
-		{ label: "enjoys", value: "Learning about new technologies, AI ethics, travel, cosplay, and manga/anime." },
+		{ label: "hobbies", value: "video games, video editing, computer building, and game development." },
+		{ label: "real hobbies", value: "hiking, running, gym......" },
+		{ label: "enjoys", value: "learning about new & upcoming tech, AI ethics, travel, cosplay, and manga/anime." },
 	],
 	specs: "RTX 5090, Ryzen 9 5900X",
 	favorites: [
-		{ category: "Media", items: "Chainsaw Man, Scott Pilgrim vs the World, Shaun of the Dead, Dandadan", color: "#ae4f4f" },
-		{ category: "Video Games", items: "Minecraft, Portal 2, Team Fortress 2, Warframe, Zenless Zone Zero, Fortnite", color: "#4fae67" },
-		{ category: "Artists", items: "Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People", color: "#4f6dae" },
+		{ category: "Series", items: "Chainsaw Man, Scott Pilgrim vs the World, Dandadan", color: "#ae4f4f" },
+		{ category: "Movies", items: "Shaun of the Dead, Zombie Land", color: "#4fae67" },
+		{ category: "Video Games", items: "Minecraft, Portal 2, Warframe, Zenless Zone Zero", color: "#4f6dae" },
+		{ category: "Artists", items: "Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People", color: "#904faeff" },
 	],
 	skills: [
 		{ name: "Swift", color: "rgb(255,203,58)" },

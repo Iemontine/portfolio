@@ -159,12 +159,13 @@ export function renderExperience(containerPx: number, fontSize: number, font?: s
 			out.push(boxLnRich(html, ml.length, cols));
 		}
 		out.push(boxEmpty(cols));
-		for (const bullet of e.bullets) {
-			const lines = wrapLines(`> ${bullet}`, innerPx, fontSize);
+		for (let bi = 0; bi < e.bullets.length; bi++) {
+			const lines = wrapLines(`> ${e.bullets[bi]}`, innerPx, fontSize);
 			for (let i = 0; i < lines.length; i++) {
 				const text = i === 0 ? lines[i] : `  ${lines[i]}`;
 				out.push(boxLn(text, cols, "t-white"));
 			}
+			if (bi < e.bullets.length - 1) out.push(boxEmpty(cols));
 		}
 		out.push(boxEmpty(cols));
 		out.push(boxBot(cols));
@@ -209,8 +210,17 @@ function renderItemList(items: ProjectEntry[], cmd: string, containerPx: number,
 		const dateHtml = `<span style="color:#888">${esc(item.date)}</span>`;
 		out.push(boxLnRich(dateHtml, item.date.length, cols));
 		out.push(boxEmpty(cols));
-		const lines = wrapLines(item.description, innerPx, fontSize);
-		for (const l of lines) out.push(boxLn(l, cols, "t-white"));
+		// Split description into sentences and render as > bullets
+		const sentences = item.description.split(/\.\s*/).filter(s => s.length > 0);
+		for (let si = 0; si < sentences.length; si++) {
+			const bullet = `> ${sentences[si]}${sentences[si].endsWith('.') ? '' : '.'}`;
+			const lines = wrapLines(bullet, innerPx, fontSize);
+			for (let li = 0; li < lines.length; li++) {
+				const text = li === 0 ? lines[li] : `  ${lines[li]}`;
+				out.push(boxLn(text, cols, "t-white"));
+			}
+			if (si < sentences.length - 1) out.push(boxEmpty(cols));
+		}
 		if (item.url) {
 			out.push(boxEmpty(cols));
 			const prefix = "→ ";
@@ -496,7 +506,7 @@ export function renderAboutMe(containerPx: number, fontSize: number, font?: stri
 
 	// APIs
 	{
-		const label = "experience with apis: ";
+		const label = "experience w/ apis: ";
 		const valuePx = colsToPixels(Math.max(1, innerCols - label.length), fontSize);
 		const valueText = aboutMe.apis.join(", ");
 		const valueLines = wrapLines(valueText, valuePx, fontSize);
