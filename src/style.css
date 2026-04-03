@@ -239,38 +239,21 @@ html::after {
 	opacity: 0.06;
 	pointer-events: none;
 	z-index: 102;
-	animation: noiseFloat 8s steps(16) infinite;
+	animation: noiseFloat 0.5s steps(1) infinite;
 	will-change: transform;
 }
 
 @keyframes noiseFloat {
-	0% {
-		transform: translate3d(0, 0, 0);
-	}
-	12.5% {
-		transform: translate3d(-5%, 8%, 0);
-	}
-	25% {
-		transform: translate3d(10%, -4%, 0);
-	}
-	37.5% {
-		transform: translate3d(-8%, -6%, 0);
-	}
-	50% {
-		transform: translate3d(4%, 10%, 0);
-	}
-	62.5% {
-		transform: translate3d(-10%, 3%, 0);
-	}
-	75% {
-		transform: translate3d(7%, -9%, 0);
-	}
-	87.5% {
-		transform: translate3d(-3%, 5%, 0);
-	}
-	100% {
-		transform: translate3d(0, 0, 0);
-	}
+	0%   { transform: translate3d(0, 0, 0); }
+	10%  { transform: translate3d(-4%, 7%, 0); }
+	20%  { transform: translate3d(8%, -3%, 0); }
+	30%  { transform: translate3d(-6%, -5%, 0); }
+	40%  { transform: translate3d(3%, 9%, 0); }
+	50%  { transform: translate3d(-9%, 2%, 0); }
+	60%  { transform: translate3d(6%, -7%, 0); }
+	70%  { transform: translate3d(-2%, 4%, 0); }
+	80%  { transform: translate3d(7%, -1%, 0); }
+	90%  { transform: translate3d(-5%, -8%, 0); }
 	100% {
 		transform: translate3d(0, 0, 0);
 	}
