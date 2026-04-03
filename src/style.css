@@ -930,6 +930,8 @@ html::after {
 .t-muted { color: #8bbfb4; }
 .t-link { color: var(--terminal-teal); }
 .t-link:hover { color: var(--terminal-teal-bright); }
+.t-link-hover { color: var(--terminal-teal); text-decoration: none; cursor: pointer; }
+.t-link-hover:hover { color: var(--terminal-teal-bright); }
 
 /* ============================
    SCROLLBAR STYLING

@@ -139,9 +139,15 @@ export function renderExperience(containerPx: number, fontSize: number, font?: s
 	out.push(`<span class="t-prompt">$</span> <span class="t-cmd">experience --list</span>`);
 	out.push("");
 
-	for (const e of experience as ExperienceEntry[]) {
+	// Apple rainbow colors: green, yellow, orange, red, purple, blue
+	const appleRainbow = ["#61BB46", "#FDB827", "#F5821F", "#E03A3E", "#963D97", "#009DDC"];
+
+	for (let idx = 0; idx < (experience as ExperienceEntry[]).length; idx++) {
+		const e = (experience as ExperienceEntry[])[idx];
+		const roleColor = appleRainbow[idx % appleRainbow.length];
 		out.push(boxTop(e.org, cols, "t-title"));
-		const roleHtml = `<span style="color:var(--terminal-teal)">${esc(e.role)}</span>`;
+		out.push(boxEmpty(cols));
+		const roleHtml = `<span style="color:${roleColor}">${esc(e.role)}</span>`;
 		out.push(boxLnRich(roleHtml, e.role.length, cols));
 		const metaHtml = `<span style="color:#888">${esc(`${e.date}  ${e.location}`)}</span>`;
 		out.push(boxLnRich(metaHtml, `${e.date}  ${e.location}`.length, cols));
@@ -153,6 +159,7 @@ export function renderExperience(containerPx: number, fontSize: number, font?: s
 				out.push(boxLn(text, cols, "t-white"));
 			}
 		}
+		out.push(boxEmpty(cols));
 		out.push(boxBot(cols));
 		out.push("");
 	}
@@ -179,17 +186,27 @@ function renderItemList(items: ProjectEntry[], cmd: string, containerPx: number,
 	out.push(`<span class="t-prompt">$</span> <span class="t-cmd">${esc(cmd)}</span>`);
 	out.push("");
 
-	for (const item of items) {
-		out.push(boxTop(item.title, cols, "t-title"));
-		const metaHtml = `<span style="color:#888">[${esc(item.kicker)}]  ${esc(item.date)}</span>`;
-		out.push(boxLnRich(metaHtml, `[${item.kicker}]  ${item.date}`.length, cols));
+	// Apple rainbow colors: green, yellow, orange, red, purple, blue
+	const appleRainbow = ["#61BB46", "#FDB827", "#F5821F", "#E03A3E", "#963D97", "#009DDC"];
+
+	for (let idx = 0; idx < items.length; idx++) {
+		const item = items[idx];
+		const titleColor = appleRainbow[idx % appleRainbow.length];
+		out.push(boxTop(item.kicker, cols, "t-title"));
+		out.push(boxEmpty(cols));
+		const titleHtml = `<span style="color:${titleColor}">${esc(item.title)}</span>`;
+		out.push(boxLnRich(titleHtml, item.title.length, cols));
+		const dateHtml = `<span style="color:#888">${esc(item.date)}</span>`;
+		out.push(boxLnRich(dateHtml, item.date.length, cols));
 		out.push(boxEmpty(cols));
 		const lines = wrapLines(item.description, innerPx, fontSize);
 		for (const l of lines) out.push(boxLn(l, cols, "t-white"));
 		if (item.url) {
 			out.push(boxEmpty(cols));
-			out.push(boxLn(`→ ${item.url}`, cols, "t-link"));
+			const linkHtml = `${esc("→ ")}<a href="${item.url}" target="_blank" rel="noopener" class="t-link-hover">${esc(item.url)}</a>`;
+			out.push(boxLnRich(linkHtml, `→ ${item.url}`.length, cols));
 		}
+		out.push(boxEmpty(cols));
 		out.push(boxBot(cols));
 		out.push("");
 	}
@@ -211,16 +228,26 @@ export function renderContact(containerPx: number, fontSize: number, font?: stri
 
 	out.push(boxTop("Links", cols, "t-title"));
 	out.push(boxEmpty(cols));
+
+	const brandColors: Record<string, string> = {
+		GitHub: "#f0f0f0",
+		LinkedIn: "#0A66C2",
+		Steam: "#66c0f4",
+		Discord: "#5865F2",
+	};
+
 	for (const c of contact as ContactEntry[]) {
 		const label = pad(c.label, 10);
+		const color = brandColors[c.label] || "var(--terminal-teal)";
 		if (c.url) {
-			const html = `${esc(label)} <a href="${c.url}" target="_blank" rel="noopener" class="t-link">${esc(c.value)}</a>`;
+			const html = `<span style="color:${color}">${esc(label)}</span> <a href="${c.url}" target="_blank" rel="noopener" class="t-link">${esc(c.value)}</a>`;
 			out.push(boxLnRich(html, (label + " " + c.value).length, cols));
 		} else if (c.copyable) {
-			const html = `${esc(label)} <span class="t-link" style="cursor:pointer" data-copy="${esc(c.value)}" onclick="navigator.clipboard.writeText(this.dataset.copy).then(()=>{this.dataset.orig=this.dataset.orig||this.textContent;this.textContent='copied!                 ';setTimeout(()=>{this.textContent=this.dataset.orig},1200)})">${esc(c.value)}</span>`;
+			const html = `<span style="color:${color}">${esc(label)}</span> <span class="t-link" style="cursor:pointer" data-copy="${esc(c.value)}" onclick="navigator.clipboard.writeText(this.dataset.copy).then(()=>{this.dataset.orig=this.dataset.orig||this.textContent;this.textContent='copied!                 ';setTimeout(()=>{this.textContent=this.dataset.orig},1200)})">${esc(c.value)}</span>`;
 			out.push(boxLnRich(html, (label + " " + c.value).length, cols));
 		} else {
-			out.push(boxLn(`${label} ${c.value}`, cols));
+			const html = `<span style="color:${color}">${esc(label)}</span> ${esc(c.value)}`;
+			out.push(boxLnRich(html, (label + " " + c.value).length, cols));
 		}
 	}
 	out.push(boxEmpty(cols));
