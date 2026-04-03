@@ -471,6 +471,7 @@ html::after {
 	overflow-y: auto;
 	background: rgba(0, 0, 0, 0.5);
 	user-select: text;
+	font-size: 14px;
 	-webkit-user-select: text;
 	-moz-user-select: text;
 }

@@ -160,9 +160,10 @@ export function renderExperience(containerPx: number, fontSize: number, font?: s
 		}
 		out.push(boxEmpty(cols));
 		for (let bi = 0; bi < e.bullets.length; bi++) {
-			const lines = wrapLines(`> ${e.bullets[bi]}`, innerPx, fontSize);
-			for (let i = 0; i < lines.length; i++) {
-				const text = i === 0 ? lines[i] : `  ${lines[i]}`;
+			const prefixPx = colsToPixels(2, fontSize); // "> " or "  " = 2 chars
+			const bLines = wrapLines(e.bullets[bi], innerPx - prefixPx, fontSize);
+			for (let i = 0; i < bLines.length; i++) {
+				const text = (i === 0 ? "> " : "  ") + bLines[i];
 				out.push(boxLn(text, cols, "t-white"));
 			}
 			if (bi < e.bullets.length - 1) out.push(boxEmpty(cols));
