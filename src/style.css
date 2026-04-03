@@ -60,6 +60,7 @@ body {
 #app {
 	width: 100vw;
 	height: 100vh;
+	height: 100dvh; /* dynamic viewport height — respects mobile browser chrome */
 	position: relative;
 	background: radial-gradient(circle at center, #0a1a17 0%, #051411 100%);
 	animation: flicker 12s infinite alternate;
@@ -90,6 +91,7 @@ body {
 	left: var(--frame-gap);
 	width: calc(100vw - (2 * var(--frame-gap)));
 	height: calc(100vh - (2 * var(--frame-gap)));
+	height: calc(100dvh - (2 * var(--frame-gap)));
 	z-index: 10003; /* above desktop (10002) and top-right decorations (10001) */
 	pointer-events: none;
 }
@@ -181,6 +183,7 @@ html::after {
 	left: var(--frame-gap);
 	width: calc(100vw - (2 * var(--frame-gap)) - (var(--standard-border-width) * 2));
 	height: calc(100vh - (2 * var(--frame-gap)) - (var(--standard-border-width) * 2));
+	height: calc(100dvh - (2 * var(--frame-gap)) - (var(--standard-border-width) * 2));
 	border: var(--standard-border-width) solid var(--terminal-teal);
 	border-radius: 4px;
 	/* Inset glow inside the border + fill the outside region with translucent black */
@@ -195,8 +198,8 @@ html::after {
 
 #site-header {
 	position: fixed;
-	top: 11px;
-	left: 50px;
+	top: calc(var(--frame-gap) - 9px);
+	left: calc(var(--frame-gap) + 30px);
 	display: flex;
 	align-items: center;
 	gap: 10px;
@@ -736,8 +739,8 @@ html::after {
 
 #top-right-container {
 	position: fixed;
-	top: 11px;
-	right: 50px;
+	top: calc(var(--frame-gap) - 9px);
+	right: calc(var(--frame-gap) + 30px);
 	display: flex;
 	z-index: 10000; /* above screen-frame (10000), below site-header (10001) and desktop (10002) */
 }
@@ -1002,7 +1005,26 @@ html::after {
    ============================ */
 
 @media (max-width: 768px) {
-	/* Hide decorative boxes that obscure desktop icons */
+	/* Shrink decorative boxes to a thin strip */
+	:root {
+		--tr-height: 50px;
+	}
+
+	#top-right-container {
+		right: 30px;
+	}
+
+	.info-box {
+		padding: 4px 6px;
+		font-size: 8px;
+	}
+
+	.info-box.logo svg,
+	.info-box.logo img {
+		max-width: 40px;
+		max-height: 40px;
+	}
+
 	/* Hide ASCII art — decorative, not essential */
 	.ascii-window {
 		display: none !important;
@@ -1016,9 +1038,9 @@ html::after {
 		min-width: 0;
 	}
 
-	/* Content windows: fill top half since decorations are hidden */
+	/* Content windows: fill top half since decorations are smaller */
 	.terminal-window:not(.about-window) {
-		top: 10px;
+		top: calc(var(--tr-height) + 15px);
 		bottom: calc(45% + 20px);
 	}
 
@@ -1031,10 +1053,25 @@ html::after {
 	}
 }
 
-/* Very narrow — stack vertically */
+/* Very narrow — compact layout */
 @media (max-width: 480px) {
+	:root {
+		--tr-height: 50px;
+	}
+
 	#site-header {
-		display: none;
+		left: calc(var(--frame-gap) + 10px);
+		transform: scale(0.85);
+		transform-origin: top left;
+	}
+
+	#top-right-container {
+		right: calc(var(--frame-gap) + 10px);
+	}
+
+	.info-box {
+		padding: 2px 4px;
+		font-size: 7px;
 	}
 
 	/* Desktop icons: compact grid */
@@ -1064,6 +1101,7 @@ html::after {
 
 	/* Content windows: use remaining top space */
 	.terminal-window:not(.about-window) {
+		top: calc(var(--tr-height) + 10px);
 		bottom: calc(50% + 15px);
 	}
 }
