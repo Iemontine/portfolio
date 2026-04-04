@@ -891,9 +891,10 @@ html::after {
 	color: var(--terminal-teal);
 	text-decoration: none;
 }
-.terminal-box a:hover {
+.terminal-box a:hover,
+.terminal-box .t-copyable:hover {
 	color: var(--terminal-teal-bright);
-	text-decoration: underline;
+	filter: brightness(1.3);
 }
 
 /* Token colors for box-drawn content */

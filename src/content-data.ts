@@ -61,7 +61,7 @@ export const experience: ExperienceEntry[] = [
 		bullets: [
 			"Automated large-scale database migrations in Python.",
 			"Built .NET tools that accelerated workstation deployments.",
-			"Troubleshot equipment/software across multiple departments.",
+			"Troubleshot equipment/software across multiple library departments.",
 		],
 	},
 	{
@@ -71,7 +71,7 @@ export const experience: ExperienceEntry[] = [
 		location: "Davis, CA",
 		bullets: [
 			"Developed backend AI features for Project Volare, an app used for interview practice: tone analysis, LLM integration, realtime speech recognition.",
-			"Collaborated with design team; adhered to specs and formal processes.",
+			"Collaborated with design team; adhered to design specs and became accustomed to more formal software engineering.",
 		],
 	},
 	{
@@ -80,17 +80,17 @@ export const experience: ExperienceEntry[] = [
 		date: "Aug 2021 — Sep 2025",
 		location: "Remote",
 		bullets: [
-			"Built web interface for patient data; moved operations paperless.",
-			"Implemented complex spreadsheet workflows; ongoing maintenance and features.",
+			"Built web interface to help employees input, store, and read patient data; moving operations completely paperless.",
+			"Implemented complex spreadsheet workflows for management of different patients and their sensitive data.",
 		],
 	},
 	{
-		org: "Travis Unified School District",
+		org: "Travis Unified",
 		role: "Technology Services Student Worker",
 		date: "May 2019 — Aug 2021",
 		location: "Fairfield, CA",
 		bullets: [
-			"Imaged, repaired, and deployed hundreds of devices across a nine-school district.",
+			"Imaged, repaired, and deployed hundreds of laptop, workstation, and tablet devices across a nine-school district.",
 		],
 	},
 ];
@@ -128,7 +128,7 @@ export const projects: ProjectEntry[] = [
 
 export const research: ProjectEntry[] = [
 	{
-		kicker: "Senior Design Project — UC Davis",
+		kicker: "UC Davis - Senior Design",
 		title: "SPEEN: Simulated Profiling Environment for Embodied iNtelligence",
 		date: "Spring 2025",
 		description: "Project lead. Open-source benchmarking platform for embodied LLM agents in a Minecraft-like Godot environment. Built the agent-environment pipeline, procedural world generation, A* navigation, and structured test scenarios. Implemented chain-of-thought prompting and automated scoring. Observed emergent cooperative behavior and division-of-labor in multi-agent scenarios.",
@@ -151,9 +151,9 @@ export const research: ProjectEntry[] = [
 ];
 
 export const contact: ContactEntry[] = [
-	{ label: "GitHub", value: "github.com/Iemontine", url: "https://github.com/Iemontine" },
-	{ label: "LinkedIn", value: "linkedin.com/in/darrolls", url: "https://linkedin.com/in/darrolls/" },
-	{ label: "Steam", value: "steamcommunity.com/id/computereality", url: "https://steamcommunity.com/id/computereality" },
+	{ label: "GitHub", value: "Iemontine", url: "https://github.com/Iemontine" },
+	{ label: "LinkedIn", value: "darrolls", url: "https://linkedin.com/in/darrolls/" },
+	{ label: "Steam", value: "computereality", url: "https://steamcommunity.com/id/computereality" },
 	{ label: "Discord", value: "clemtine [click to copy]", copyable: true },
 ];
 

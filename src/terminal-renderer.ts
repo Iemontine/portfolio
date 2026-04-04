@@ -271,10 +271,11 @@ export function renderContact(containerPx: number, fontSize: number, font?: stri
 		const label = pad(c.label, 10);
 		const color = brandColors[c.label] || "var(--terminal-teal)";
 		if (c.url) {
-			const html = `<span class="glow" style="color:${color}">${esc(label)}</span> <a href="${c.url}" target="_blank" rel="noopener" class="t-link">${esc(c.value)}</a>`;
+			const html = `<a href="${c.url}" target="_blank" rel="noopener" class="t-link" style="text-decoration:none"><span class="glow" style="color:${color}">${esc(label)}</span> ${esc(c.value)}</a>`;
 			out.push(boxLnRich(html, (label + " " + c.value).length, cols));
 		} else if (c.copyable) {
-			const html = `<span class="glow" style="color:${color}">${esc(label)}</span> <span class="t-link" style="cursor:pointer" data-copy="${esc(c.value)}" onclick="navigator.clipboard.writeText(this.dataset.copy).then(()=>{this.dataset.orig=this.dataset.orig||this.textContent;this.textContent='copied!                 ';setTimeout(()=>{this.textContent=this.dataset.orig},1200)})">${esc(c.value)}</span>`;
+			const copyVal = c.value.replace(/ \[click to copy\]/, "");
+			const html = `<span class="t-copyable" style="cursor:pointer" data-copy="${esc(copyVal)}" onclick="navigator.clipboard.writeText(this.dataset.copy).then(()=>{this.dataset.origHtml=this.dataset.origHtml||this.innerHTML;this.innerHTML='copied!                            ';setTimeout(()=>{this.innerHTML=this.dataset.origHtml},1200)})"><span class="glow" style="color:${color}">${esc(label)}</span> ${esc(c.value)}</span>`;
 			out.push(boxLnRich(html, (label + " " + c.value).length, cols));
 		} else {
 			const html = `<span class="glow" style="color:${color}">${esc(label)}</span> ${esc(c.value)}`;
