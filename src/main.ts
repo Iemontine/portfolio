@@ -461,7 +461,7 @@ class WindowManager {
 		el.offsetWidth;
 
 		// Animate to identity
-		el.style.transition = "transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+		el.style.transition = "transform 400ms cubic-bezier(0.25, 0.8, 0.25, 1)";
 		el.style.transform = "none";
 
 		const onEnd = () => {
@@ -644,7 +644,8 @@ class WindowManager {
 	}
 
 	private minimizeWindow(windowId: string): void {
-		// For this demo, minimize will just close the window
+		// Reset maximized state so the next window opens unmaximized
+		this.isContentWindowMaximized = false;
 		this.closeWindow(windowId);
 	}
 
@@ -653,10 +654,18 @@ class WindowManager {
 		if (!windowElement) return;
 
 		const isMax = windowElement.dataset.maximized === "true";
+
+		// Bring to front BEFORE toggling maximized, so the DOM re-append
+		// doesn't reset the CSS transition mid-flight.
+		if (!isMax) this.moveWindowToFront(windowId);
+
+		// Force a layout so the browser registers the element's current position
+		// after any DOM move, before we trigger the transition.
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		windowElement.offsetWidth;
+
 		windowElement.dataset.maximized = isMax ? "false" : "true";
 		this.isContentWindowMaximized = !isMax;
-
-		if (!isMax) this.moveWindowToFront(windowId);
 	}
 
 	// ============================

@@ -75,8 +75,8 @@ body {
 	width: calc(100% - 80px);
 	height: calc(100% - 80px);
 	position: absolute;
-	top: 40px;
-	left: 40px;
+	top: 30px;
+	left: 30px;
 	padding: 20px;
 	display: grid;
 	grid-template-columns: repeat(auto-fit, 80px);
@@ -347,20 +347,20 @@ html::after {
 	contain: layout style paint;
 	will-change: transform;
 	transform: translateZ(0);
-	transition: top 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-		left 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-		right 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-		bottom 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-		width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-		height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+	transition: top 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+		left 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+		right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+		bottom 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+		width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+		height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 /* Content windows: top portion of container, below decorations, above bottom row */
 .terminal-window:not(.about-window) {
 	position: absolute;
-	top: calc(var(--tr-height) + 25px);
-	left: 10px;
-	right: 10px;
+	top: calc(var(--tr-height));
+	left: 17%;
+	right: 17%;
 	bottom: calc(45% + 20px);
 	height: auto;
 	width: auto;
@@ -456,20 +456,20 @@ html::after {
 
 /* ASCII window show/hide */
 .ascii-enter {
-	animation: asciiWindowEnter 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+	animation: windowOpen 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 	transform-origin: bottom left;
 }
 .ascii-exit {
-	animation: asciiWindowExit 0.25s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+	animation: windowClose 0.35s cubic-bezier(0.55, 0.055, 0.675, 0.19);
 	transform-origin: bottom left;
 }
-@keyframes asciiWindowEnter {
-	from { opacity: 0; transform: scale(0.96) translate3d(-6px, 6px, 0); }
-	to   { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
+@keyframes windowOpen {
+	from { opacity: 0; transform: scale(0.95); }
+	to   { opacity: 1; transform: scale(1); }
 }
-@keyframes asciiWindowExit {
-	from { opacity: 1; transform: scale(1) translate3d(0, 0, 0); }
-	to   { opacity: 0; transform: scale(0.96) translate3d(-6px, 6px, 0); }
+@keyframes windowClose {
+	from { opacity: 1; transform: scale(1); }
+	to   { opacity: 0; transform: scale(0.95); }
 }
 
 .window-content::-webkit-scrollbar,
@@ -504,13 +504,13 @@ html::after {
 	============================ */
 
 .window-enter {
-	animation: windowSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	animation: windowOpen 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 	animation-fill-mode: both;
 	will-change: transform, opacity;
 }
 
 .window-exit {
-	animation: windowSlideOut 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+	animation: windowClose 0.35s cubic-bezier(0.55, 0.055, 0.675, 0.19);
 	animation-fill-mode: both;
 	will-change: transform, opacity;
 }
@@ -539,7 +539,7 @@ html::after {
 
 /* Content animations */
 .content-fade-in {
-	animation: contentFadeIn 0.6s ease-out;
+	animation: contentFadeIn 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 @keyframes contentFadeIn {
@@ -555,7 +555,7 @@ html::after {
 
 /* ASCII content */
 .ascii-content-enter {
-	animation: asciiContentEnter 0.5s ease-out;
+	animation: asciiContentEnter 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 @keyframes asciiContentEnter {
@@ -574,12 +574,12 @@ html::after {
 	============================ */
 
 .about-enter {
-	animation: aboutEnter 0.45s cubic-bezier(0.25, 0.8, 0.25, 1);
+	animation: windowOpen 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 	transform-origin: bottom right;
 }
 
 .about-exit {
-	animation: aboutExit 0.3s cubic-bezier(0.55, 0.055, 0.675, 0.19);
+	animation: windowClose 0.35s cubic-bezier(0.55, 0.055, 0.675, 0.19);
 	transform-origin: bottom right;
 }
 
@@ -607,12 +607,12 @@ html::after {
 
 /* About maximize/restore (bottom-right origin) */
 .about-maximize {
-	animation: aboutMaximize 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+	animation: aboutMaximize 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 	transform-origin: bottom right;
 }
 
 .about-restore {
-	animation: aboutRestore 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+	animation: aboutRestore 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
 	transform-origin: bottom right;
 }
 
@@ -1016,7 +1016,9 @@ html::after {
 
 	/* Content windows: fill top half since decorations are smaller */
 	.terminal-window:not(.about-window) {
-		top: calc(var(--tr-height) + 15px);
+		top: calc(var(--tr-height));
+		left: 10px;
+		right: 10px;
 		bottom: calc(45% + 20px);
 	}
 
@@ -1077,7 +1079,9 @@ html::after {
 
 	/* Content windows: use remaining top space */
 	.terminal-window:not(.about-window) {
-		top: calc(var(--tr-height) + 10px);
+		top: calc(var(--tr-height));
+		left: 10px;
+		right: 10px;
 		bottom: calc(50% + 15px);
 	}
 }
