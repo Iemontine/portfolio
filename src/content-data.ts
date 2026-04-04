@@ -106,7 +106,7 @@ export const projects: ProjectEntry[] = [
 	{
 		kicker: "Godot RPG",
 		title: "Monsters' Shift",
-		date: "Nov 2024",
+		date: "Winter 2024",
 		description: "Producer and gameplay engineer on a 6-person team. Built core infrastructure: interactable objects, scene transitions, cutscene authoring tools, character designer, and story manager. Designed maps, implemented the QTE mechanics and directional audio system, and managed 400+ commits across the team using Agile sprints.",
 		url: "https://github.com/Iemontine/MonstersShift",
 	},
@@ -178,10 +178,12 @@ export const aboutMe = {
 	],
 	specs: "RTX 5090, Ryzen 9 5900X",
 	favorites: [
-		{ category: "Series", items: "Chainsaw Man, Scott Pilgrim vs the World, Dandadan", color: "#ae4f4f" },
-		{ category: "Movies", items: "Shaun of the Dead, Zombie Land", color: "#4fae67" },
-		{ category: "Video Games", items: "Minecraft, Portal 2, Warframe, Zenless Zone Zero", color: "#4f6dae" },
-		{ category: "Artists", items: "Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People", color: "#904faeff" },
+		{ category: "Manga/Anime", items: "Chainsaw Man, Dandadan, Trigun", color: "#61BB46" },
+		{ category: "Series", items: "Scott Pilgrim vs the World, Invincible", color: "#FDB827" },
+		{ category: "Movies", items: "Shaun of the Dead, Everything Everywhere All at Once", color: "#F5821F" },
+		{ category: "Video Games", items: "OMORI, Minecraft, Undertale,Signalis, Portal 2, Warframe", color: "#E03A3E" },
+		{ category: "Artists", items: "Jerma, Carpenter Brut, Ricky Montgomery, Good Kid, The Vanished People, Kenshi Yonezu", color: "#963D97" },
+		{ category: "i've been to", items: "Tōkyō, Ōsaka, Český Krumlov, München, Salzburg, Werfen, Verona, Padova, Venice", color: "#009DDC" },
 	],
 	skills: [
 		{ name: "Swift", color: "rgb(255,203,58)" },

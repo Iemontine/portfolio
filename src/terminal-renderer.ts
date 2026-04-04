@@ -67,7 +67,7 @@ function wrapLines(text: string, maxWidthPx: number, fontSize: number): string[]
  */
 function pxToCols(px: number, fontSize: number): number {
 	const charW = textRatio() * fontSize;
-	const safePx = px * 0.81;
+	const safePx = px * 0.80;
 	return Math.max(10, Math.floor(safePx / charW));
 }
 
@@ -149,7 +149,7 @@ export function renderExperience(containerPx: number, fontSize: number, font?: s
 		out.push(boxEmpty(cols));
 		const roleLines = wrapLines(e.role, innerPx, fontSize);
 		for (const rl of roleLines) {
-			const html = `<span style="color:${roleColor}">${esc(rl)}</span>`;
+			const html = `<span class="glow" style="color:${roleColor}">${esc(rl)}</span>`;
 			out.push(boxLnRich(html, rl.length, cols));
 		}
 		const metaText = `${e.date}  ${e.location}`;
@@ -205,7 +205,7 @@ function renderItemList(items: ProjectEntry[], cmd: string, containerPx: number,
 		out.push(boxEmpty(cols));
 		const titleLines = wrapLines(item.title, innerPx, fontSize);
 		for (const tl of titleLines) {
-			const html = `<span style="color:${titleColor}">${esc(tl)}</span>`;
+			const html = `<span class="glow" style="color:${titleColor}">${esc(tl)}</span>`;
 			out.push(boxLnRich(html, tl.length, cols));
 		}
 		const dateHtml = `<span style="color:#888">${esc(item.date)}</span>`;
@@ -261,9 +261,9 @@ export function renderContact(containerPx: number, fontSize: number, font?: stri
 	out.push(boxEmpty(cols));
 
 	const brandColors: Record<string, string> = {
-		GitHub: "#f0f0f0",
+		GitHub: "#D8BD0E",
 		LinkedIn: "#0A66C2",
-		Steam: "#66c0f4",
+		Steam: "#c7d5e0",
 		Discord: "#5865F2",
 	};
 
@@ -271,13 +271,13 @@ export function renderContact(containerPx: number, fontSize: number, font?: stri
 		const label = pad(c.label, 10);
 		const color = brandColors[c.label] || "var(--terminal-teal)";
 		if (c.url) {
-			const html = `<span style="color:${color}">${esc(label)}</span> <a href="${c.url}" target="_blank" rel="noopener" class="t-link">${esc(c.value)}</a>`;
+			const html = `<span class="glow" style="color:${color}">${esc(label)}</span> <a href="${c.url}" target="_blank" rel="noopener" class="t-link">${esc(c.value)}</a>`;
 			out.push(boxLnRich(html, (label + " " + c.value).length, cols));
 		} else if (c.copyable) {
-			const html = `<span style="color:${color}">${esc(label)}</span> <span class="t-link" style="cursor:pointer" data-copy="${esc(c.value)}" onclick="navigator.clipboard.writeText(this.dataset.copy).then(()=>{this.dataset.orig=this.dataset.orig||this.textContent;this.textContent='copied!                 ';setTimeout(()=>{this.textContent=this.dataset.orig},1200)})">${esc(c.value)}</span>`;
+			const html = `<span class="glow" style="color:${color}">${esc(label)}</span> <span class="t-link" style="cursor:pointer" data-copy="${esc(c.value)}" onclick="navigator.clipboard.writeText(this.dataset.copy).then(()=>{this.dataset.orig=this.dataset.orig||this.textContent;this.textContent='copied!                 ';setTimeout(()=>{this.textContent=this.dataset.orig},1200)})">${esc(c.value)}</span>`;
 			out.push(boxLnRich(html, (label + " " + c.value).length, cols));
 		} else {
-			const html = `<span style="color:${color}">${esc(label)}</span> ${esc(c.value)}`;
+			const html = `<span class="glow" style="color:${color}">${esc(label)}</span> ${esc(c.value)}`;
 			out.push(boxLnRich(html, (label + " " + c.value).length, cols));
 		}
 	}
@@ -341,7 +341,7 @@ function applyMatchesToRange(
 		const oEnd = Math.min(m.end, rangeEnd);
 		if (oStart > cursor) html += esc(text.substring(cursor, oStart));
 		const style = `color:${m.color}${m.bold ? ";font-weight:bold" : ""}`;
-		html += `<span style="${style}">${esc(text.substring(oStart, oEnd))}</span>`;
+		html += `<span class="glow" style="${style}">${esc(text.substring(oStart, oEnd))}</span>`;
 		cursor = oEnd;
 	}
 	if (cursor < rangeEnd) html += esc(text.substring(cursor, rangeEnd));
@@ -393,6 +393,7 @@ function colorizeWrappedLines(
 function labeledLines(
 	label: string, labelStyle: string, value: string,
 	cols: number, innerCols: number, fontSize: number,
+	glow = false,
 ): string[] {
 	const labelLen = label.length;
 	const valuePx = colsToPixels(Math.max(1, innerCols - labelLen), fontSize);
@@ -400,8 +401,9 @@ function labeledLines(
 	const result: string[] = [];
 
 	for (let i = 0; i < valueLines.length; i++) {
+		const cls = glow ? ' class="glow"' : '';
 		const prefixHtml = i === 0
-			? `<span style="${labelStyle}">${esc(label)}</span>`
+			? `<span${cls} style="${labelStyle}">${esc(label)}</span>`
 			: esc(" ".repeat(labelLen));
 		const html = prefixHtml + `<span style="color:var(--terminal-white)">${esc(valueLines[i])}</span>`;
 		result.push(boxLnRich(html, labelLen + valueLines[i].length, cols));
@@ -429,8 +431,8 @@ export function renderAboutMe(containerPx: number, fontSize: number, font?: stri
 	const maxLbl = Math.max(...aboutMe.currents.map(c => `${c.label}:`.length));
 	for (const curr of aboutMe.currents) {
 		const label = `${curr.label}:` + " ".repeat(maxLbl + 1 - `${curr.label}:`.length);
-		const style = `color:${curr.color};text-shadow:0 0 3px ${curr.color}`;
-		out.push(...labeledLines(label, style, curr.value, cols, innerCols, fontSize));
+		const style = `color:${curr.color}`;
+		out.push(...labeledLines(label, style, curr.value, cols, innerCols, fontSize, true));
 	}
 
 	out.push(boxEmpty(cols));
@@ -463,7 +465,7 @@ export function renderAboutMe(containerPx: number, fontSize: number, font?: stri
 	const allDetails = [{ label: "bio", value: aboutMe.bio }, ...aboutMe.details];
 	for (const detail of allDetails) {
 		const label = `${detail.label}: `;
-		const style = `color:${labelColor};font-weight:bold`;
+		const style = `color:${labelColor}`;
 		out.push(...labeledLines(label, style, detail.value, cols, innerCols, fontSize));
 	}
 	out.push(boxEmpty(cols));
@@ -477,7 +479,7 @@ export function renderAboutMe(containerPx: number, fontSize: number, font?: stri
 	for (const fav of aboutMe.favorites) {
 		const label = `${fav.category}: `;
 		const style = `color:${fav.color}`;
-		out.push(...labeledLines(label, style, fav.items, cols, innerCols, fontSize));
+		out.push(...labeledLines(label, style, fav.items, cols, innerCols, fontSize, true));
 	}
 
 	out.push(boxEmpty(cols));
@@ -490,7 +492,7 @@ export function renderAboutMe(containerPx: number, fontSize: number, font?: stri
 
 	// Skills
 	{
-		const label = "proficient in: ";
+		const label = "i know: ";
 		const valuePx = colsToPixels(Math.max(1, innerCols - label.length), fontSize);
 		const valueText = aboutMe.skills.map(s => s.name).join(", ");
 		const valueLines = wrapLines(valueText, valuePx, fontSize);
@@ -498,7 +500,9 @@ export function renderAboutMe(containerPx: number, fontSize: number, font?: stri
 		const coloredLines = colorizeWrappedLines(valueText, valueLines, skillTokens);
 
 		for (let i = 0; i < valueLines.length; i++) {
-			const prefix = i === 0 ? esc(label) : esc(" ".repeat(label.length));
+			const prefix = i === 0
+				? `<span style="color:${labelColor}">${esc(label)}</span>`
+				: esc(" ".repeat(label.length));
 			const html = prefix + coloredLines[i];
 			out.push(boxLnRich(html, label.length + valueLines[i].length, cols));
 		}
@@ -515,18 +519,32 @@ export function renderAboutMe(containerPx: number, fontSize: number, font?: stri
 		const coloredLines = colorizeWrappedLines(valueText, valueLines, apiTokens);
 
 		for (let i = 0; i < valueLines.length; i++) {
-			const prefix = i === 0 ? esc(label) : esc(" ".repeat(label.length));
+			const prefix = i === 0
+				? `<span style="color:${labelColor}">${esc(label)}</span>`
+				: esc(" ".repeat(label.length));
 			const html = prefix + coloredLines[i];
 			out.push(boxLnRich(html, label.length + valueLines[i].length, cols));
 		}
 	}
 	out.push(boxEmpty(cols));
 
-	// Specs
+	// Specs (with brand colors)
 	{
-		const label = "SPECS: ";
-		const style = `color:${labelColor};font-weight:bold`;
-		out.push(...labeledLines(label, style, aboutMe.specs, cols, innerCols, fontSize));
+		const label = "specs: ";
+		const specsTokens = [
+			{ name: "RTX 5090", color: "#76b900", bold: true },
+			{ name: "Ryzen 9 5900X", color: "#ed1c24", bold: true },
+		];
+		const valuePx = colsToPixels(Math.max(1, innerCols - label.length), fontSize);
+		const valueLines = wrapLines(aboutMe.specs, valuePx, fontSize);
+		const coloredLines = colorizeWrappedLines(aboutMe.specs, valueLines, specsTokens);
+		for (let i = 0; i < valueLines.length; i++) {
+			const prefix = i === 0
+				? `<span style="color:${labelColor}">${esc(label)}</span>`
+				: esc(" ".repeat(label.length));
+			const html = prefix + coloredLines[i];
+			out.push(boxLnRich(html, label.length + valueLines[i].length, cols));
+		}
 	}
 	out.push(boxEmpty(cols));
 	out.push(boxBot(cols));

@@ -31,8 +31,10 @@
 	--terminal-teal: #1dbe9c;
 	--terminal-white: #f0f0f0;
 	--terminal-teal-bright: rgb(79, 245, 212);
-	--glow-teal-bright: 0 0 5px var(--terminal-teal-bright);
+	--glow: 0 0 3px currentColor;
+	--glow-bright: 0 0 5px currentColor;
 	--glow-teal: 0 0 3px var(--terminal-teal);
+	--glow-teal-bright: 0 0 5px var(--terminal-teal-bright);
 	--standard-border-width: 1px;
 	--outside-veil-opacity: 0.6;
 	--tr-height: 140px;
@@ -222,7 +224,7 @@ html::after {
 	font-size: 12px;
 	color: var(--terminal-teal);
 	letter-spacing: 1px;
-	text-shadow: var(--glow-teal);
+	text-shadow: var(--glow);
 }
 
 /* Noise overlay */
@@ -254,9 +256,7 @@ html::after {
 	70%  { transform: translate3d(-2%, 4%, 0); }
 	80%  { transform: translate3d(7%, -1%, 0); }
 	90%  { transform: translate3d(-5%, -8%, 0); }
-	100% {
-		transform: translate3d(0, 0, 0);
-	}
+	100% { transform: translate3d(0, 0, 0); }
 }
 
 /* ============================
@@ -340,7 +340,7 @@ html::after {
 .terminal-window {
 	background: rgba(0, 0, 0, 0.95);
 	border: var(--standard-border-width) solid var(--terminal-teal);
-	border-radius: 0;
+	border-radius: 4px;
 	box-shadow: var(--glow-teal), 0 2px 8px rgba(0, 0, 0, 0.5);
 	pointer-events: all;
 	overflow: hidden;
@@ -433,7 +433,7 @@ html::after {
 	font-weight: 600;
 	font-family: "MS UI Gothic", monospace;
 	color: var(--terminal-teal);
-	text-shadow: var(--glow-teal);
+	text-shadow: var(--glow);
 }
 
 .window-content {
@@ -644,7 +644,7 @@ html::after {
 .terminal-text h2,
 .terminal-text h3 {
 	color: var(--terminal-teal);
-	text-shadow: var(--glow-teal);
+	text-shadow: var(--glow);
 }
 
 .terminal-text h1 .mono,
@@ -654,7 +654,7 @@ html::after {
 .terminal-text h1 {
 	font-size: 18px;
 	margin-bottom: 16px;
-	text-shadow: var(--glow-teal);
+	text-shadow: var(--glow);
 	border-bottom: 1px solid var(--terminal-teal);
 	padding-bottom: 8px;
 }
@@ -662,13 +662,13 @@ html::after {
 .terminal-text h2 {
 	font-size: 16px;
 	margin: 16px 0 8px 0;
-	text-shadow: var(--glow-teal);
+	text-shadow: var(--glow);
 }
 
 .terminal-text h3 {
 	font-size: 14px;
 	margin: 12px 0 6px 0;
-	text-shadow: var(--glow-teal);
+	text-shadow: var(--glow);
 }
 
 .terminal-text p {
@@ -688,13 +688,13 @@ html::after {
 .terminal-text a {
 	color: var(--terminal-teal);
 	text-decoration: none;
-	text-shadow: var(--glow-teal);
+	text-shadow: var(--glow);
 	transition: all 0.3s ease;
 }
 
 .terminal-text a:hover {
 	color: var(--terminal-teal-bright);
-	text-shadow: var(--glow-teal-bright);
+	text-shadow: var(--glow-bright);
 }
 
 .terminal-text code {
@@ -901,11 +901,15 @@ html::after {
 .t-cmd { color: var(--terminal-white); }
 .t-title { color: var(--terminal-teal-bright); }
 .t-white { color: var(--terminal-white); }
-.t-muted { color: #8bbfb4; }
+.t-muted { color: #888; }
 .t-link { color: var(--terminal-teal); }
 .t-link:hover { color: var(--terminal-teal-bright); }
 .t-link-hover { color: var(--terminal-teal); text-decoration: none; cursor: pointer; }
 .t-link-hover:hover { color: var(--terminal-teal-bright); }
+
+/* Glow utility — uses currentColor so it works with any text color */
+.glow { text-shadow: var(--glow); }
+.glow-bright { text-shadow: var(--glow-bright); }
 
 /* ============================
    SCROLLBAR STYLING
@@ -942,7 +946,7 @@ html::after {
 	height: 45%;
 	min-height: 200px;
 	background: #000;
-	border: var(--standard-border-width) solid currentColor;
+	border: var(--standard-border-width) solid var(--terminal-teal);
 	border-radius: 4px;
 	box-shadow: var(--glow-teal), 0 2px 8px rgba(0, 0, 0, 0.5);
 	backdrop-filter: blur(5px);
